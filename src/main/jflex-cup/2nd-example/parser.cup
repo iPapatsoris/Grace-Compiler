@@ -1,0 +1,53 @@
+/* Simple +/-/* expression language; parser evaluates constant expressions on the fly*/
+/**
+ *  Package and Import Specifications
+ */
+import java_cup.runtime.*;
+
+/**
+ *  Usercode Components
+ */
+parser code {:
+    // Connect this parser to a scanner!
+    Scanner s;
+    Parser(Scanner s){ this.s=s; }
+:}
+
+/* define how to connect to the scanner! */
+scan with {: return s.next_token(); :};
+
+/**
+ *  Symbol Lists
+ */
+
+/* Terminals (tokens returned by the scanner). */
+terminal            SEMI, PLUS, MINUS, TIMES, LPAREN, RPAREN,
+                    AND, CHAR, DIV, DO, ELSE, FUN, IF,
+                    INT, MOD, NOT, NOTHING, OR, REF, RETURN,
+                    THEN, VAR, WHILE,
+                    ID;
+terminal String     STRING_LITERAL;        // our scanner provides numbers as strings
+terminal Integer    INT_LITERAL;
+
+/*  Non terminals */
+non terminal            expr_list;
+non terminal Integer    expr;      // used to store evaluated subexpressions
+
+/**
+ *  Precedence Declarations
+ */
+precedence left PLUS, MINUS;
+precedence left TIMES;
+
+/**
+ *  The Grammar Rules
+ */
+expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);         :}
+            | expr:e SEMI                   {: System.out.println(e);         :}
+;
+expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = e1+e2;                :}
+             | expr:e1 MINUS expr:e2        {: RESULT = e1-e2;                :}
+             | expr:e1 TIMES expr:e2        {: RESULT = e1*e2;                :}
+             | LPAREN expr:e RPAREN	        {: RESULT = e;                    :}
+             | STRING_LITERAL:s	            {: RESULT = Integer.parseInt(s);  :}
+             ;
