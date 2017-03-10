@@ -8,12 +8,31 @@ import java_cup.runtime.*;
 
 %{
 StringBuffer stringBuffer = new StringBuffer();
+
 private Symbol symbol(int type) {
    return new Symbol(type, yyline, yycolumn);
 }
+
 private Symbol symbol(int type, Object value) {
     return new Symbol(type, yyline, yycolumn, value);
 }
+
+private static Character formEscape(String str) {System.out.println(str);
+    if (str.charAt(0) == 'x') {
+        return (char)Integer.parseInt(str.substring(1, 3), 16);
+    }
+    switch (str) {
+        case "n'": return '\n';
+        case "t'": return '\t';
+        case "r'": return '\r';
+        case "0'": return 0;
+        case "\\'": return '\\';
+        case "''": return '\'';
+        case "\"'": return '\"';
+        default: System.out.println("No match"); return null;
+    }
+}
+
 %}
 
 LineTerminator = \r|\n|\r\n
@@ -21,6 +40,7 @@ WhiteSpace = {LineTerminator} | [ \t\f]
 //LegalAfterDigit = [+\-*();] | {WhiteSpace}
 
 %state STRING
+%xstate ESCAPE
 
 %%
 
@@ -60,6 +80,8 @@ WhiteSpace = {LineTerminator} | [ \t\f]
 [a-zA-Z][a-zA-Z0-9_]* {return symbol(sym.ID, yytext()); }
 [0-9]+ {return symbol(sym.INT_LITERAL, new Integer(yytext()));}
 [0-9]+([^+\-*();\n\t\r ])+  {throw new Error("Illegal character <"+yytext()+"> at line " + yyline + ", column " + yycolumn); }
+\'[^\\'\"]\' {return symbol(sym.CHAR_LITERAL, yytext().charAt(1));}
+\'\\ {System.out.println("OK"); yybegin(ESCAPE);}
 
 <STRING> {
       \"                             { yybegin(YYINITIAL);
@@ -71,6 +93,12 @@ WhiteSpace = {LineTerminator} | [ \t\f]
       \\r                            { stringBuffer.append('\r'); }
       \\\"                           { stringBuffer.append('\"'); }
       \\                             { stringBuffer.append('\\'); }
+}
+
+<ESCAPE> {
+    ([ntr0\\'\"] | x([0-9a-fA-F]{2}))'  { System.out.println("OKKK"); yybegin(YYINITIAL); return symbol(sym.CHAR_LITERAL, formEscape(yytext()));}
+    [^]                    { throw new Error("Illegal character <"+yytext()+">"); }
+
 }
 
 [^]                    { throw new Error("Illegal character <"+yytext()+">"); }

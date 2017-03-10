@@ -30,6 +30,7 @@ public interface sym {
   public static final int NOTHING = 18;
   public static final int EOF = 0;
   public static final int DIV = 10;
+  public static final int CHAR_LITERAL = 28;
   public static final int MINUS = 4;
   public static final int error = 1;
   public static final int VAR = 23;
@@ -62,7 +63,8 @@ public interface sym {
   "WHILE",
   "ID",
   "STRING_LITERAL",
-  "INT_LITERAL"
+  "INT_LITERAL",
+  "CHAR_LITERAL"
   };
 }
 

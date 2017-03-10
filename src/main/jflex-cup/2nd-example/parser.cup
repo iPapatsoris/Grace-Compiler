@@ -28,6 +28,7 @@ terminal            SEMI, PLUS, MINUS, TIMES, LPAREN, RPAREN,
                     ID;
 terminal String     STRING_LITERAL;        // our scanner provides numbers as strings
 terminal Integer    INT_LITERAL;
+terminal Character  CHAR_LITERAL;
 
 /*  Non terminals */
 non terminal            expr_list;
