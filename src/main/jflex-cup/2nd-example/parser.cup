@@ -21,12 +21,14 @@ scan with {: return s.next_token(); :};
  */
 
 /* Terminals (tokens returned by the scanner). */
-terminal            SEMI, PLUS, MINUS, TIMES, LPAREN, RPAREN,
-                    AND, CHAR, DIV, DO, ELSE, FUN, IF,
+terminal            AND, CHAR, DIV, DO, ELSE, FUN, IF,
                     INT, MOD, NOT, NOTHING, OR, REF, RETURN,
                     THEN, VAR, WHILE,
-                    ID;
-terminal String     STRING_LITERAL;        // our scanner provides numbers as strings
+                    PLUS, MINUS, TIMES, DIVIDE, HASH, EQ, NEQ,
+                    LESS, GREATER, LESSEQ, GREATEREQ,
+                    LPAREN, RPAREN, LSQR, RSQR, LBRACK, RBRACK,
+                    COMMA, SEMICOLON, COLON, LARROW, ID, SEMI;
+terminal String     STRING_LITERAL;
 terminal Integer    INT_LITERAL;
 terminal Character  CHAR_LITERAL;
 
