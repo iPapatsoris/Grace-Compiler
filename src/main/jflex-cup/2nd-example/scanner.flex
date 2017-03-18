@@ -69,7 +69,6 @@ EscapeChar = [ntr0\\'\"] | x([0-9a-fA-F]{2})
     "+"            { return symbol(sym.PLUS); }
     "-"            { return symbol(sym.MINUS); }
     "*"            { return symbol(sym.TIMES); }
-    "/"            { return symbol(sym.DIVIDE); }
     "#"            { return symbol(sym.HASH); }
     "="            { return symbol(sym.EQ); }
     "<>"            { return symbol(sym.NEQ); }
@@ -91,12 +90,12 @@ EscapeChar = [ntr0\\'\"] | x([0-9a-fA-F]{2})
     "<-"           { return symbol(sym.LARROW);}
 
     [a-zA-Z][a-zA-Z0-9_]* {return symbol(sym.ID, yytext()); }
-    [0-9]+ {return symbol(sym.INT_LITERAL, new Integer(yytext()));}
+    [0-9]+ {return symbol(sym.INT_CONST, new Integer(yytext()));}
     [0-9]+([^+\-*/#=<>()\[\]{},;:\n\t\r ])+  {throw new Error("Illegal character <"+yytext()+"> at line " + yyline + ", column " + yycolumn); }
-    \'[^\\'\"]\' {return symbol(sym.CHAR_LITERAL, yytext().charAt(1));}
+    \'[^\\'\"]\' {return symbol(sym.CHAR_CONST, yytext().charAt(1));}
     \'\\{EscapeChar}\' {
         String toEscape = yytext().substring(2, yytext().length()-1);
-        return symbol(sym.CHAR_LITERAL, formEscape(toEscape));
+        return symbol(sym.CHAR_CONST, formEscape(toEscape));
     }
     \" { stringBuffer.setLength(0); yybegin(STRING); }
     \$\n { }
