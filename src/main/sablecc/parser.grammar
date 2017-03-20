@@ -12,10 +12,11 @@ Helpers
     all = [0..0xffff];
     letter = [['a'..'z'] + ['A'..'Z']];
     digit = ['0'..'9'];
-    common_char = [all - [[''' + '"'] + '\']];
     hexadecimal_digit = digit | ['a'..'f'] | ['A'..'F'];
     hexadecimal_literal = ('x' | 'X') hexadecimal_digit hexadecimal_digit;
     escape_sequence = '\n' | '\t' | '\r' | '\0' | '\\' | '\' ''' | '\"' | hexadecimal_literal;
+    common_char = [all - [[''' + '"'] + '\']];
+    char_part = common_char | escape_sequence;
 
 
 Tokens
@@ -39,7 +40,8 @@ Tokens
 
     identifier = letter (letter | digit | '_')*;
     int_constant = digit+;
-    char_literal = ''' (common_char | escape_sequence) ''';
+    char_literal = ''' char_part ''';
+    string = '"' ([common_char - [lf + cr]] | escape_sequence)+ '"';
     whitespace = whitespace;
 Ignored Tokens
     whitespace;
