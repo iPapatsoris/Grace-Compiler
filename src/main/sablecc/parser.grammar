@@ -1,18 +1,45 @@
 Package compiler;
 
-
 Helpers
-  sp = ' ';
-  lf = 0x000a;
-  cr = 0x000d;
-  ff = 0x000c;
-  ht = 0x0009; 
-  line_terminator = lf | cr | cr lf;
-  white_space = (sp | ht | ff | line_terminator)*;
+    sp = ' ';
+    lf = 0x000a;
+    cr = 0x000d;
+    ff = 0x000c;
+    ht = 0x0009;
+    line_terminator = lf | cr | cr lf;
+    whitespace = (sp | ht | ff | line_terminator)*;
+
+    all = [0..0xffff];
+    letter = [['a'..'z'] + ['A'..'Z']];
+    digit = ['0'..'9'];
+    common_char = [all - [[''' + '"'] + '\']];
+    hexadecimal_digit = digit | ['a'..'f'] | ['A'..'F'];
+    hexadecimal_literal = ('x' | 'X') hexadecimal_digit hexadecimal_digit;
+    escape_sequence = '\n' | '\t' | '\r' | '\0' | '\\' | '\' ''' | '\"' | hexadecimal_literal;
+
 
 Tokens
-  white_space = white_space;
+    and = 'and';
+    char = 'char';
+    div = 'div';
+    do = 'do';
+    else = 'else';
+    fun = 'fun';
+    if = 'if';
+    int = 'int';
+    mod = 'mod';
+    not = 'not';
+    nothing = 'nothing';
+    or = 'or';
+    ref = 'ref';
+    return = 'return';
+    then = 'then';
+    var = 'var';
+    while = 'while';
 
+    identifier = letter (letter | digit | '_')*;
+    int_constant = digit+;
+    char_literal = ''' (common_char | escape_sequence) ''';
+    whitespace = whitespace;
 Ignored Tokens
-  white_space;
-
+    whitespace;
