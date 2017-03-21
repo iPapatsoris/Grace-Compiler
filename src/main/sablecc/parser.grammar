@@ -10,6 +10,7 @@ Helpers
     whitespace = (sp | ht | ff | line_terminator)*;
 
     all = [0..0xffff];
+    nothing = [all - all];
     letter = [['a'..'z'] + ['A'..'Z']];
     digit = ['0'..'9'];
     hexadecimal_digit = digit | ['a'..'f'] | ['A'..'F'];
@@ -17,7 +18,9 @@ Helpers
     escape_sequence = '\n' | '\t' | '\r' | '\0' | '\\' | '\' ''' | '\"' | hexadecimal_literal;
     common_char = [all - [[''' + '"'] + '\']];
     char_part = common_char | escape_sequence;
-
+    not_dollar = [all - '$'];
+    not_dollar_line_terminator = [all - ['$' + [lf + cr]]];
+    not_line_terminator = [all - [lf + cr]];
 
 Tokens
     and = 'and';
@@ -38,10 +41,35 @@ Tokens
     var = 'var';
     while = 'while';
 
+    plus = '+';
+    minus = '-';
+    times = '*';
+    hash = '#';
+    equal = '=';
+    less_than = '<';
+    greater_than = '>';
+    less_than_equal = '<=';
+    greater_than_equal = '>=';
+
+    lparen = '(';
+    rparen = ')';
+    lsquare_bracket = '[';
+    rsquare_bracket = ']';
+    lbracket = '{';
+    rbracket = '}';
+    comma = ',';
+    semicolon = ';';
+    colon = ':';
+    left_arrow = '<-';
+
     identifier = letter (letter | digit | '_')*;
     int_constant = digit+;
     char_literal = ''' char_part ''';
     string = '"' ([common_char - [lf + cr]] | escape_sequence)+ '"';
+
+    line_comment = '$' (line_terminator | (not_dollar_line_terminator not_line_terminator* line_terminator));
+    block_comment = '$$' not_dollar* '$' (not_dollar not_dollar* '$')* '$';
     whitespace = whitespace;
+
 Ignored Tokens
-    whitespace;
+    whitespace, line_comment, block_comment;
