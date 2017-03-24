@@ -10,7 +10,6 @@ Helpers
     whitespace = (sp | ht | ff | line_terminator)*;
 
     all = [0..0xffff];
-    nothing = [all - all];
     letter = [['a'..'z'] + ['A'..'Z']];
     digit = ['0'..'9'];
     hexadecimal_digit = digit | ['a'..'f'] | ['A'..'F'];
@@ -64,7 +63,7 @@ Tokens
 
     identifier = letter (letter | digit | '_')*;
     int_constant = digit+;
-    char_literal = ''' char_part ''';
+    char_constant = ''' char_part ''';
     string = '"' ([common_char - [lf + cr]] | escape_sequence)+ '"';
 
     line_comment = '$' (line_terminator | (not_dollar_line_terminator not_line_terminator* line_terminator));
@@ -73,3 +72,26 @@ Tokens
 
 Ignored Tokens
     whitespace, line_comment, block_comment;
+
+Productions
+    //program = expr*;
+    expr = {add} expr plus term
+         | {sub} expr minus term
+         | {term} term
+         ;
+
+    term = {mult} term times factor
+         | {div} term div factor
+         | {mod} term mod factor
+         | {factor} factor
+         ;
+
+    factor = {positive} plus const
+           | {negative} minus const
+           | {const} const
+           ;
+
+    const = {int} int_constant
+          | {char} char_constant
+          | {paren} lparen expr rparen
+          ;
