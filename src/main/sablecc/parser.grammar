@@ -45,10 +45,10 @@ Tokens
     times = '*';
     hash = '#';
     equal = '=';
-    less_than = '<';
-    greater_than = '>';
-    less_than_equal = '<=';
-    greater_than_equal = '>=';
+    less = '<';
+    greater = '>';
+    less_equal = '<=';
+    greater_equal = '>=';
 
     lparen = '(';
     rparen = ')';
@@ -74,7 +74,33 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    //program = expr*;
+    program = {expr} expr
+            | {cond} cond
+            ;
+
+    /* Conditions */
+    cond = {disj} cond or conj
+         | {other} conj
+         ;
+
+    conj = conj and neg
+         | {other} neg
+         ;
+
+    neg = not neg
+        | {other} numeric_cond
+        ;
+
+    numeric_cond = {equal} [left]:expr equal [right]:expr
+                 | {not_equal} [left]:expr hash [right]:expr
+                 | {greater} [left]:expr greater [right]:expr
+                 | {less} [left]:expr less [right]:expr
+                 | {greater_equal} [left]:expr greater_equal [right]:expr
+                 | {less_equal} [left]:expr less_equal [right]:expr
+                 | {paren} lparen cond rparen
+                 ;
+
+    /* Expressions */
     expr = {add} expr plus term
          | {sub} expr minus term
          | {term} term
