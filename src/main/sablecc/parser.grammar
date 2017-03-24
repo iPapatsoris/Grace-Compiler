@@ -78,6 +78,15 @@ Productions
             | {cond} cond
             ;
 
+    another_argument = comma expr;
+    arguments = expr another_argument*;
+    func_call = identifier lparen arguments? rparen;
+
+    l_value = l_value lsquare_bracket expr rsquare_bracket
+            | {id} identifier
+            | {string} string
+            ;
+
     /* Conditions */
     cond = {disj} cond or conj
          | {other} conj
@@ -103,21 +112,23 @@ Productions
     /* Expressions */
     expr = {add} expr plus term
          | {sub} expr minus term
-         | {term} term
+         | {other} term
          ;
 
     term = {mult} term times factor
          | {div} term div factor
          | {mod} term mod factor
-         | {factor} factor
+         | {other} factor
          ;
 
     factor = {positive} plus const
            | {negative} minus const
-           | {const} const
+           | {other} const
            ;
 
-    const = {int} int_constant
+    const = {l_value} l_value
+          | {int} int_constant
           | {char} char_constant
           | {paren} lparen expr rparen
+          | func_call
           ;
