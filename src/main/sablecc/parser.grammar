@@ -74,14 +74,65 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program = {expr} expr
-            | {cond} cond
-            ;
+    program = func_def;
+    func_def = header local_def* block;
 
+    another_fpar_def = semicolon fpar_def;
+    one_or_more_fpar_def = fpar_def another_fpar_def*;
+    header = fun identifier lparen one_or_more_fpar_def? rparen colon return_type;
+
+
+    fpar_def = ref? identifier another_identifier* colon fpar_type;
+    data_type = {int} int
+              | {char} char
+              ;
+
+    array_size = lsquare_bracket int_constant rsquare_bracket;
+    type = data_type array_size*;
+    return_type = data_type
+             | {nothing} nothing
+             ;
+
+    empty_cell = lsquare_bracket rsquare_bracket;
+    fpar_type = data_type empty_cell? array_size*;
+    local_def = {func_def} func_def
+              | {func_decl} func_decl
+              | {var_def} var_def
+              ;
+
+    another_identifier = comma identifier;
+    var_def = var identifier another_identifier* colon type semicolon;
+    func_decl = header semicolon;
+
+    /* Statements */
+    statement = {open} open_statement
+              | {matched} matched_statement
+              ;
+
+    matched_statement = {with_else} if cond then [left]:matched_statement else [right]:matched_statement
+                      | {other} other_statement
+                      ;
+
+    open_statement = {without_else} if cond then statement
+                   | {with_else} if cond then matched_statement else open_statement
+                   ;
+
+    other_statement = {null} semicolon
+                    | {assignment} l_value left_arrow expr semicolon
+                    | {func_call} func_call semicolon
+                    //| {loop} while cond do statement
+                    | {return} return expr? semicolon
+                    | {block} block
+                    ;
+
+    block = lbracket statement* rbracket;
+
+    /* Function call */
     another_argument = comma expr;
     arguments = expr another_argument*;
     func_call = identifier lparen arguments? rparen;
 
+    /* L-value */
     l_value = l_value lsquare_bracket expr rsquare_bracket
             | {id} identifier
             | {string} string
