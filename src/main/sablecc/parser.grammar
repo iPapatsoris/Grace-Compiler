@@ -110,11 +110,13 @@ Productions
               ;
 
     matched_statement = {with_else} if cond then [left]:matched_statement else [right]:matched_statement
+                      | {loop} while cond do matched_statement
                       | {other} other_statement
                       ;
 
     open_statement = {without_else} if cond then statement
                    | {with_else} if cond then matched_statement else open_statement
+                   | {loop} while cond do open_statement
                    ;
 
     other_statement = {null} semicolon
