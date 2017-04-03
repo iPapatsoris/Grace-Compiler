@@ -122,7 +122,6 @@ Productions
     other_statement = {null} semicolon
                     | {assignment} l_value left_arrow expr semicolon
                     | {func_call} func_call semicolon
-                    //| {loop} while cond do statement
                     | {return} return expr? semicolon
                     | {block} block
                     ;

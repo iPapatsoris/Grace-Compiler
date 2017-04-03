@@ -1,1 +1,3 @@
-123
+fun main () : nothing {
+    myVar <- adfasd12;
+}

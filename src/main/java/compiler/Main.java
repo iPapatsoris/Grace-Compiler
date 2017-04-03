@@ -8,14 +8,19 @@ import compiler.node.Start;
 
 import java.io.PushbackReader;
 import java.io.InputStreamReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.lang.IllegalArgumentException;
 
 public class Main {
 
     public static void main(String args[]) {
+        if (args.length < 1) {
+            throw new IllegalArgumentException("No input file");
+        }
         Start tree = null;
         try {
-            PushbackReader reader = new PushbackReader(new InputStreamReader(System.in));
+            PushbackReader reader = new PushbackReader(new FileReader(args[0]));
             Parser p = new Parser(new Lexer(reader));
             tree = p.parse();
         } catch (Exception e) {
