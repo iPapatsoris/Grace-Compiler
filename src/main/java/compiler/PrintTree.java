@@ -4,6 +4,7 @@ import compiler.analysis.DepthFirstAdapter;
 import compiler.node.*;
 
 import java.util.Collections;
+import java.lang.String;
 
 
 public class PrintTree extends DepthFirstAdapter {
@@ -23,6 +24,19 @@ public class PrintTree extends DepthFirstAdapter {
         System.out.print(String.join("", Collections.nCopies(indentation, " ")));
     }
 
+    private void printNode(Node node) {
+        printIndentation();
+        String nodeClass = node.getClass().toString();
+        int suffixIndex = nodeClass.lastIndexOf('.');
+        System.out.println(nodeClass.substring(suffixIndex+2));
+        addIndentationLevel();
+    }
+
+    private void printLeaf(Node node) {
+        printIndentation();
+        System.out.println(node);
+    }
+
     @Override
     public void defaultIn(Node node) {
         System.out.println(ANSI_RED + node.getClass() + ": " + ANSI_RESET + node);
@@ -38,49 +52,37 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void inAAddExpr(AAddExpr node) {
-        printIndentation();
-        System.out.println("AddExpr");
-        addIndentationLevel();
+        printNode(node);
     }
 
     @Override
     public void inASubExpr(ASubExpr node) {
-        printIndentation();
-        System.out.println("ASubExpr");
-        addIndentationLevel();
+        printNode(node);
     }
 
     @Override
     public void inAMultExpr(AMultExpr node) {
-        printIndentation();
-        System.out.println("AMultExpr");
-        addIndentationLevel();
+        printNode(node);
     }
 
     @Override
     public void inADivExpr(ADivExpr node) {
-        printIndentation();
-        System.out.println("ADivExpr");
-        addIndentationLevel();
+        printNode(node);
     }
 
     @Override
     public void inAModExpr(AModExpr node) {
-        printIndentation();
-        System.out.println("AModExpr");
-        addIndentationLevel();
+        printNode(node);
     }
 
     @Override
     public void inAIntConstantExpr(AIntConstantExpr node) {
-        printIndentation();
-        System.out.println(node);
+        printLeaf(node);
     }
 
     @Override
     public void inACharConstantExpr(ACharConstantExpr node) {
-        printIndentation();
-        System.out.println(node);
+        printLeaf(node);
     }
 
 /* Out */
