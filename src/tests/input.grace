@@ -1,3 +1,1 @@
-fun main () : nothing {
-    myVar <- adfasd12;
-}
+((1+3) * 4+5)

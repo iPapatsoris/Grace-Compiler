@@ -74,7 +74,7 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program = func_def;
+    program {-> expr} = expr {-> expr.expr}; /*func_def;*/
     func_def = header local_def* block;
 
     another_fpar_def = semicolon fpar_def;
@@ -162,25 +162,39 @@ Productions
                  ;
 
     /* Expressions */
-    expr = {add} expr plus term
-         | {sub} expr minus term
-         | {other} term
+    expr {-> expr} =
+           {add} expr plus term {-> New expr.add(expr.expr, term.expr)}
+         | {sub} expr minus term {-> New expr.sub(expr.expr, term.expr)}
+         | {other} term {-> term.expr}
          ;
 
-    term = {mult} term times factor
-         | {div} term div factor
-         | {mod} term mod factor
-         | {other} factor
+    term {-> expr} =
+           {mult} term times factor {-> New expr.mult(term.expr, factor.expr)}
+         | {div} term div factor {-> New expr.div(term.expr, factor.expr)}
+         | {mod} term mod factor {-> New expr.mod(term.expr, factor.expr)}
+         | {other} factor {-> factor.expr}
          ;
 
-    factor = {positive} plus const
-           | {negative} minus const
-           | {other} const
+    factor {-> expr} =
+             {positive} plus const {-> const.expr}
+           | {negative} minus const {-> const.expr}
+           | {other} const {->const.expr}
            ;
 
-    const = {l_value} l_value
-          | {int} int_constant
-          | {char} char_constant
-          | {paren} lparen expr rparen
-          | func_call
+    const {-> expr} =
+        /*    {l_value} l_value*/
+           {int} int_constant {-> New expr.int_constant(int_constant)}
+          | {char} char_constant {-> New expr.char_constant(char_constant)}
+          | {paren} lparen expr rparen {-> expr.expr}
+    /*      | func_call*/
           ;
+
+Abstract Syntax Tree
+    expr = {add} [left]:expr [right]:expr
+         | {sub} [left]:expr [right]:expr
+         | {mult} [left]:expr [right]:expr
+         | {div} [left]:expr [right]:expr
+         | {mod} [left]:expr [right]:expr
+         | {int_constant} int_constant
+         | {char_constant} char_constant
+         ;
