@@ -74,7 +74,7 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program {-> l_value} = l_value {-> l_value.l_value}; /*func_def;*/
+    program {-> cond} = cond {-> cond.cond}; /*func_def;*/
     func_def = header local_def* block;
 
     another_fpar_def = semicolon fpar_def;
@@ -143,25 +143,29 @@ Productions
             ;
 
     /* Conditions */
-    cond = {disj} cond or conj
-         | {other} conj
+    cond {-> cond} =
+           {disj} cond or conj {-> New cond.disj(cond.cond, conj.cond)}
+         | {other} conj {-> conj.cond}
          ;
 
-    conj = conj and neg
-         | {other} neg
+    conj {-> cond} =
+           conj and neg {-> New cond.conj(conj.cond, neg.cond)}
+         | {other} neg {-> neg.cond}
          ;
 
-    neg = not neg
-        | {other} numeric_cond
+    neg {-> cond } =
+          not neg {-> New cond.neg(neg.cond)}
+        | {other} numeric_cond {-> numeric_cond.cond}
         ;
 
-    numeric_cond = {equal} [left]:expr equal [right]:expr
-                 | {not_equal} [left]:expr hash [right]:expr
-                 | {greater} [left]:expr greater [right]:expr
-                 | {less} [left]:expr less [right]:expr
-                 | {greater_equal} [left]:expr greater_equal [right]:expr
-                 | {less_equal} [left]:expr less_equal [right]:expr
-                 | {paren} lparen cond rparen
+    numeric_cond {-> cond} =
+                   {equal} [left]:expr equal [right]:expr {-> New cond.equal(left.expr, right.expr)}
+                 | {not_equal} [left]:expr hash [right]:expr {-> New cond.not_equal(left.expr, right.expr)}
+                 | {greater} [left]:expr greater [right]:expr {-> New cond.greater(left.expr, right.expr)}
+                 | {less} [left]:expr less [right]:expr {-> New cond.less(left.expr, right.expr)}
+                 | {greater_equal} [left]:expr greater_equal [right]:expr {-> New cond.greater_equal(left.expr, right.expr)}
+                 | {less_equal} [left]:expr less_equal [right]:expr {-> New cond.less_equal(left.expr, right.expr)}
+                 | {paren} lparen cond rparen {-> cond.cond}
                  ;
 
     /* Expressions */
@@ -193,6 +197,17 @@ Productions
           ;
 
 Abstract Syntax Tree
+    cond = {disj} [left]:cond [right]:cond
+         | {conj} [left]:cond [right]:cond
+         | {neg} cond
+         | {equal} [left]:expr [right]:expr
+         | {not_equal} [left]:expr [right]:expr
+         | {greater} [left]:expr [right]:expr
+         | {less} [left]:expr [right]:expr
+         | {greater_equal} [left]:expr [right]:expr
+         | {less_equal} [left]:expr [right]:expr
+         ;
+
     l_value = {identifier} identifier expr*
             | {string} string expr*
             ;

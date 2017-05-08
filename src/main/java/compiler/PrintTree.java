@@ -55,7 +55,56 @@ public class PrintTree extends DepthFirstAdapter {
     }
 */
 
-/* In */
+    /* ******** In ******** */
+
+    /* Condition */
+
+    @Override
+    public void inADisjCond(ADisjCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAConjCond(AConjCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANegCond(ANegCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAEqualCond(AEqualCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANotEqualCond(ANotEqualCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAGreaterCond(AGreaterCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inALessCond(ALessCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAGreaterEqualCond(AGreaterEqualCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inALessEqualCond(ALessEqualCond node) {
+        printNode(node);
+    }
+
+    /* Function call */
 
     @Override
     public void inAFuncCall(AFuncCall node) {
@@ -63,6 +112,8 @@ public class PrintTree extends DepthFirstAdapter {
         System.out.println(getClassName(node) + " " + node.getIdentifier());
         addIndentationLevel();
     }
+
+   /* L_value */
 
     @Override
     public void inAIdentifierLValue(AIdentifierLValue node) {
@@ -77,6 +128,8 @@ public class PrintTree extends DepthFirstAdapter {
         System.out.println(getClassName(node) + " " + node.getString());
         addIndentationLevel();
     }
+
+    /* Expr */
 
     @Override
     public void inALValueExpr(ALValueExpr node) {
@@ -123,6 +176,8 @@ public class PrintTree extends DepthFirstAdapter {
         printNode(node);
     }
 
+    /* Leaf nodes */
+
     @Override
     public void inAIntConstantExpr(AIntConstantExpr node) {
         printLeaf(node);
@@ -136,7 +191,63 @@ public class PrintTree extends DepthFirstAdapter {
     @Override
     public void inStart(Start node) {}
 
-/* Out */
+    /* ******** Out ******** */
+
+    /* Condition */
+
+    @Override
+    public void outADisjCond(ADisjCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAConjCond(AConjCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outANegCond(ANegCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAEqualCond(AEqualCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outANotEqualCond(ANotEqualCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAGreaterCond(AGreaterCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outALessCond(ALessCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAGreaterEqualCond(AGreaterEqualCond node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outALessEqualCond(ALessEqualCond node) {
+        removeIndentationLevel();
+    }
+
+    /* Function call */
+
+    @Override
+    public void outAFuncCall(AFuncCall node) {
+        removeIndentationLevel();
+    }
+
+    /* L_value */
 
     @Override
     public void outAIdentifierLValue(AIdentifierLValue node) {
@@ -147,6 +258,8 @@ public class PrintTree extends DepthFirstAdapter {
     public void outAStringLValue(AStringLValue node) {
         removeIndentationLevel();
     }
+
+    /* Expr */
 
     @Override
     public void outAFuncCallExpr(AFuncCallExpr node) {
@@ -193,6 +306,7 @@ public class PrintTree extends DepthFirstAdapter {
         removeIndentationLevel();
     }
 
+    /* Leaf nodes */
 
     @Override
     public void outAIntConstantExpr(AIntConstantExpr node) {

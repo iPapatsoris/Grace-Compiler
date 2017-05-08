@@ -17,3 +17,4 @@ vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika sws
 `a['a'][++--(1-+-1)]`
 `a[+-+-+-(b["c"[2]])]`
 `array[func   (a,1+2, func2("Asf", func3()))]`
+`1 >= 2 and (3 <= 4 or 5 = 6) and not 6 # 5`
