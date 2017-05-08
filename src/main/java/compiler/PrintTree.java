@@ -24,6 +24,13 @@ public class PrintTree extends DepthFirstAdapter {
         System.out.print(String.join("", Collections.nCopies(indentation, " ")));
     }
 
+    private String getClassName(Node node) {
+        String nodeClass = node.getClass().toString();
+        int suffixIndex = nodeClass.lastIndexOf('.');
+        return nodeClass.substring(suffixIndex+2);
+    }
+
+    /* To be used by nodes without pure tokens as attributes */
     private void printNode(Node node) {
         printIndentation();
         String nodeClass = node.getClass().toString();
@@ -51,6 +58,25 @@ public class PrintTree extends DepthFirstAdapter {
 /* In */
 
     @Override
+    public void inAIdentifierLValue(AIdentifierLValue node) {
+        printIndentation();
+        System.out.println(getClassName(node) + " " + node.getIdentifier());
+        addIndentationLevel();
+    }
+
+    @Override
+    public void inAStringLValue(AStringLValue node) {
+        printIndentation();
+        System.out.println(getClassName(node) + " " + node.getString());
+        addIndentationLevel();
+    }
+
+    @Override
+    public void inALValueExpr(ALValueExpr node) {
+        printNode(node);
+    }
+
+    @Override
     public void inAAddExpr(AAddExpr node) {
         printNode(node);
     }
@@ -76,6 +102,16 @@ public class PrintTree extends DepthFirstAdapter {
     }
 
     @Override
+    public void inAPositiveExpr(APositiveExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANegativeExpr(ANegativeExpr node) {
+        printNode(node);
+    }
+
+    @Override
     public void inAIntConstantExpr(AIntConstantExpr node) {
         printLeaf(node);
     }
@@ -86,6 +122,16 @@ public class PrintTree extends DepthFirstAdapter {
     }
 
 /* Out */
+
+    @Override
+    public void outAIdentifierLValue(AIdentifierLValue node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAStringLValue(AStringLValue node) {
+        removeIndentationLevel();
+    }
 
     @Override
     public void outAAddExpr(AAddExpr node) {
@@ -111,6 +157,17 @@ public class PrintTree extends DepthFirstAdapter {
     public void outAModExpr(AModExpr node) {
         removeIndentationLevel();
     }
+
+    @Override
+    public void outAPositiveExpr(APositiveExpr node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outANegativeExpr(ANegativeExpr node) {
+        removeIndentationLevel();
+    }
+
 
     @Override
     public void outAIntConstantExpr(AIntConstantExpr node) {
