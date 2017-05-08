@@ -129,9 +129,9 @@ Productions
     block = lbracket statement* rbracket;
 
     /* Function call */
-    another_argument = comma expr;
-    arguments = expr another_argument*;
-    func_call = identifier lparen arguments? rparen;
+    another_argument {-> expr} = comma expr {-> expr.expr};
+    arguments {-> expr+} = expr another_argument* {-> [expr.expr, another_argument.expr]};
+    func_call {-> func_call} = identifier lparen arguments? rparen {-> New func_call(identifier, [arguments.expr])};
 
     /* L-value */
     cell {-> expr} =
@@ -186,10 +186,10 @@ Productions
 
     const {-> expr} =
             {l_value} l_value {-> New expr.l_value(l_value.l_value)}
+          | {func_call} func_call {-> New expr.func_call(func_call.func_call)}
           | {int} int_constant {-> New expr.int_constant(int_constant)}
           | {char} char_constant {-> New expr.char_constant(char_constant)}
           | {paren} lparen expr rparen {-> expr.expr}
-    /*      | func_call*/
           ;
 
 Abstract Syntax Tree
@@ -197,7 +197,10 @@ Abstract Syntax Tree
             | {string} string expr*
             ;
 
+    func_call = identifier expr*;
+
     expr = {l_value} l_value
+         | {func_call} func_call
          | {add} [left]:expr [right]:expr
          | {sub} [left]:expr [right]:expr
          | {mult} [left]:expr [right]:expr

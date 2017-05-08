@@ -1,1 +1,1 @@
-a[+-+-+-(b["c"[2]])]
+array[func   (a,1+2, func2("Asf", func3()))]

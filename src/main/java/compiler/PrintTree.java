@@ -58,6 +58,13 @@ public class PrintTree extends DepthFirstAdapter {
 /* In */
 
     @Override
+    public void inAFuncCall(AFuncCall node) {
+        printIndentation();
+        System.out.println(getClassName(node) + " " + node.getIdentifier());
+        addIndentationLevel();
+    }
+
+    @Override
     public void inAIdentifierLValue(AIdentifierLValue node) {
         printIndentation();
         System.out.println(getClassName(node) + " " + node.getIdentifier());
@@ -73,6 +80,11 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void inALValueExpr(ALValueExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncCallExpr(AFuncCallExpr node) {
         printNode(node);
     }
 
@@ -121,6 +133,9 @@ public class PrintTree extends DepthFirstAdapter {
         printLeaf(node);
     }
 
+    @Override
+    public void inStart(Start node) {}
+
 /* Out */
 
     @Override
@@ -130,6 +145,16 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void outAStringLValue(AStringLValue node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAFuncCallExpr(AFuncCallExpr node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outALValueExpr(ALValueExpr node) {
         removeIndentationLevel();
     }
 
