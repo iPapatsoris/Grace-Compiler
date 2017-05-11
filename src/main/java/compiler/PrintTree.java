@@ -57,6 +57,33 @@ public class PrintTree extends DepthFirstAdapter {
 
     /* ******** In ******** */
 
+    /* Statement */
+
+    @Override
+    public void inAIfStatement(AIfStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAAssignmentStatement(AAssignmentStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncCallStatement(AFuncCallStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAReturnStatement(AReturnStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANullStatement(ANullStatement node) {
+        printNode(node);
+    }
+
     /* Condition */
 
     @Override
@@ -192,6 +219,34 @@ public class PrintTree extends DepthFirstAdapter {
     public void inStart(Start node) {}
 
     /* ******** Out ******** */
+
+    /* Statement */
+
+    @Override
+    public void outAIfStatement(AIfStatement node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAAssignmentStatement(AAssignmentStatement node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAFuncCallStatement(AFuncCallStatement node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAReturnStatement(AReturnStatement node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outANullStatement(ANullStatement node) {
+        removeIndentationLevel();
+    }
+
 
     /* Condition */
 

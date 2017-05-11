@@ -1,1 +1,8 @@
-1 >= 2 and (3 <= 4 or 5 = 6) and not 6 # 5
+if condition(123) > 0 then
+    if (50 < 0) then {
+        return crazy_func(123, a[b[123]]);
+        a <- neti;
+    }
+    else
+        a[123*4] <- myfun();
+        return "OK";

@@ -20,7 +20,7 @@ public class Main {
         }
         Start tree = null;
         try {
-            PushbackReader reader = new PushbackReader(new FileReader(args[0]));
+            PushbackReader reader = new PushbackReader(new FileReader(args[0]), 1024);
             Parser p = new Parser(new Lexer(reader));
             tree = p.parse();
         } catch (Exception e) {

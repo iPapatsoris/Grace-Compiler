@@ -74,7 +74,7 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program {-> cond} = cond {-> cond.cond}; /*func_def;*/
+    program {-> program} = statement* {-> New program.program([statement])}; /*func_def;*/
     func_def = header local_def* block;
 
     another_fpar_def = semicolon fpar_def;
@@ -105,28 +105,32 @@ Productions
     func_decl = header semicolon;
 
     /* Statements */
-    statement = {open} open_statement
-              | {matched} matched_statement
+    statement {-> statement*} =
+                {open} open_statement {-> [open_statement.statement]}
+              | {matched} matched_statement {-> [matched_statement.statement]}
               ;
 
-    matched_statement = {with_else} if cond then [left]:matched_statement else [right]:matched_statement
-                      | {loop} while cond do matched_statement
-                      | {other} other_statement
+    matched_statement {-> statement*} =
+                        {with_else} if cond then [left]:matched_statement else [right]:matched_statement {-> [New statement.if(cond.cond, [left.statement], [right.statement])]}
+                      /*| {loop} while cond do matched_statement {-> matched_statement.statement}*/
+                      | {other} other_statement {-> [other_statement.statement]}
                       ;
 
-    open_statement = {without_else} if cond then statement
-                   | {with_else} if cond then matched_statement else open_statement
-                   | {loop} while cond do open_statement
+    open_statement {-> statement*} =
+                     {without_else} if cond then statement {-> [New statement.if(cond.cond, [statement.statement], [])]}
+                   | {with_else} if cond then matched_statement else open_statement {-> [New statement.if(cond.cond, [matched_statement.statement], [open_statement.statement])]}
+                   /*| {loop} while cond do open_statement {-> open_statement.statement}*/
                    ;
 
-    other_statement = {null} semicolon
-                    | {assignment} l_value left_arrow expr semicolon
-                    | {func_call} func_call semicolon
-                    | {return} return expr? semicolon
-                    | {block} block
+    other_statement {-> statement*} =
+                      {null} semicolon {-> [New statement.null()]}
+                    | {assignment} l_value left_arrow expr semicolon {-> [New statement.assignment(l_value.l_value, expr.expr)]}
+                    | {func_call} func_call semicolon {-> [New statement.func_call(func_call.func_call)]}
+                    | {return} return expr? semicolon {-> [New statement.return(expr.expr)]}
+                    | {block} block {-> [block.statement]}
                     ;
 
-    block = lbracket statement* rbracket;
+    block {-> statement*} = lbracket statement* rbracket {-> [statement.statement]};
 
     /* Function call */
     another_argument {-> expr} = comma expr {-> expr.expr};
@@ -197,6 +201,14 @@ Productions
           ;
 
 Abstract Syntax Tree
+    program = {program} statement*;
+    statement = {if} cond [then]:statement* [else]:statement*
+              | {assignment} l_value expr
+              | {func_call} func_call
+              | {return} expr?
+              | {null}
+              ;
+
     cond = {disj} [left]:cond [right]:cond
          | {conj} [left]:cond [right]:cond
          | {neg} cond
