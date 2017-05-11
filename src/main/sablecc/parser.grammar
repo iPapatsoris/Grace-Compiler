@@ -112,14 +112,14 @@ Productions
 
     matched_statement {-> statement*} =
                         {with_else} if cond then [left]:matched_statement else [right]:matched_statement {-> [New statement.if(cond.cond, [left.statement], [right.statement])]}
-                      /*| {loop} while cond do matched_statement {-> matched_statement.statement}*/
+                      | {while} while cond do matched_statement {-> [New statement.while(cond.cond, [matched_statement.statement])]}
                       | {other} other_statement {-> [other_statement.statement]}
                       ;
 
     open_statement {-> statement*} =
                      {without_else} if cond then statement {-> [New statement.if(cond.cond, [statement.statement], [])]}
                    | {with_else} if cond then matched_statement else open_statement {-> [New statement.if(cond.cond, [matched_statement.statement], [open_statement.statement])]}
-                   /*| {loop} while cond do open_statement {-> open_statement.statement}*/
+                   | {while} while cond do open_statement {-> [New statement.while(cond.cond, [open_statement.statement])]}
                    ;
 
     other_statement {-> statement*} =
@@ -203,6 +203,7 @@ Productions
 Abstract Syntax Tree
     program = {program} statement*;
     statement = {if} cond [then]:statement* [else]:statement*
+              | {while} cond statement*
               | {assignment} l_value expr
               | {func_call} func_call
               | {return} expr?

@@ -46,7 +46,7 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void defaultIn(Node node) {
-        System.out.println(ANSI_RED + node.getClass() + ": " + ANSI_RESET + node);
+        System.out.println(ANSI_RED + node.getClass() + " " + ANSI_RESET + node);
     }
 
 /*    @Override
@@ -61,6 +61,13 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void inAIfStatement(AIfStatement node) {
+        printIndentation();
+        System.out.println(getClassName(node) + ": then " + node.getThen().size() + ", else " + node.getElse().size());
+        addIndentationLevel();
+    }
+
+    @Override
+    public void inAWhileStatement(AWhileStatement node) {
         printNode(node);
     }
 
@@ -136,7 +143,7 @@ public class PrintTree extends DepthFirstAdapter {
     @Override
     public void inAFuncCall(AFuncCall node) {
         printIndentation();
-        System.out.println(getClassName(node) + " " + node.getIdentifier());
+        System.out.println(getClassName(node) + ": " + node.getIdentifier());
         addIndentationLevel();
     }
 
@@ -145,14 +152,14 @@ public class PrintTree extends DepthFirstAdapter {
     @Override
     public void inAIdentifierLValue(AIdentifierLValue node) {
         printIndentation();
-        System.out.println(getClassName(node) + " " + node.getIdentifier());
+        System.out.println(getClassName(node) + ": " + node.getIdentifier());
         addIndentationLevel();
     }
 
     @Override
     public void inAStringLValue(AStringLValue node) {
         printIndentation();
-        System.out.println(getClassName(node) + " " + node.getString());
+        System.out.println(getClassName(node) + ": " + node.getString());
         addIndentationLevel();
     }
 
@@ -224,6 +231,11 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void outAIfStatement(AIfStatement node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAWhileStatement(AWhileStatement node) {
         removeIndentationLevel();
     }
 

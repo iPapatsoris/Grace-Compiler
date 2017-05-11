@@ -5,4 +5,8 @@ if condition(123) > 0 then
     }
     else
         a[123*4] <- myfun();
-        return "OK";
+    return "OK";
+while (x > 0)  do {
+    while y > 0 do
+        ;
+}
