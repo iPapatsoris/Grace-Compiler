@@ -74,8 +74,8 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program {-> program} = var_def {-> New program.program(var_def)}; /*func_def;*/
-    func_def = header local_def* block;
+    program {-> func_def} = func_def {-> func_def.func_def};
+    func_def {-> func_def} = header local_def* block {-> New func_def(header.header, [local_def.local_def], [block.statement])};
 
     another_fpar_def {-> fpar_def} = semicolon fpar_def {-> fpar_def.fpar_def};
     one_or_more_fpar_def {-> fpar_def+} = fpar_def another_fpar_def*
@@ -103,9 +103,10 @@ Productions
     fpar_type {-> fpar_type} = data_type empty_cell? array_size*
                                {-> New fpar_type(data_type.data_type, empty_cell.lsquare_bracket, [array_size.int_constant] )};
 
-    local_def = {func_def} func_def
-              | {func_decl} func_decl
-              | {var_def} var_def
+    local_def {-> local_def} =
+                {func_def} func_def {-> New local_def.func_def(func_def.func_def)}
+              | {func_decl} func_decl {-> New local_def.func_decl(func_decl.header)}
+              | {var_def} var_def {-> New local_def.var_def(var_def.var_def)}
               ;
 
     another_identifier {-> identifier} = comma identifier {-> identifier};
@@ -210,9 +211,15 @@ Productions
           ;
 
 Abstract Syntax Tree
-    program = {program} var_def;
+    func_def = header local_def* statement*;
 
     header = identifier fpar_def* data_type;
+
+    local_def = {func_def} func_def
+              | {func_decl} header
+              | {var_def} var_def
+              ;
+
     fpar_def = ref? identifier+ fpar_type;
     fpar_type = data_type lsquare_bracket? int_constant*; /* lsquare_bracket token marks empty first dimension */
 

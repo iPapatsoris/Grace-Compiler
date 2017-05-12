@@ -51,7 +51,25 @@ public class PrintTree extends DepthFirstAdapter {
 
     /* ******** In ******** */
 
-    /* Header */
+    @Override
+    public void inAFuncDefLocalDef(AFuncDefLocalDef node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncDeclLocalDef(AFuncDeclLocalDef node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAVarDefLocalDef(AVarDefLocalDef node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncDef(AFuncDef node) {
+        printNode(node);
+    }
 
     @Override
     public void inAHeader(AHeader node) {
@@ -275,7 +293,25 @@ public class PrintTree extends DepthFirstAdapter {
 
     /* ******** Out ******** */
 
-    /* Header */
+    @Override
+    public void outAFuncDefLocalDef(AFuncDefLocalDef node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAFuncDeclLocalDef(AFuncDeclLocalDef node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAVarDefLocalDef(AVarDefLocalDef node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAFuncDef(AFuncDef node) {
+        removeIndentationLevel();
+    }
 
     @Override
     public void outAHeader(AHeader node) {
