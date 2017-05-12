@@ -74,7 +74,7 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program {-> program} = statement* {-> New program.program([statement])}; /*func_def;*/
+    program {-> program} = fpar_type {-> New program.program(fpar_type)}; /*func_def;*/
     func_def = header local_def* block;
 
     another_fpar_def = semicolon fpar_def;
@@ -83,18 +83,20 @@ Productions
 
 
     fpar_def = ref? identifier another_identifier* colon fpar_type;
-    data_type = {int} int
-              | {char} char
+    data_type {-> data_type} =
+                {int} int {-> New data_type.int()}
+              | {char} char {-> New data_type.char()}
               ;
 
-    array_size = lsquare_bracket int_constant rsquare_bracket;
+    array_size {-> int_constant} = lsquare_bracket int_constant rsquare_bracket {-> int_constant};
     type = data_type array_size*;
-    return_type = data_type
+    return_type  = data_type
              | {nothing} nothing
              ;
 
-    empty_cell = lsquare_bracket rsquare_bracket;
-    fpar_type = data_type empty_cell? array_size*;
+    empty_cell {-> lsquare_bracket} = lsquare_bracket rsquare_bracket {-> lsquare_bracket};
+    fpar_type {-> fpar_type} = data_type empty_cell? array_size* {-> New fpar_type(data_type.data_type, empty_cell.lsquare_bracket, [array_size.int_constant] )};
+
     local_def = {func_def} func_def
               | {func_decl} func_decl
               | {var_def} var_def
@@ -201,7 +203,16 @@ Productions
           ;
 
 Abstract Syntax Tree
-    program = {program} statement*;
+    program = {program} fpar_type;
+
+    /*fpar_def = {value} identifier+*/
+    fpar_type = data_type lsquare_bracket? int_constant*; /* lsquare_bracket token marks empty first dimension */
+
+
+    data_type = {int}
+              | {char}
+              ;
+
     statement = {if} cond [then]:statement* [else]:statement*
               | {while} cond statement*
               | {assignment} l_value expr

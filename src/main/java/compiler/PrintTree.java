@@ -39,7 +39,7 @@ public class PrintTree extends DepthFirstAdapter {
         addIndentationLevel();
     }
 
-    private void printLeaf(Node node) {
+    private void printTokenVal(Node node) {
         printIndentation();
         System.out.println(node);
     }
@@ -56,6 +56,26 @@ public class PrintTree extends DepthFirstAdapter {
 */
 
     /* ******** In ******** */
+
+    /* Fpar type */
+
+    @Override
+    public void inAFparType(AFparType node) {
+        printIndentation();
+        System.out.println(getClassName(node) + ":  " +
+            (node.getLsquareBracket() != null ? "empty dimension, " : "")  + node.getIntConstant());
+        addIndentationLevel();
+    }
+
+    @Override
+    public void inAIntDataType(AIntDataType node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inACharDataType(ACharDataType node) {
+        printNode(node);
+    }
 
     /* Statement */
 
@@ -210,22 +230,37 @@ public class PrintTree extends DepthFirstAdapter {
         printNode(node);
     }
 
-    /* Leaf nodes */
-
     @Override
     public void inAIntConstantExpr(AIntConstantExpr node) {
-        printLeaf(node);
+        printTokenVal(node);
     }
 
     @Override
     public void inACharConstantExpr(ACharConstantExpr node) {
-        printLeaf(node);
+        printTokenVal(node);
     }
 
     @Override
     public void inStart(Start node) {}
 
     /* ******** Out ******** */
+
+    /* Fpar type */
+
+    @Override
+    public void outAFparType(AFparType node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAIntDataType(AIntDataType node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outACharDataType(ACharDataType node) {
+        removeIndentationLevel();
+    }
 
     /* Statement */
 
@@ -372,8 +407,6 @@ public class PrintTree extends DepthFirstAdapter {
     public void outANegativeExpr(ANegativeExpr node) {
         removeIndentationLevel();
     }
-
-    /* Leaf nodes */
 
     @Override
     public void outAIntConstantExpr(AIntConstantExpr node) {
