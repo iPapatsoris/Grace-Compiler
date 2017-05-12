@@ -91,6 +91,22 @@ public class PrintTree extends DepthFirstAdapter {
         printNode(node);
     }
 
+    /* Variable */
+
+    @Override
+    public void inAVarDef(AVarDef node) {
+        printIndentation();
+        System.out.println(getClassName(node) + ":  " + node.getIdentifier());
+        addIndentationLevel();
+    }
+
+    @Override
+    public void inAVarType(AVarType node) {
+        printIndentation();
+        System.out.println(getClassName(node) + ":  " + node.getIntConstant());
+        addIndentationLevel();
+    }
+
     /* Statement */
 
     @Override
@@ -288,6 +304,18 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void outANothingDataType(ANothingDataType node) {
+        removeIndentationLevel();
+    }
+
+    /* Variable */
+
+    @Override
+    public void outAVarDef(AVarDef node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAVarType(AVarType node) {
         removeIndentationLevel();
     }
 

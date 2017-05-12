@@ -74,7 +74,7 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program {-> program} = header {-> New program.program(header)}; /*func_def;*/
+    program {-> program} = var_def {-> New program.program(var_def)}; /*func_def;*/
     func_def = header local_def* block;
 
     another_fpar_def {-> fpar_def} = semicolon fpar_def {-> fpar_def.fpar_def};
@@ -93,7 +93,7 @@ Productions
               ;
 
     array_size {-> int_constant} = lsquare_bracket int_constant rsquare_bracket {-> int_constant};
-    type = data_type array_size*;
+    type {-> var_type} = data_type array_size* {-> New var_type(data_type.data_type, [array_size.int_constant])};
     return_type {-> data_type} =
                data_type {-> data_type.data_type}
              | {nothing} nothing {-> New data_type.nothing()}
@@ -109,8 +109,9 @@ Productions
               ;
 
     another_identifier {-> identifier} = comma identifier {-> identifier};
-    var_def = var identifier another_identifier* colon type semicolon;
-    func_decl = header semicolon;
+    var_def {-> var_def} = var identifier another_identifier* colon type semicolon
+                        {-> New var_def([identifier, another_identifier.identifier], type.var_type)};
+    func_decl {-> header} = header semicolon {-> header.header};
 
     /* Statements */
     statement {-> statement*} =
@@ -209,7 +210,7 @@ Productions
           ;
 
 Abstract Syntax Tree
-    program = {program} header;
+    program = {program} var_def;
 
     header = identifier fpar_def* data_type;
     fpar_def = ref? identifier+ fpar_type;
@@ -219,6 +220,9 @@ Abstract Syntax Tree
               | {char}
               | {nothing}
               ;
+
+    var_type = data_type int_constant*;
+    var_def = identifier+ var_type;
 
     statement = {if} cond [then]:statement* [else]:statement*
               | {while} cond statement*
