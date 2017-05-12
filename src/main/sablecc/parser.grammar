@@ -74,15 +74,19 @@ Ignored Tokens
     whitespace, line_comment, block_comment;
 
 Productions
-    program {-> program} = fpar_type {-> New program.program(fpar_type)}; /*func_def;*/
+    program {-> program} = header {-> New program.program(header)}; /*func_def;*/
     func_def = header local_def* block;
 
-    another_fpar_def = semicolon fpar_def;
-    one_or_more_fpar_def = fpar_def another_fpar_def*;
-    header = fun identifier lparen one_or_more_fpar_def? rparen colon return_type;
+    another_fpar_def {-> fpar_def} = semicolon fpar_def {-> fpar_def.fpar_def};
+    one_or_more_fpar_def {-> fpar_def+} = fpar_def another_fpar_def*
+                         {-> [fpar_def.fpar_def, another_fpar_def.fpar_def]};
+
+    header {-> header} = fun identifier lparen one_or_more_fpar_def? rparen colon return_type
+                         {-> New header(identifier, [one_or_more_fpar_def.fpar_def], return_type.data_type)};
 
 
-    fpar_def = ref? identifier another_identifier* colon fpar_type;
+    fpar_def {-> fpar_def} = ref? identifier another_identifier* colon fpar_type
+                             {-> New fpar_def(ref, [identifier, another_identifier.identifier], fpar_type)};
     data_type {-> data_type} =
                 {int} int {-> New data_type.int()}
               | {char} char {-> New data_type.char()}
@@ -90,19 +94,21 @@ Productions
 
     array_size {-> int_constant} = lsquare_bracket int_constant rsquare_bracket {-> int_constant};
     type = data_type array_size*;
-    return_type  = data_type
-             | {nothing} nothing
+    return_type {-> data_type} =
+               data_type {-> data_type.data_type}
+             | {nothing} nothing {-> New data_type.nothing()}
              ;
 
     empty_cell {-> lsquare_bracket} = lsquare_bracket rsquare_bracket {-> lsquare_bracket};
-    fpar_type {-> fpar_type} = data_type empty_cell? array_size* {-> New fpar_type(data_type.data_type, empty_cell.lsquare_bracket, [array_size.int_constant] )};
+    fpar_type {-> fpar_type} = data_type empty_cell? array_size*
+                               {-> New fpar_type(data_type.data_type, empty_cell.lsquare_bracket, [array_size.int_constant] )};
 
     local_def = {func_def} func_def
               | {func_decl} func_decl
               | {var_def} var_def
               ;
 
-    another_identifier = comma identifier;
+    another_identifier {-> identifier} = comma identifier {-> identifier};
     var_def = var identifier another_identifier* colon type semicolon;
     func_decl = header semicolon;
 
@@ -203,14 +209,15 @@ Productions
           ;
 
 Abstract Syntax Tree
-    program = {program} fpar_type;
+    program = {program} header;
 
-    /*fpar_def = {value} identifier+*/
+    header = identifier fpar_def* data_type;
+    fpar_def = ref? identifier+ fpar_type;
     fpar_type = data_type lsquare_bracket? int_constant*; /* lsquare_bracket token marks empty first dimension */
-
 
     data_type = {int}
               | {char}
+              | {nothing}
               ;
 
     statement = {if} cond [then]:statement* [else]:statement*

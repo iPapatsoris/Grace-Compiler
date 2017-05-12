@@ -30,7 +30,7 @@ public class PrintTree extends DepthFirstAdapter {
         return nodeClass.substring(suffixIndex+2);
     }
 
-    /* To be used by nodes without pure tokens as attributes */
+    /* Generic printing that does not print pure token attributes */
     private void printNode(Node node) {
         printIndentation();
         String nodeClass = node.getClass().toString();
@@ -49,15 +49,24 @@ public class PrintTree extends DepthFirstAdapter {
         System.out.println(ANSI_RED + node.getClass() + " " + ANSI_RESET + node);
     }
 
-/*    @Override
-    public void defaultOut(Node node) {
-        removeIndentationLevel();
-    }
-*/
-
     /* ******** In ******** */
 
-    /* Fpar type */
+    /* Header */
+
+    @Override
+    public void inAHeader(AHeader node) {
+        printIndentation();
+        System.out.println(getClassName(node) + ":  " + node.getIdentifier());
+        addIndentationLevel();
+    }
+
+    @Override
+    public void inAFparDef(AFparDef node) {
+        printIndentation();
+        System.out.println(getClassName(node) + ":  " +
+            (node.getRef() != null ? "ref " : "")  + node.getIdentifier());
+        addIndentationLevel();
+    }
 
     @Override
     public void inAFparType(AFparType node) {
@@ -74,6 +83,11 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void inACharDataType(ACharDataType node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANothingDataType(ANothingDataType node) {
         printNode(node);
     }
 
@@ -245,7 +259,17 @@ public class PrintTree extends DepthFirstAdapter {
 
     /* ******** Out ******** */
 
-    /* Fpar type */
+    /* Header */
+
+    @Override
+    public void outAHeader(AHeader node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outAFparDef(AFparDef node) {
+        removeIndentationLevel();
+    }
 
     @Override
     public void outAFparType(AFparType node) {
@@ -259,6 +283,11 @@ public class PrintTree extends DepthFirstAdapter {
 
     @Override
     public void outACharDataType(ACharDataType node) {
+        removeIndentationLevel();
+    }
+
+    @Override
+    public void outANothingDataType(ANothingDataType node) {
         removeIndentationLevel();
     }
 

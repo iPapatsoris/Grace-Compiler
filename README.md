@@ -35,3 +35,7 @@ while (x > 0)  do {
         ;
 }
 `
+
+`ref myVar, mySecondVar: char [] [1] [23]`
+
+`fun myFunc (ref myVar, mySecondVar: char [] [1] [23] ; myThirdVar: int [] ; myFourthVar: int [2]) : nothing`
