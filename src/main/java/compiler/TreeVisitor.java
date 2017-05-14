@@ -7,9 +7,11 @@ import java.util.Collections;
 import java.lang.String;
 
 
-public class PrintTree extends DepthFirstAdapter {
+public class TreeVisitor extends DepthFirstAdapter {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
+
+    private SymbolTable symbolTable;
 
     private int indentation = 0;
     private void addIndentationLevel() {

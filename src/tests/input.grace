@@ -1,1 +1,3 @@
-var myVar1, myVar2 : int [12][15][2];
+fun myFun() : nothing {
+    i <- 1* 2;
+}
