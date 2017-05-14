@@ -15,19 +15,6 @@ import java.lang.IllegalArgumentException;
 public class Main {
 
     public static void main(String args[]) {
-
-        SymbolTable symbolTable = new SymbolTable();
-        try {
-        symbolTable.enter();
-        symbolTable.insert("myVar");
-        symbolTable.insert("myVar2");
-        symbolTable.insert("myVar");
-    } catch (SemanticException e) {
-        System.err.println(e.getMessage());
-        System.exit(1);
-    }
-
-        return;/*
         if (args.length < 1) {
             throw new IllegalArgumentException("No input file");
         }
@@ -46,7 +33,7 @@ public class Main {
             }
             System.exit(1);
         }
-        tree.apply(new PrintTree());
+        tree.apply(new TreeVisitor());
         /*Lexer lexer = new Lexer(reader);
         for(;;) {
             try {

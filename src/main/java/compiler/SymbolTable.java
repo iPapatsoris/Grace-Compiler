@@ -23,43 +23,40 @@ public class SymbolTable {
         this.curScope++;
     }
 
-    public void insert(String identifier) throws SemanticException {
-        Symbol oldSymbol = lookupTable.get(identifier);
+    public void insert(Token token) throws SemanticException {
+        Symbol oldSymbol = lookupTable.get(token.getText());
         if (oldSymbol != null && oldSymbol.getScope() == curScope) {
-            throw new SemanticException("Semantic error: symbol " + oldSymbol + " at line "  +
-                                         "is already defined at current scope at line " + oldSymbol.getLine() + ", column " + oldSymbol.getPos());
+            throw new SemanticException("Semantic error: variable \'" + token.getText() +"\' at " + getLocation(token) +
+                                         " is already defined at current scope at " + getLocation(oldSymbol.getToken()));
         }
-        System.out.println("Success");
+        Symbol newSymbol = new Symbol(token, curScope, oldSymbol);
+        symbolList.addFirst(newSymbol);
+        lookupTable.put(token.getText(), newSymbol);
+
+        System.out.println("Inserted " + newSymbol);
+    }
+
+    private static String getLocation(Token token) {
+        return "[" + token.getLine() + "," + token.getPos() + "]";
     }
 
     private class Symbol {
-        private String identifier;
+        private Token token;
         private long scope;
         private Symbol shadowedSymbol;
-        private long line;
-        private long pos;
 
-        public Symbol(String identifier, long scope, long line, long pos) {
-            this.identifier = identifier;
+        public Symbol(Token token, long scope, Symbol shadowedSymbol) {
+            this.token = token;
             this.scope = scope;
-            this.line = line;
-            this.pos = pos;
+            this.shadowedSymbol = shadowedSymbol;
         }
 
-        public String getIdentifier() {
-            return identifier;
+        public Token getToken() {
+            return token;
         }
 
         public long getScope() {
             return scope;
-        }
-
-        public long getLine() {
-            return line;
-        }
-
-        public long getPos() {
-            return pos;
         }
 
         public Symbol getShadowedSymbol() {
@@ -68,7 +65,7 @@ public class SymbolTable {
 
         @Override
         public String toString() {
-            return identifier + (shadowedSymbol != null ? " with shadowing" : "");
+            return token.getText() + " at scope " + scope + (shadowedSymbol != null ? " with shadowing" : "");
         }
     }
 

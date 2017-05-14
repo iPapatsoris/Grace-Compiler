@@ -1,3 +1,6 @@
-fun myFun() : nothing {
-    i <- 1* 2;
+fun myFun() : nothing
+    var a : int;
+    var b : char;
+    var a : char;
+{
 }

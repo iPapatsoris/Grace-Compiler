@@ -12,8 +12,13 @@ public class TreeVisitor extends DepthFirstAdapter {
     public static final String ANSI_RED = "\u001B[31m";
 
     private SymbolTable symbolTable;
+    private int indentation;
 
-    private int indentation = 0;
+    public TreeVisitor() {
+        symbolTable = new SymbolTable();
+        indentation = 0;
+    }
+
     private void addIndentationLevel() {
         indentation++;
     }
@@ -118,7 +123,14 @@ public class TreeVisitor extends DepthFirstAdapter {
         printIndentation();
         System.out.println(getClassName(node) + ":  " + node.getIdentifier());
         addIndentationLevel();
-    }
+
+        try {
+            symbolTable.insert(node.getIdentifier().get(0));
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+}
 
     @Override
     public void inAVarType(AVarType node) {
