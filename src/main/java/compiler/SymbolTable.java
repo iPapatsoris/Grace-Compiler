@@ -30,11 +30,16 @@ public class SymbolTable {
             if (symbol.getScope() != curScope) {
                 break;
             }
-            lookupTable.put(symbol.getToken().getText(), symbol);
+            if (symbol.getShadowedSymbol() != null) {
+                lookupTable.put(symbol.getToken().getText(), symbol.getShadowedSymbol());
+            } else {
+                lookupTable.remove(symbol.getToken().getText());
+            }
             System.out.println("Removing " + symbol);
             it.remove();
         }
         curScope--;
+        System.out.println("After exit: " + this);
     }
 
     public void insert(Token token) throws SemanticException {
@@ -47,7 +52,7 @@ public class SymbolTable {
         symbolList.addFirst(newSymbol);
         lookupTable.put(token.getText(), newSymbol);
 
-        System.out.println("Inserted " + newSymbol);
+        System.out.println("Inserted " + newSymbol + ":\n" + this);
     }
 
     public Symbol lookup(Token token) throws SemanticException {
@@ -56,6 +61,11 @@ public class SymbolTable {
             throw new SemanticException("Semantic error: undeclared symbol \'" + token.getText() +"\' at " + getLocation(token));
         }
         return symbol;
+    }
+
+    @Override
+    public String toString() {
+        return "curScope: " + curScope + "\nsymbolList: " + symbolList + "\nlookupTable: " + lookupTable;
     }
 
     private static String getLocation(Token token) {
@@ -87,7 +97,7 @@ public class SymbolTable {
 
         @Override
         public String toString() {
-            return token.getText() + " at scope " + scope + (shadowedSymbol != null ? " with shadowing" : "");
+            return token.getText() + " at scope " + scope + " found at " + getLocation(token) + (shadowedSymbol != null ? " overshadowing the one at " + getLocation(shadowedSymbol.getToken()) : "");
         }
     }
 

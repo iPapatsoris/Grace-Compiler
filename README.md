@@ -11,9 +11,31 @@ We print the name of each Node in the CST in a DFS manner along with the
 matched input. This is implemented by simply overriding the *Node.defaultIn* method.
 
 ## Notes
-vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika swsto.
-
+* vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika swsto.
+* pinakes pernountai panta by reference. exei noima na dwsw kai egw to keyword reference?
 ## Samples
+
+`fun myFun() : nothing
+    var a : int;
+    var b : char;
+    var c : int;
+
+    fun myOtherFun() : char
+        var d: int;
+        var a: int;
+
+        fun lel() : int
+            var d: int;
+            var a: int; {}
+        fun lel2() : int
+            var d: int;
+            var a: int; {}
+        {}
+{
+}`
+
+-
+
 `a['a'][++--(1-+-1)]`
 
 `a[+-+-+-(b["c"[2]])]`

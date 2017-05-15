@@ -76,6 +76,7 @@ public class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void inAFuncDef(AFuncDef node) {
         printNode(node);
+        symbolTable.enter();
     }
 
     @Override
