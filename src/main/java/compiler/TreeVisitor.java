@@ -325,6 +325,7 @@ public class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAFuncDef(AFuncDef node) {
         removeIndentationLevel();
+        symbolTable.exit();
     }
 
     @Override
