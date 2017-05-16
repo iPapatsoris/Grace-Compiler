@@ -8,16 +8,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
 
-public class SymbolTable {
+class SymbolTable {
 
     private ArrayDeque<SymbolEntry> symbolList;
     private HashMap<String, SymbolEntry> lookupTable;
     private long curScope;
 
     public SymbolTable() {
-        this.symbolList = new ArrayDeque<SymbolEntry>();
-        this.lookupTable = new HashMap<String, SymbolEntry>();
-        this.curScope = -1;
+        symbolList = new ArrayDeque<SymbolEntry>();
+        lookupTable = new HashMap<String, SymbolEntry>();
+        curScope = -1;
     }
 
     public void enter() {
@@ -50,7 +50,7 @@ public class SymbolTable {
                                         " is already defined at current scope at " + getLocation(oldSymbolEntry.getSymbol().getToken()));
         }
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
-        symbolList.addFirst(newSymbolEntry);
+        symbolList.push(newSymbolEntry);
         lookupTable.put(identifier, newSymbolEntry);
 
         System.out.println(TreeVisitor.ANSI_BLUE + "Inserted " + newSymbolEntry + ":\n" + this + TreeVisitor.ANSI_RESET);

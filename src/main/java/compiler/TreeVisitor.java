@@ -5,10 +5,12 @@ import compiler.node.*;
 
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.ArrayDeque;
 import java.lang.String;
 
 
-public class TreeVisitor extends DepthFirstAdapter {
+class TreeVisitor extends DepthFirstAdapter {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
@@ -19,10 +21,12 @@ public class TreeVisitor extends DepthFirstAdapter {
     public static final String ANSI_WHITE = "\u001B[37m";
 
     private SymbolTable symbolTable;
+    private ArrayDeque<ReturnInfo> returnInfo;
     private int indentation;
 
     public TreeVisitor() {
         symbolTable = new SymbolTable();
+        returnInfo = new ArrayDeque<ReturnInfo>();
         indentation = 0;
     }
 
@@ -38,10 +42,18 @@ public class TreeVisitor extends DepthFirstAdapter {
         System.out.print(String.join("", Collections.nCopies(indentation, " ")));
     }
 
-    private String getClassName(Node node) {
+    private static String getClassName(Node node) {
         String nodeClass = node.getClass().toString();
         int suffixIndex = nodeClass.lastIndexOf('.');
         return nodeClass.substring(suffixIndex+2);
+    }
+
+    private static ArrayList<Integer> convertTokensToNumbers(LinkedList<TIntConstant> tokens) {
+        ArrayList<Integer> numbers = new ArrayList<Integer>();
+        for (TIntConstant token : tokens) {
+            numbers.add(Integer.parseInt(token.getText()));
+        }
+        return numbers;
     }
 
     /* Generic printing that does not print pure token attributes */
@@ -141,17 +153,6 @@ public class TreeVisitor extends DepthFirstAdapter {
         printIndentation();
         System.out.println(getClassName(node) + ":  " + node.getIdentifier());
         addIndentationLevel();
-
-        for (Token token : node.getIdentifier()) {
-            ArrayList<Integer> dimensionsList = new ArrayList<Integer>();
-            Symbol symbol = new Variable(token, Type.INT, dimensionsList);
-            try {
-                symbolTable.insert(symbol);
-            } catch (SemanticException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-        }
     }
 
     @Override
@@ -385,11 +386,34 @@ public class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAVarDef(AVarDef node) {
         removeIndentationLevel();
+
+        VariableInfo variableInfo = (VariableInfo) returnInfo.pop();
+        for (Token token : node.getIdentifier()) {
+            Symbol symbol = new Variable(token, variableInfo.getType(), variableInfo.getDimensions());
+            try {
+                symbolTable.insert(symbol);
+            } catch (SemanticException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+        }
     }
 
     @Override
     public void outAVarType(AVarType node) {
         removeIndentationLevel();
+
+        Type type = Type.NOTHING;
+        switch (getClassName(node.getDataType())) {
+            case "IntDataType"  : type = Type.INT;
+                                  break;
+            case "CharDataType" : type = Type.CHAR;
+                                  break;
+            default             : System.err.println("Unsupported AST returnInfo in outAVarType");
+                                  System.exit(1);
+        }
+        ReturnInfo variableInfo = new VariableInfo(type, convertTokensToNumbers(node.getIntConstant()));
+        returnInfo.push(variableInfo);
     }
 
     /* Statement */

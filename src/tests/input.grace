@@ -3,5 +3,6 @@ fun main() : nothing
     var myChar : char;
     fun myFun() : int
         var myInt1 : char;
+        var myArray: int[13][14];
     {}
 {}
