@@ -4,12 +4,19 @@ import compiler.analysis.DepthFirstAdapter;
 import compiler.node.*;
 
 import java.util.Collections;
+import java.util.ArrayList;
 import java.lang.String;
 
 
 public class TreeVisitor extends DepthFirstAdapter {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
 
     private SymbolTable symbolTable;
     private int indentation;
@@ -76,6 +83,7 @@ public class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void inAFuncDef(AFuncDef node) {
         printNode(node);
+
         symbolTable.enter();
     }
 
@@ -92,6 +100,15 @@ public class TreeVisitor extends DepthFirstAdapter {
         System.out.println(getClassName(node) + ":  " +
             (node.getRef() != null ? "ref " : "")  + node.getIdentifier());
         addIndentationLevel();
+
+        /*for (Token identifier : node.getIdentifier()) {
+            try {
+                symbolTable.insert(identifier);
+            } catch (SemanticException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+        }*/
     }
 
     @Override
@@ -125,13 +142,17 @@ public class TreeVisitor extends DepthFirstAdapter {
         System.out.println(getClassName(node) + ":  " + node.getIdentifier());
         addIndentationLevel();
 
-        try {
-            symbolTable.insert(node.getIdentifier().get(0));
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+        for (Token token : node.getIdentifier()) {
+            ArrayList<Integer> dimensionsList = new ArrayList<Integer>();
+            Symbol symbol = new Variable(token, Type.INT, dimensionsList);
+            try {
+                symbolTable.insert(symbol);
+            } catch (SemanticException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
         }
-}
+    }
 
     @Override
     public void inAVarType(AVarType node) {

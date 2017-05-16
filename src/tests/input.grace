@@ -1,18 +1,7 @@
-fun myFun() : nothing
-    var a : int;
-    var b : char;
-    var c : int;
-
-    fun myOtherFun() : char
-        var d: int;
-        var a: int;
-
-        fun lel() : int
-            var d: int;
-            var a: int; {}
-        fun lel2() : int
-            var d: int;
-            var a: int; {}
-        {}
-{
-}
+fun main() : nothing
+    var myInt1, myInt2 : int;
+    var myChar : char;
+    fun myFun() : int
+        var myInt1 : char;
+    {}
+{}

@@ -10,13 +10,13 @@ import java.lang.String;
 
 public class SymbolTable {
 
-    private ArrayDeque<Symbol> symbolList;
-    private HashMap<String, Symbol> lookupTable;
+    private ArrayDeque<SymbolEntry> symbolList;
+    private HashMap<String, SymbolEntry> lookupTable;
     private long curScope;
 
     public SymbolTable() {
-        this.symbolList = new ArrayDeque<Symbol>();
-        this.lookupTable = new HashMap<String, Symbol>();
+        this.symbolList = new ArrayDeque<SymbolEntry>();
+        this.lookupTable = new HashMap<String, SymbolEntry>();
         this.curScope = -1;
     }
 
@@ -25,79 +25,80 @@ public class SymbolTable {
     }
 
     public void exit() {
-        for (Iterator<Symbol> it = symbolList.iterator(); it.hasNext(); ) {
-            Symbol symbol = it.next();
-            if (symbol.getScope() != curScope) {
+        for (Iterator<SymbolEntry> it = symbolList.iterator(); it.hasNext(); ) {
+            SymbolEntry symbolEntry = it.next();
+            if (symbolEntry.getScope() != curScope) {
                 break;
             }
-            if (symbol.getShadowedSymbol() != null) {
-                lookupTable.put(symbol.getToken().getText(), symbol.getShadowedSymbol());
+            if (symbolEntry.getShadowedSymbolEntry() != null) {
+                lookupTable.put(symbolEntry.getSymbol().getToken().getText(), symbolEntry.getShadowedSymbolEntry());
             } else {
-                lookupTable.remove(symbol.getToken().getText());
+                lookupTable.remove(symbolEntry.getSymbol().getToken().getText());
             }
-            System.out.println("Removing " + symbol);
+            System.out.println(TreeVisitor.ANSI_BLUE + "Removing " + symbolEntry + TreeVisitor.ANSI_RESET);
             it.remove();
         }
         curScope--;
-        System.out.println("After exit: " + this);
+        System.out.println(TreeVisitor.ANSI_BLUE + "After exit: " + this + TreeVisitor.ANSI_RESET);
     }
 
-    public void insert(Token token) throws SemanticException {
-        Symbol oldSymbol = lookupTable.get(token.getText());
-        if (oldSymbol != null && oldSymbol.getScope() == curScope) {
-            throw new SemanticException("Semantic error: symbol \'" + token.getText() +"\' at " + getLocation(token) +
-                                        " is already defined at current scope at " + getLocation(oldSymbol.getToken()));
+    public void insert(Symbol symbol) throws SemanticException {
+        String identifier = symbol.getToken().getText();
+        SymbolEntry oldSymbolEntry = lookupTable.get(identifier);
+        if (oldSymbolEntry != null && oldSymbolEntry.getScope() == curScope) {
+            throw new SemanticException("Semantic error: symbol \'" + identifier +"\' at " + getLocation(symbol.getToken()) +
+                                        " is already defined at current scope at " + getLocation(oldSymbolEntry.getSymbol().getToken()));
         }
-        Symbol newSymbol = new Symbol(token, curScope, oldSymbol);
-        symbolList.addFirst(newSymbol);
-        lookupTable.put(token.getText(), newSymbol);
+        SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
+        symbolList.addFirst(newSymbolEntry);
+        lookupTable.put(identifier, newSymbolEntry);
 
-        System.out.println("Inserted " + newSymbol + ":\n" + this);
+        System.out.println(TreeVisitor.ANSI_BLUE + "Inserted " + newSymbolEntry + ":\n" + this + TreeVisitor.ANSI_RESET);
     }
 
     public Symbol lookup(Token token) throws SemanticException {
-        Symbol symbol = lookupTable.get(token.getText());
-        if (symbol == null) {
+        SymbolEntry symbolEntry = lookupTable.get(token.getText());
+        if (symbolEntry == null) {
             throw new SemanticException("Semantic error: undeclared symbol \'" + token.getText() +"\' at " + getLocation(token));
         }
-        return symbol;
+        return symbolEntry.getSymbol();
     }
 
     @Override
     public String toString() {
-        return "curScope: " + curScope + "\nsymbolList: " + symbolList + "\nlookupTable: " + lookupTable;
+        return symbolList.toString();
     }
 
     private static String getLocation(Token token) {
         return "[" + token.getLine() + "," + token.getPos() + "]";
     }
 
-    private class Symbol {
-        private Token token;
+    private class SymbolEntry {
+        private Symbol symbol;
         private long scope;
-        private Symbol shadowedSymbol;
+        private SymbolEntry shadowedSymbolEntry;
 
-        public Symbol(Token token, long scope, Symbol shadowedSymbol) {
-            this.token = token;
+        public SymbolEntry(Symbol symbol, long scope, SymbolEntry shadowedSymbolEntry) {
+            this.symbol = symbol;
             this.scope = scope;
-            this.shadowedSymbol = shadowedSymbol;
+            this.shadowedSymbolEntry = shadowedSymbolEntry;
         }
 
-        public Token getToken() {
-            return token;
+        public Symbol getSymbol() {
+            return symbol;
         }
 
         public long getScope() {
             return scope;
         }
 
-        public Symbol getShadowedSymbol() {
-            return shadowedSymbol;
+        public SymbolEntry getShadowedSymbolEntry() {
+            return shadowedSymbolEntry;
         }
 
         @Override
         public String toString() {
-            return token.getText() + " at scope " + scope + " found at " + getLocation(token) + (shadowedSymbol != null ? " overshadowing the one at " + getLocation(shadowedSymbol.getToken()) : "");
+            return symbol + " at scope " + scope; //return token.getText() + " at scope " + scope + " found at " + getLocation(token) + (shadowedSymbol != null ? " overshadowing the one at " + getLocation(shadowedSymbol.getToken()) : "");
         }
     }
 

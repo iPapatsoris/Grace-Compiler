@@ -12,8 +12,17 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
 
 ## Notes
 * vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika swsto.
-* pinakes pernountai panta by reference. exei noima na dwsw kai egw to keyword reference?
+* pinakes pernountai panta by reference, de mporoun na ginoun return
 ## Samples
+`fun main() : nothing
+    fun myFun() : nothing
+        fun myOtherFun() : nothing;
+    {}
+    fun myOtherFun() : nothing
+    {}
+{}
+`
+
 
 `fun myFun() : nothing
     var a : int;
