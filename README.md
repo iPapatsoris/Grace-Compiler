@@ -19,6 +19,22 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
 
 ## Samples
 `fun main() : nothing
+    fun myFun(myVar : int) : nothing;
+    var myVar : int;
+    fun myFun(myVar : int) : nothing
+    {}
+{}
+`
+
+`fun main() : nothing
+    fun myFun(myInt1, myInt2 : int ; ref myChar : char) : int
+        fun myOtherFun(ref myArray: int[12]; ref myOtherArray: char[][14][15]) : char
+        {}
+    {}
+{}
+`
+
+`fun main() : nothing
     var myInt1, myInt2 : int;
     var myChar : char;
     fun myFun() : int

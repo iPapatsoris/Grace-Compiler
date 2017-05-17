@@ -5,14 +5,15 @@ import compiler.node.*;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.Iterator;
 
 enum Type {
     INT, CHAR, NOTHING
 }
 
 abstract class Symbol {
-    private Token token;
-    private Type type;
+    protected Token token;
+    protected Type type;
 
     public Symbol(Token token, Type type) {
         this.token = token;
@@ -27,15 +28,15 @@ abstract class Symbol {
         return type;
     }
 
+
     @Override
     public String toString() {
         return token + " " + type;
     }
-
 }
 
 class Variable extends Symbol {
-    private ArrayList<Integer> dimensions;
+    protected ArrayList<Integer> dimensions;
 
     public Variable(Token token, Type type, ArrayList<Integer> dimensions) {
         super(token, type);
@@ -50,7 +51,6 @@ class Variable extends Symbol {
     public String toString() {
         return super.toString() + " " + dimensions;
     }
-
 }
 
 class Argument extends Variable {
@@ -72,21 +72,62 @@ class Argument extends Variable {
     }
 
     @Override
+    public boolean equals(Object object) {
+        Argument argument = (Argument)object;
+        return this.token.getText().equals(argument.token.getText())
+               && this.type == argument.type
+               && this.dimensions.equals(argument.dimensions)
+               && this.reference == argument.reference
+               && this.noFirstDimension == argument.noFirstDimension;
+    }
+
+    @Override
     public String toString() {
         return super.toString() + " " + reference + " " + noFirstDimension;
     }
 }
 
 class Function extends Symbol {
+    private ArrayDeque<Argument> arguments;
     private boolean defined;
 
-    public Function(Token token, Type type, boolean defined) {
+    public Function(Token token, ArrayDeque<Argument> arguments, Type type, boolean defined) {
         super(token, type);
+        this.arguments = arguments;
         this.defined = defined;
+    }
+
+    public ArrayDeque<Argument> getArguments() {
+        return arguments;
+    }
+
+    public boolean isDefined() {
+        return defined;
+    }
+
+    public boolean sameHeader(Function function) {
+        return this.token.getText().equals(function.token.getText())
+               && this.type == function.type
+               && equalDeque(this.arguments, function.arguments);
     }
 
     @Override
     public String toString() {
-        return super.toString() + " " + defined;
+        return super.toString() + " " + defined + " " + arguments ;
+    }
+
+    /* Dequeue does not implement Object.equals . Either implement ArrayDeque or use this function */
+    private static boolean equalDeque(ArrayDeque<Argument> queue1, ArrayDeque<Argument> queue2) {
+        if (queue1.size() != queue2.size()) {
+            return false;
+        }
+
+        Iterator<Argument> it2 = queue2.iterator();
+        for (Iterator<Argument> it1 = queue1.iterator(); it1.hasNext(); ) {
+            if (! it1.next().equals(it2.next())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

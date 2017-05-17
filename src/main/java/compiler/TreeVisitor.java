@@ -339,6 +339,23 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAFuncDeclLocalDef(AFuncDeclLocalDef node) {
         removeIndentationLevel();
+
+        FunctionInfo functionInfo = (FunctionInfo) returnInfo.pop();
+        ArrayDeque<Argument> arguments = new ArrayDeque<Argument>();
+        for (ArgumentInfo argumentInfo : functionInfo.getArguments()) {
+            for (Token argument : argumentInfo.getIdentifiers()) {
+                arguments.add(new Argument(argument, argumentInfo.getType(), argumentInfo.getDimensions(), argumentInfo.hasReference(), argumentInfo.hasNoFirstDimension()));
+            }
+        }
+        Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getReturnType(), false);
+        try {
+            symbolTable.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        System.out.println("returnInfo size now: " + returnInfo.size());
     }
 
     @Override
@@ -349,7 +366,6 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAFuncDef(AFuncDef node) {
         removeIndentationLevel();
-        symbolTable.exit();
     }
 
     @Override
@@ -367,8 +383,16 @@ class TreeVisitor extends DepthFirstAdapter {
                 symbolTable.enter();
             }
 
+            /* Get arguments */
+            ArrayDeque<Argument> arguments = new ArrayDeque<Argument>();
+            for (ArgumentInfo argumentInfo : functionInfo.getArguments()) {
+                for (Token argument : argumentInfo.getIdentifiers()) {
+                    arguments.add(new Argument(argument, argumentInfo.getType(), argumentInfo.getDimensions(), argumentInfo.hasReference(), argumentInfo.hasNoFirstDimension()));
+                }
+            }
+
             /* Add function symbol on current scope */
-            Symbol function = new Function(functionInfo.getToken(), functionInfo.getReturnType(), true);
+            Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getReturnType(), true);
             try {
                 symbolTable.insert(function);
             } catch (SemanticException e) {
@@ -380,14 +404,12 @@ class TreeVisitor extends DepthFirstAdapter {
             if (! mainFunction) {
                 symbolTable.enter();
             }
-            for (ArgumentInfo argumentInfo : functionInfo.getArguments()) {
-                for (Token argument : argumentInfo.getIdentifiers()) {
-                    try {
-                        symbolTable.insert(new Argument(argument, argumentInfo.getType(), argumentInfo.getDimensions(), argumentInfo.hasReference(), argumentInfo.hasNoFirstDimension()));
-                    } catch (SemanticException e) {
-                        System.err.println(e.getMessage());
-                        System.exit(1);
-                    }
+            for (Argument argument : arguments) {
+                try {
+                    symbolTable.insert(argument);
+                } catch (SemanticException e) {
+                    System.err.println(e.getMessage());
+                    System.exit(1);
                 }
             }
 
@@ -408,6 +430,12 @@ class TreeVisitor extends DepthFirstAdapter {
             }
         }
         outAFuncDef(node);
+        try {
+            symbolTable.exit();
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
     }
 
     @Override

@@ -24,38 +24,68 @@ class SymbolTable {
         curScope++;
     }
 
-    public void exit() {
+    public void exit() throws SemanticException {
+        HashMap<String, Function> definedFunctions = new HashMap<String, Function>();
         for (Iterator<SymbolEntry> it = symbolList.iterator(); it.hasNext(); ) {
             SymbolEntry symbolEntry = it.next();
             if (symbolEntry.getScope() != curScope) {
                 break;
             }
+            Symbol symbol = symbolEntry.getSymbol();
+
+            /* Function declaration and definition checks */
+            if (symbol instanceof Function) {
+                Function function = (Function)symbol;
+                if (function.isDefined()) {
+                    definedFunctions.put(function.getToken().getText(), function);
+                } else {
+                    Function definedFunction = definedFunctions.get(function.getToken().getText());
+                    if (definedFunction == null) {
+                        throw new SemanticException("Semantic error: function " + function.getToken().getText() +
+                                                " is declared at " + getLocation(function.getToken()) +
+                                                " but not defined at the same scope");
+                    } else {
+                        if (!function.sameHeader(definedFunction)) {
+                            throw new SemanticException("Semantic error: different headers between declared function " +
+                                                        function.getToken().getText() + " at " + getLocation(function.getToken()) +
+                                                        " and defined one at " + getLocation(definedFunction.getToken()));
+                        }
+                    }
+                }
+            }
+
+
+            /* Remove symbol */
             if (symbolEntry.getShadowedSymbolEntry() != null) {
-                lookupTable.put(symbolEntry.getSymbol().getToken().getText(), symbolEntry.getShadowedSymbolEntry());
+                lookupTable.put(symbol.getToken().getText(), symbolEntry.getShadowedSymbolEntry());
             } else {
-                lookupTable.remove(symbolEntry.getSymbol().getToken().getText());
+                lookupTable.remove(symbol.getToken().getText());
             }
             System.out.println(TreeVisitor.ANSI_BLUE + "Removing " + symbolEntry + TreeVisitor.ANSI_RESET);
             it.remove();
         }
         curScope--;
-        System.out.println(TreeVisitor.ANSI_BLUE + "After exit: " + this + TreeVisitor.ANSI_RESET);
+        //System.out.println(TreeVisitor.ANSI_BLUE + "After exit: " + this + TreeVisitor.ANSI_RESET);
     }
 
     public void insert(Symbol symbol) throws SemanticException {
         String identifier = symbol.getToken().getText();
         SymbolEntry oldSymbolEntry = lookupTable.get(identifier);
-        if (symbol instanceof Function && oldSymbolEntry != null && (oldSymbolEntry.getSymbol() instanceof Variable || oldSymbolEntry.getSymbol() instanceof Argument)
-        || oldSymbolEntry != null && oldSymbolEntry.getSymbol() instanceof Function && (symbol instanceof Variable || symbol instanceof Argument)
-        || oldSymbolEntry != null && oldSymbolEntry.getScope() == curScope) {
-            throw new SemanticException("Semantic error: symbol \'" + identifier +"\' at " + getLocation(symbol.getToken()) +
-                                        " is already defined at current scope at " + getLocation(oldSymbolEntry.getSymbol().getToken()));
+        if (oldSymbolEntry != null) {
+            Symbol oldSymbol = oldSymbolEntry.getSymbol();
+            if (symbol instanceof Function && ((Function)symbol).isDefined() && (oldSymbol instanceof Variable || oldSymbol instanceof Argument)
+            || oldSymbol instanceof Function && ((Function)oldSymbol).isDefined() && (symbol instanceof Variable || symbol instanceof Argument)
+            || oldSymbol instanceof Function && symbol instanceof Function && !( !((Function)oldSymbol).isDefined() && ((Function)symbol).isDefined())
+            || !(oldSymbol instanceof Function && symbol instanceof Function) && oldSymbolEntry.getScope() == curScope) {
+                throw new SemanticException("Semantic error: symbol \'" + identifier +"\' at " + getLocation(symbol.getToken()) +
+                                            " is already defined at " + getLocation(oldSymbolEntry.getSymbol().getToken()));
+            }
         }
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
         symbolList.push(newSymbolEntry);
         lookupTable.put(identifier, newSymbolEntry);
 
-        System.out.println(TreeVisitor.ANSI_BLUE + "Inserted " + newSymbolEntry + ":\n" + this + TreeVisitor.ANSI_RESET);
+        System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
     }
 
     public Symbol lookup(Token token) throws SemanticException {
@@ -74,6 +104,11 @@ class SymbolTable {
     public String toString() {
         return symbolList.toString();
     }
+
+    /* A function name may appear twice only if first one was declaration and current one is definition
+    private static boolean duplicateFunction(Symbol oldSymbol, Symbol symbol) {
+        return oldSymbol instanceof Function && symbol instanceof Function && !( !((Function)oldSymbol).isDefined() && ((Function)symbol).isDefined());
+    }*/
 
     private static String getLocation(Token token) {
         return "[" + token.getLine() + "," + token.getPos() + "]";
