@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ArrayDeque;
+import java.util.List;
 import java.lang.String;
 
 
@@ -46,6 +47,17 @@ class TreeVisitor extends DepthFirstAdapter {
         String nodeClass = node.getClass().toString();
         int suffixIndex = nodeClass.lastIndexOf('.');
         return nodeClass.substring(suffixIndex+2);
+    }
+
+    private static Type convertNodeToType(Node node) {
+        switch (getClassName(node)) {
+            case "IntDataType"     : return Type.INT;
+            case "CharDataType"    : return Type.CHAR;
+            case "NothingDataType" : return Type.NOTHING;
+            default                : System.err.println("Internal error in convertNodeToType");
+                                     System.exit(1);
+        }
+        return Type.NOTHING;
     }
 
     private static ArrayList<Integer> convertTokensToNumbers(LinkedList<TIntConstant> tokens) {
@@ -95,8 +107,6 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void inAFuncDef(AFuncDef node) {
         printNode(node);
-
-        symbolTable.enter();
     }
 
     @Override
@@ -112,15 +122,6 @@ class TreeVisitor extends DepthFirstAdapter {
         System.out.println(getClassName(node) + ":  " +
             (node.getRef() != null ? "ref " : "")  + node.getIdentifier());
         addIndentationLevel();
-
-        /*for (Token identifier : node.getIdentifier()) {
-            try {
-                symbolTable.insert(identifier);
-            } catch (SemanticException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
-        }*/
     }
 
     @Override
@@ -328,7 +329,7 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void inStart(Start node) {}
 
-    /* ******** Out ******** */
+    /* ******** Out & Case  ******** */
 
     @Override
     public void outAFuncDefLocalDef(AFuncDefLocalDef node) {
@@ -352,18 +353,93 @@ class TreeVisitor extends DepthFirstAdapter {
     }
 
     @Override
+    public void caseAFuncDef(AFuncDef node)
+    {
+        inAFuncDef(node);
+        if(node.getHeader() != null)
+        {
+            node.getHeader().apply(this);
+            FunctionInfo functionInfo = (FunctionInfo) returnInfo.pop();
+
+            /* Function symbol on current scope and arguments on new, unless it's main function */
+            boolean mainFunction = symbolTable.onFirstScope();
+            if (mainFunction) {
+                symbolTable.enter();
+            }
+
+            /* Add function symbol on current scope */
+            Symbol function = new Function(functionInfo.getToken(), functionInfo.getReturnType(), true);
+            try {
+                symbolTable.insert(function);
+            } catch (SemanticException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+
+            /* Add arguments on new scope */
+            if (! mainFunction) {
+                symbolTable.enter();
+            }
+            for (ArgumentInfo argumentInfo : functionInfo.getArguments()) {
+                for (Token argument : argumentInfo.getIdentifiers()) {
+                    try {
+                        symbolTable.insert(new Argument(argument, argumentInfo.getType(), argumentInfo.getDimensions(), argumentInfo.hasReference(), argumentInfo.hasNoFirstDimension()));
+                    } catch (SemanticException e) {
+                        System.err.println(e.getMessage());
+                        System.exit(1);
+                    }
+                }
+            }
+
+            System.out.println("returnInfo size now: " + returnInfo.size());
+        }
+        {
+            List<PLocalDef> copy = new ArrayList<PLocalDef>(node.getLocalDef());
+            for(PLocalDef e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        {
+            List<PStatement> copy = new ArrayList<PStatement>(node.getStatement());
+            for(PStatement e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        outAFuncDef(node);
+    }
+
+    @Override
     public void outAHeader(AHeader node) {
         removeIndentationLevel();
+
+        ArrayDeque<ArgumentInfo> arguments = new ArrayDeque<ArgumentInfo>();
+        for (int argumentCount = node.getFparDef().size() ; argumentCount > 0 ; argumentCount--) {
+            ArgumentInfo argumentInfo = (ArgumentInfo) returnInfo.pop();
+            arguments.addFirst(argumentInfo);
+        }
+        ReturnInfo functionInfo = new FunctionInfo(node.getIdentifier(), arguments, convertNodeToType(node.getDataType()));
+        returnInfo.push(functionInfo);
     }
 
     @Override
     public void outAFparDef(AFparDef node) {
         removeIndentationLevel();
+
+        ArgumentInfo argumentInfo = (ArgumentInfo) returnInfo.peek();
+        boolean reference =  (node.getRef() != null ? true : false);
+        argumentInfo.setReference(reference);
+        argumentInfo.setIdentifiers(new ArrayDeque(node.getIdentifier()));
     }
 
     @Override
     public void outAFparType(AFparType node) {
         removeIndentationLevel();
+
+        boolean noFirstDimension = (node.getLsquareBracket() != null ? true : false);
+        ArgumentInfo argumentInfo = new ArgumentInfo(convertNodeToType(node.getDataType()), convertTokensToNumbers(node.getIntConstant()), noFirstDimension);
+        returnInfo.push(argumentInfo);
     }
 
     @Override
@@ -403,15 +479,12 @@ class TreeVisitor extends DepthFirstAdapter {
     public void outAVarType(AVarType node) {
         removeIndentationLevel();
 
-        Type type = Type.NOTHING;
-        switch (getClassName(node.getDataType())) {
-            case "IntDataType"  : type = Type.INT;
-                                  break;
-            case "CharDataType" : type = Type.CHAR;
-                                  break;
-            default             : System.err.println("Unsupported AST returnInfo in outAVarType");
-                                  System.exit(1);
+        Type type = convertNodeToType(node.getDataType());
+        if (type == Type.NOTHING) {
+            System.err.println("Internal error: unsupported AST returnInfo in outAVarType");
+            System.exit(1);
         }
+
         ReturnInfo variableInfo = new VariableInfo(type, convertTokensToNumbers(node.getIntConstant()));
         returnInfo.push(variableInfo);
     }

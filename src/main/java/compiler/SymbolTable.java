@@ -45,7 +45,9 @@ class SymbolTable {
     public void insert(Symbol symbol) throws SemanticException {
         String identifier = symbol.getToken().getText();
         SymbolEntry oldSymbolEntry = lookupTable.get(identifier);
-        if (oldSymbolEntry != null && oldSymbolEntry.getScope() == curScope) {
+        if (symbol instanceof Function && oldSymbolEntry != null && (oldSymbolEntry.getSymbol() instanceof Variable || oldSymbolEntry.getSymbol() instanceof Argument)
+        || oldSymbolEntry != null && oldSymbolEntry.getSymbol() instanceof Function && (symbol instanceof Variable || symbol instanceof Argument)
+        || oldSymbolEntry != null && oldSymbolEntry.getScope() == curScope) {
             throw new SemanticException("Semantic error: symbol \'" + identifier +"\' at " + getLocation(symbol.getToken()) +
                                         " is already defined at current scope at " + getLocation(oldSymbolEntry.getSymbol().getToken()));
         }
@@ -62,6 +64,10 @@ class SymbolTable {
             throw new SemanticException("Semantic error: undeclared symbol \'" + token.getText() +"\' at " + getLocation(token));
         }
         return symbolEntry.getSymbol();
+    }
+
+    public boolean onFirstScope() {
+        return curScope == -1;
     }
 
     @Override

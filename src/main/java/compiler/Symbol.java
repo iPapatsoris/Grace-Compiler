@@ -4,6 +4,7 @@ import compiler.node.*;
 
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 
 enum Type {
     INT, CHAR, NOTHING
@@ -34,7 +35,7 @@ abstract class Symbol {
 }
 
 class Variable extends Symbol {
-    ArrayList<Integer> dimensions;
+    private ArrayList<Integer> dimensions;
 
     public Variable(Token token, Type type, ArrayList<Integer> dimensions) {
         super(token, type);
@@ -53,8 +54,8 @@ class Variable extends Symbol {
 }
 
 class Argument extends Variable {
-    boolean reference;
-    boolean noFirstDimension;
+    private boolean reference;
+    private boolean noFirstDimension;
 
     public Argument(Token token, Type type, ArrayList<Integer> dimensions, boolean reference, boolean noFirstDimension) {
         super(token, type, dimensions);
@@ -73,5 +74,19 @@ class Argument extends Variable {
     @Override
     public String toString() {
         return super.toString() + " " + reference + " " + noFirstDimension;
+    }
+}
+
+class Function extends Symbol {
+    private boolean defined;
+
+    public Function(Token token, Type type, boolean defined) {
+        super(token, type);
+        this.defined = defined;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " " + defined;
     }
 }

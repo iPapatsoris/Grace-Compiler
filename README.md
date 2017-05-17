@@ -11,9 +11,23 @@ We print the name of each Node in the CST in a DFS manner along with the
 matched input. This is implemented by simply overriding the *Node.defaultIn* method.
 
 ## Notes
+* variable overshadowing metaksu scopes, tipota metaksu funcs
 * vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika swsto.
 * pinakes pernountai panta by reference, de mporoun na ginoun return
+* check return statement, apousia return an nothing
+* main den epistrefei, den exei args
+
 ## Samples
+`fun main() : nothing
+    var myInt1, myInt2 : int;
+    var myChar : char;
+    fun myFun() : int
+        var myInt1 : char;
+        var myArray: int[13][14];
+    {}
+{}
+`
+
 `fun main() : nothing
     fun myFun() : nothing
         fun myOtherFun() : nothing;
@@ -22,7 +36,6 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
     {}
 {}
 `
-
 
 `fun myFun() : nothing
     var a : int;
