@@ -28,10 +28,13 @@ abstract class Symbol {
         return type;
     }
 
-
     @Override
     public String toString() {
         return token + " " + type;
+    }
+
+    public static String getLocation(Token token) {
+        return "[" + token.getLine() + "," + token.getPos() + "]";
     }
 }
 
@@ -71,6 +74,7 @@ class Argument extends Variable {
         return noFirstDimension;
     }
 
+    /* TODO: Implement Object.hashCode */
     @Override
     public boolean equals(Object object) {
         Argument argument = (Argument)object;
@@ -116,7 +120,7 @@ class Function extends Symbol {
         return super.toString() + " " + defined + " " + arguments ;
     }
 
-    /* Dequeue does not implement Object.equals . Either implement ArrayDeque or use this function */
+    /* Dequeue does not implement Object.equals . Either implement ArrayDeque or use this method */
     private static boolean equalDeque(ArrayDeque<Argument> queue1, ArrayDeque<Argument> queue2) {
         if (queue1.size() != queue2.size()) {
             return false;

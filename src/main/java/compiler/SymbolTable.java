@@ -42,13 +42,13 @@ class SymbolTable {
                     Function definedFunction = definedFunctions.get(function.getToken().getText());
                     if (definedFunction == null) {
                         throw new SemanticException("Semantic error: function " + function.getToken().getText() +
-                                                " is declared at " + getLocation(function.getToken()) +
+                                                " is declared at " + Symbol.getLocation(function.getToken()) +
                                                 " but not defined at the same scope");
                     } else {
                         if (!function.sameHeader(definedFunction)) {
                             throw new SemanticException("Semantic error: different headers between declared function " +
-                                                        function.getToken().getText() + " at " + getLocation(function.getToken()) +
-                                                        " and defined one at " + getLocation(definedFunction.getToken()));
+                                                        function.getToken().getText() + " at " + Symbol.getLocation(function.getToken()) +
+                                                        " and defined one at " + Symbol.getLocation(definedFunction.getToken()));
                         }
                     }
                 }
@@ -77,8 +77,8 @@ class SymbolTable {
             || oldSymbol instanceof Function && ((Function)oldSymbol).isDefined() && (symbol instanceof Variable || symbol instanceof Argument)
             || oldSymbol instanceof Function && symbol instanceof Function && !( !((Function)oldSymbol).isDefined() && ((Function)symbol).isDefined())
             || !(oldSymbol instanceof Function && symbol instanceof Function) && oldSymbolEntry.getScope() == curScope) {
-                throw new SemanticException("Semantic error: symbol \'" + identifier +"\' at " + getLocation(symbol.getToken()) +
-                                            " is already defined at " + getLocation(oldSymbolEntry.getSymbol().getToken()));
+                throw new SemanticException("Semantic error: symbol \'" + identifier +"\' at " + Symbol.getLocation(symbol.getToken()) +
+                                            " is already defined at " + Symbol.getLocation(oldSymbolEntry.getSymbol().getToken()));
             }
         }
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
@@ -91,7 +91,7 @@ class SymbolTable {
     public Symbol lookup(Token token) throws SemanticException {
         SymbolEntry symbolEntry = lookupTable.get(token.getText());
         if (symbolEntry == null) {
-            throw new SemanticException("Semantic error: undeclared symbol \'" + token.getText() +"\' at " + getLocation(token));
+            throw new SemanticException("Semantic error: undeclared symbol \'" + token.getText() +"\' at " + Symbol.getLocation(token));
         }
         return symbolEntry.getSymbol();
     }
@@ -109,10 +109,6 @@ class SymbolTable {
     private static boolean duplicateFunction(Symbol oldSymbol, Symbol symbol) {
         return oldSymbol instanceof Function && symbol instanceof Function && !( !((Function)oldSymbol).isDefined() && ((Function)symbol).isDefined());
     }*/
-
-    private static String getLocation(Token token) {
-        return "[" + token.getLine() + "," + token.getPos() + "]";
-    }
 
     private class SymbolEntry {
         private Symbol symbol;
@@ -139,7 +135,7 @@ class SymbolTable {
 
         @Override
         public String toString() {
-            return symbol + " at scope " + scope; //return token.getText() + " at scope " + scope + " found at " + getLocation(token) + (shadowedSymbol != null ? " overshadowing the one at " + getLocation(shadowedSymbol.getToken()) : "");
+            return symbol + " at scope " + scope; //return token.getText() + " at scope " + scope + " found at " + Symbol.getLocation(token) + (shadowedSymbol != null ? " overshadowing the one at " + Symbol.getLocation(shadowedSymbol.getToken()) : "");
         }
     }
 

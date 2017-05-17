@@ -381,6 +381,10 @@ class TreeVisitor extends DepthFirstAdapter {
             boolean mainFunction = symbolTable.onFirstScope();
             if (mainFunction) {
                 symbolTable.enter();
+                if (functionInfo.getArguments().size() > 0 || functionInfo.getReturnType() != Type.NOTHING) {
+                    System.err.println("Semantic error: first function should have no arguments and \'nothing\' as return type");
+                    System.exit(1);
+                }
             }
 
             /* Get arguments */
@@ -445,6 +449,11 @@ class TreeVisitor extends DepthFirstAdapter {
         ArrayDeque<ArgumentInfo> arguments = new ArrayDeque<ArgumentInfo>();
         for (int argumentCount = node.getFparDef().size() ; argumentCount > 0 ; argumentCount--) {
             ArgumentInfo argumentInfo = (ArgumentInfo) returnInfo.pop();
+            if (!argumentInfo.hasReference() && (argumentInfo.getDimensions().size() > 0 || argumentInfo.hasNoFirstDimension())) {
+                System.err.println("Semantic error: argument(s) '" + argumentInfo.getIdentifiers() + "' in method '" +
+                                    node.getIdentifier().getText() +"' at " + Symbol.getLocation(node.getIdentifier()) + " are of type array but not reference");
+                System.exit(1);
+            }
             arguments.addFirst(argumentInfo);
         }
         ReturnInfo functionInfo = new FunctionInfo(node.getIdentifier(), arguments, convertNodeToType(node.getDataType()));

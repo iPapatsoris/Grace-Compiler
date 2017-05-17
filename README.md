@@ -15,7 +15,6 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
 * vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika swsto.
 * pinakes pernountai panta by reference, de mporoun na ginoun return
 * check return statement, apousia return an nothing
-* main den epistrefei, den exei args
 
 ## Samples
 `fun main() : nothing
