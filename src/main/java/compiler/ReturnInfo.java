@@ -97,3 +97,31 @@ class FunctionInfo extends ReturnInfo {
     }
 
 }
+
+class ExprInfo extends ReturnInfo {
+    private Type type;
+    private boolean negative;
+    private Token token; // For error printing
+
+    ExprInfo(Type type, Token token) {
+        this.token = token;
+        this.type = type;
+        this.negative = false;
+    }
+
+    Token getToken() {
+        return token;
+    }
+
+    Type getType() {
+        return type;
+    }
+
+    boolean isNegative() {
+        return negative;
+    }
+
+    void toggleNegative() {
+        negative = !negative;
+    }
+}

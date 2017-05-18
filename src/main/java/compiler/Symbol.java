@@ -36,6 +36,17 @@ abstract class Symbol {
     public static String getLocation(Token token) {
         return "[" + token.getLine() + "," + token.getPos() + "]";
     }
+
+    public static String typeToString(Type type) {
+        switch (type) {
+            case INT     : return "int";
+            case CHAR    : return "char";
+            case NOTHING : return "nothing";
+            default      : System.err.println("Internal error: wrong enum Type in typeToString()");
+                           System.exit(1);
+        }
+        return "";
+    }
 }
 
 class Variable extends Symbol {

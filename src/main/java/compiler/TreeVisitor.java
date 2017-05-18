@@ -382,7 +382,7 @@ class TreeVisitor extends DepthFirstAdapter {
             if (mainFunction) {
                 symbolTable.enter();
                 if (functionInfo.getArguments().size() > 0 || functionInfo.getReturnType() != Type.NOTHING) {
-                    System.err.println("Semantic error: first function should have no arguments and \'nothing\' as return type");
+                    System.err.println("Semantic error: first method should have no arguments and \'nothing\' as return type");
                     System.exit(1);
                 }
             }
@@ -665,21 +665,34 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAPositiveExpr(APositiveExpr node) {
         removeIndentationLevel();
+        ExprInfo expr = (ExprInfo)returnInfo.peek();
+        if (expr.getType() != Type.INT) {
+            System.err.println("Semantic error: operator '+' expected operand of type int, but got " +
+                                Symbol.typeToString(expr.getType()) + " instead at " +
+                                Symbol.getLocation(expr.getToken()));
+        }
     }
 
     @Override
     public void outANegativeExpr(ANegativeExpr node) {
         removeIndentationLevel();
+        ExprInfo expr = (ExprInfo)returnInfo.peek();
+        if (expr.getType() != Type.INT) {
+            System.err.println("Semantic error: operator '-' expected operand of type int, but got " +
+                                Symbol.typeToString(expr.getType()) + " instead at " +
+                                Symbol.getLocation(expr.getToken()));
+        }
+        expr.toggleNegative();
     }
 
     @Override
     public void outAIntConstantExpr(AIntConstantExpr node) {
-
+        returnInfo.push(new ExprInfo(Type.INT, node.getIntConstant()));
     }
 
     @Override
     public void outACharConstantExpr(ACharConstantExpr node) {
-
+        returnInfo.push(new ExprInfo(Type.CHAR, node.getCharConstant()));
     }
 
 }
