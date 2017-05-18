@@ -640,26 +640,98 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAAddExpr(AAddExpr node) {
         removeIndentationLevel();
+
+        Token token = null;
+        for (int i = 0 ; i < 2 ; i++) {
+            ExprInfo expr = (ExprInfo)returnInfo.pop();
+            if (i == 0) {
+                token = expr.getToken();
+            }
+            if (expr.getType() != Type.INT) {
+                System.err.println("Semantic error: operator '+' expected operand of type int, but got " +
+                                    Symbol.typeToString(expr.getType()) + " instead at " +
+                                    Symbol.getLocation(expr.getToken()));
+                System.exit(1);
+            }
+        }
+        returnInfo.push(new ExprInfo(Type.INT, token));
     }
 
     @Override
     public void outASubExpr(ASubExpr node) {
         removeIndentationLevel();
+
+        Token token = null;
+        for (int i = 0 ; i < 2 ; i++) {
+            ExprInfo expr = (ExprInfo)returnInfo.pop();
+            if (i == 0) {
+                token = expr.getToken();
+            }
+            if (expr.getType() != Type.INT) {
+                System.err.println("Semantic error: operator '-' expected operand of type int, but got " +
+                                    Symbol.typeToString(expr.getType()) + " instead at " +
+                                    Symbol.getLocation(expr.getToken()));
+                System.exit(1);
+            }
+        }
+        returnInfo.push(new ExprInfo(Type.INT, token));
     }
 
     @Override
     public void outAMultExpr(AMultExpr node) {
         removeIndentationLevel();
+        Token token = null;
+        for (int i = 0 ; i < 2 ; i++) {
+            ExprInfo expr = (ExprInfo)returnInfo.pop();
+            if (i == 0) {
+                token = expr.getToken();
+            }
+            if (expr.getType() != Type.INT) {
+                System.err.println("Semantic error: operator '*' expected operand of type int, but got " +
+                                    Symbol.typeToString(expr.getType()) + " instead at " +
+                                    Symbol.getLocation(expr.getToken()));
+                System.exit(1);
+            }
+        }
+        returnInfo.push(new ExprInfo(Type.INT, token));
     }
 
     @Override
     public void outADivExpr(ADivExpr node) {
         removeIndentationLevel();
+        Token token = null;
+        for (int i = 0 ; i < 2 ; i++) {
+            ExprInfo expr = (ExprInfo)returnInfo.pop();
+            if (i == 0) {
+                token = expr.getToken();
+            }
+            if (expr.getType() != Type.INT) {
+                System.err.println("Semantic error: operator 'div' expected operand of type int, but got " +
+                                    Symbol.typeToString(expr.getType()) + " instead at " +
+                                    Symbol.getLocation(expr.getToken()));
+                System.exit(1);
+            }
+        }
+        returnInfo.push(new ExprInfo(Type.INT, token));
     }
 
     @Override
     public void outAModExpr(AModExpr node) {
         removeIndentationLevel();
+        Token token = null;
+        for (int i = 0 ; i < 2 ; i++) {
+            ExprInfo expr = (ExprInfo)returnInfo.pop();
+            if (i == 0) {
+                token = expr.getToken();
+            }
+            if (expr.getType() != Type.INT) {
+                System.err.println("Semantic error: operator 'mod' expected operand of type int, but got " +
+                                    Symbol.typeToString(expr.getType()) + " instead at " +
+                                    Symbol.getLocation(expr.getToken()));
+                System.exit(1);
+            }
+        }
+        returnInfo.push(new ExprInfo(Type.INT, token));
     }
 
     @Override
@@ -667,9 +739,10 @@ class TreeVisitor extends DepthFirstAdapter {
         removeIndentationLevel();
         ExprInfo expr = (ExprInfo)returnInfo.peek();
         if (expr.getType() != Type.INT) {
-            System.err.println("Semantic error: operator '+' expected operand of type int, but got " +
+            System.err.println("Semantic error: sign operator '+' expected operand of type int, but got " +
                                 Symbol.typeToString(expr.getType()) + " instead at " +
                                 Symbol.getLocation(expr.getToken()));
+            System.exit(1);
         }
     }
 
@@ -678,9 +751,10 @@ class TreeVisitor extends DepthFirstAdapter {
         removeIndentationLevel();
         ExprInfo expr = (ExprInfo)returnInfo.peek();
         if (expr.getType() != Type.INT) {
-            System.err.println("Semantic error: operator '-' expected operand of type int, but got " +
+            System.err.println("Semantic error: sign operator '-' expected operand of type int, but got " +
                                 Symbol.typeToString(expr.getType()) + " instead at " +
                                 Symbol.getLocation(expr.getToken()));
+            System.exit(1);
         }
         expr.toggleNegative();
     }

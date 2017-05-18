@@ -1,4 +1,4 @@
 fun main() : nothing
 {
-    x <- +'a';
+    x <- -2 mod ++++--1;
 }
