@@ -101,27 +101,47 @@ class FunctionInfo extends ReturnInfo {
 class ExprInfo extends ReturnInfo {
     private Type type;
     private boolean negative;
+    private boolean lvalue;
+    private ArrayList<Integer> dimensions;
     private Token token; // For error printing
 
     ExprInfo(Type type, Token token) {
         this.token = token;
         this.type = type;
         this.negative = false;
+        this.lvalue = false;
+        this.dimensions = null;
     }
 
-    Token getToken() {
+    ExprInfo(Type type, ArrayList<Integer> dimensions, Token token) {
+        this.token = token;
+        this.type = type;
+        this.negative = false;
+        this.lvalue = true;
+        this.dimensions = dimensions;
+    }
+
+    public Token getToken() {
         return token;
     }
 
-    Type getType() {
+    public Type getType() {
         return type;
     }
 
-    boolean isNegative() {
+    public boolean isNegative() {
         return negative;
     }
 
-    void toggleNegative() {
+    public boolean isLvalue() {
+        return lvalue;
+    }
+
+    public ArrayList<Integer> getDimensions() {
+        return dimensions;
+    }
+
+    public void toggleNegative() {
         negative = !negative;
     }
 }

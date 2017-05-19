@@ -1,7 +1,10 @@
 fun main() : nothing
-    fun myFun(myInt: int): char
+    var myVar :int[15];
+    fun myFun(ref myVar: int[][1234]): char
         fun myOtherFun(): int
-        {myFun(myOtherFun());}
-    {}
+        {}
+    {    myVar[myVar] <- 12;
+}
 {
+    myVar[3] <- 12;
 }

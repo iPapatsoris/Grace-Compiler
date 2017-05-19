@@ -89,8 +89,7 @@ class Argument extends Variable {
     @Override
     public boolean equals(Object object) {
         Argument argument = (Argument)object;
-        return this.token.getText().equals(argument.token.getText())
-               && this.type == argument.type
+        return this.type == argument.type
                && this.dimensions.equals(argument.dimensions)
                && this.reference == argument.reference
                && this.noFirstDimension == argument.noFirstDimension;

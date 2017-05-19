@@ -661,6 +661,61 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAIdentifierLValue(AIdentifierLValue node) {
         removeIndentationLevel();
+
+        Symbol symbol = symbolTable.lookup(node.getIdentifier().getText());
+        if (symbol == null || !(symbol instanceof Variable || symbol instanceof Argument)) {
+            System.err.println("Semantic error: undeclared symbol \'" +
+                                node.getIdentifier().getText() + "\' at " +
+                                Symbol.getLocation(node.getIdentifier()));
+            System.exit(1);
+        }
+
+        int dimensionsNum = ((Variable)symbol).getDimensions().size();
+        if (symbol instanceof Argument && ((Argument)symbol).hasNoFirstDimension()) {
+            dimensionsNum++;
+        }
+
+
+        Variable variable = (Variable)symbol;
+        symbol = null;
+
+        if (node.getExpr().size() > dimensionsNum) {
+            System.err.println("Semantic error: lvalue '" + node.getIdentifier().getText() +
+                               "' at " + Symbol.getLocation(node.getIdentifier()) +
+                               " uses more dimensions than definition at: " +
+                               Symbol.getLocation(variable.getToken()) + ": expected at most " +
+                               dimensionsNum + " but got " + node.getExpr().size() +
+                               " instead");
+            System.exit(1);
+        }
+
+        ArrayList<ExprInfo> exprs = new ArrayList<ExprInfo>();
+        for (int i = 0 ; i < node.getExpr().size() ; i++) {
+            exprs.add(((ExprInfo)returnInfo.pop()));
+        }
+
+        for (Iterator<ExprInfo> it = exprs.iterator(); it.hasNext() ; ) {
+            ExprInfo expr = it.next();
+            if (expr.getType() != Type.INT) {
+                System.err.println("Semantic error: expression " + expr.getToken().getText() +
+                                   " at " + Symbol.getLocation(expr.getToken()) + " should be of type 'int', but it is '" +
+                                    Symbol.typeToString(expr.getType()) + "' instead");
+                System.exit(1);
+            } else if (expr.getDimensions() != null && expr.getDimensions().size() > 0) {
+                System.err.println("Semantic error: expression " + expr.getToken().getText() +
+                                   " at " + Symbol.getLocation(expr.getToken()) + " should be of type 'int', but it is '" +
+                                    Symbol.typeToString(expr.getType()) + String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) +
+                                    "' instead");
+                System.exit(1);
+            }
+        }
+
+        /* Carry over the number of dimensions left, if any, to identify if lvalue remains an array */
+        ArrayList<Integer> dimensionsLeft = new ArrayList<Integer>();
+        for (int i = 0 ; i < dimensionsNum - node.getExpr().size() ; i++) {
+            dimensionsLeft.add(null);
+        }
+        returnInfo.push(new ExprInfo(variable.getType(), dimensionsLeft, node.getIdentifier()));
     }
 
     @Override
