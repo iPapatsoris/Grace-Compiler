@@ -88,12 +88,9 @@ class SymbolTable {
         System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
     }
 
-    public Symbol lookup(Token token) throws SemanticException {
-        SymbolEntry symbolEntry = lookupTable.get(token.getText());
-        if (symbolEntry == null) {
-            throw new SemanticException("Semantic error: undeclared symbol \'" + token.getText() +"\' at " + Symbol.getLocation(token));
-        }
-        return symbolEntry.getSymbol();
+    public Symbol lookup(String symbol) {
+        SymbolEntry symbolEntry = lookupTable.get(symbol);
+        return (symbolEntry == null ? null : symbolEntry.getSymbol());
     }
 
     public boolean onFirstScope() {

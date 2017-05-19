@@ -1,4 +1,7 @@
 fun main() : nothing
+    fun myFun(myInt: int): char
+        fun myOtherFun(): int
+        {myFun(myOtherFun());}
+    {}
 {
-    x <- -2 mod ++++--1;
 }

@@ -15,8 +15,27 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
 * vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika swsto.
 * pinakes de mporoun na ginoun return
 * check return statement, apousia return an nothing
+* anadromi stin main?
 
 ## Samples
+`fun main() : nothing
+    fun myFun(myInt: int): char
+        fun myOtherFun(): int
+        {myFun(myOtherFun());}
+    {}
+{
+}
+`
+
+`fun main() : nothing
+    fun myFun(myInt: char): char
+        fun myOtherFun(): int
+        {}
+    {}
+{
+    i <- 13 + myFun(myFun('2'));
+}`
+
 `fun main() : nothing
     fun myFun(myVar : int) : nothing;
     var myVar : int;
