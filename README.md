@@ -12,12 +12,23 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
 
 ## Notes
 * 'a'mod 2 apodekto?
-* vasi enotitas 1.4.1, a["asdf"] de simainei kati, parolo pou einai syntaktika swsto.
 * pinakes de mporoun na ginoun return
 * check return statement, apousia return an nothing
 * anadromi stin main?
 
 ## Samples
+`fun main() : nothing
+    var myVar :int[15][123];
+    fun myFun(ref myVar: int[][1234]): char
+        fun myOtherFun(): int
+        {}
+    {
+    }
+{
+    myVar["Asdf"[myFun(myVar)]] <- 12;
+}
+`
+
 `fun main() : nothing
     fun myFun(myInt: int): char
         fun myOtherFun(): int

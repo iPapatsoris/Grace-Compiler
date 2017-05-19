@@ -641,15 +641,35 @@ class TreeVisitor extends DepthFirstAdapter {
         int i = 0;
         for (Iterator<Argument> it = function.getArguments().iterator() ; it.hasNext() ; i++ ) {
             Argument argCorrect = it.next();
+            int dimensionsNumCorrect = argCorrect.getDimensions().size();
+            if (argCorrect.hasNoFirstDimension()) {
+                dimensionsNumCorrect++;
+            }
             ExprInfo arg = args.pop();
-            if (arg.getType() != argCorrect.getType()) {
+            if (arg.getType() != argCorrect.getType() || arg.getDimensions().size() != dimensionsNumCorrect) {
                 System.err.println("Semantic error: method '" + node.getIdentifier().getText() +
                                    "' called at " + Symbol.getLocation(node.getIdentifier()) +
                                    " conflicts with header's argument types at " +
                                    Symbol.getLocation(function.getToken()) + ": expected argument " +
                                    (i+1) + " to be of type '" + Symbol.typeToString(argCorrect.getType()) +
-                                   "' but got '" + Symbol.typeToString(arg.getType()) + "' instead at " +
-                                    Symbol.getLocation(arg.getToken()));
+                                   String.join("", Collections.nCopies(dimensionsNumCorrect, "[]")) +
+                                   "', but got '" + Symbol.typeToString(arg.getType()) +
+                                   String.join("", Collections.nCopies(arg.getDimensions().size(), "[]")) +
+                                   "' instead at " + Symbol.getLocation(arg.getToken()));
+                System.exit(1);
+            } else if (arg.isLvalue() && !argCorrect.isReference()) {
+                System.err.println("Semantic error: method '" + node.getIdentifier().getText() +
+                                   "' called at " + Symbol.getLocation(node.getIdentifier()) +
+                                   " conflicts with header's argument at " +
+                                   Symbol.getLocation(function.getToken()) + ": argument " +
+                                   (i+1) + " is an lvalue, but is not passed by reference '");
+                System.exit(1);
+            } else if (!arg.isLvalue() && argCorrect.isReference()) {
+                System.err.println("Semantic error: method '" + node.getIdentifier().getText() +
+                                   "' called at " + Symbol.getLocation(node.getIdentifier()) +
+                                   " conflicts with header's argument at " +
+                                   Symbol.getLocation(function.getToken()) + ": argument " +
+                                   (i+1) + " is passed by reference, but is not an lvalue'");
                 System.exit(1);
             }
         }
@@ -659,12 +679,7 @@ class TreeVisitor extends DepthFirstAdapter {
     /* L_value */
 
     private static void checkNumericExpession(ExprInfo expr) {
-        if (expr.getType() != Type.INT && expr.getDimensions().size() == 0) {
-            System.err.println("Semantic error: expression at " + Symbol.getLocation(expr.getToken()) +
-                               " should be of type 'int', but it is '" +
-                               Symbol.typeToString(expr.getType()) + "' instead");
-            System.exit(1);
-        } else if (expr.getDimensions().size() > 0) {
+        if (expr.getType() != Type.INT || expr.getDimensions().size() > 0) {
             System.err.println("Semantic error: expression at " + Symbol.getLocation(expr.getToken()) +
                                " should be of type 'int', but it is '" +
                                Symbol.typeToString(expr.getType()) +
@@ -759,12 +774,7 @@ class TreeVisitor extends DepthFirstAdapter {
     }
 
     private static void checkNumericOperand(String operator, ExprInfo expr) {
-        if (expr.getType() != Type.INT && expr.getDimensions().size() == 0) {
-            System.err.println("Semantic error: operator '" + operator + "' expected operand of type 'int', but got '" +
-                                Symbol.typeToString(expr.getType()) + "' instead at " +
-                                Symbol.getLocation(expr.getToken()));
-            System.exit(1);
-        } else if (expr.getDimensions().size() > 0) {
+        if (expr.getType() != Type.INT || expr.getDimensions().size() > 0) {
             System.err.println("Semantic error: operator '" + operator + "' expected operand of type 'int', but got '" +
                                 Symbol.typeToString(expr.getType()) +
                                 String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) + "' instead at " +
