@@ -3,8 +3,8 @@ fun main() : nothing
     fun myFun(ref myVar: int[][1234]): char
         fun myOtherFun(): int
         {}
-    {    myVar[myVar] <- 12;
-}
+    {
+    }
 {
-    myVar[3] <- 12;
+    myVar["asd"[2]] <- 12;
 }

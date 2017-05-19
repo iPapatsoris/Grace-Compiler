@@ -110,7 +110,7 @@ class ExprInfo extends ReturnInfo {
         this.type = type;
         this.negative = false;
         this.lvalue = false;
-        this.dimensions = null;
+        this.dimensions = new ArrayList<Integer>();
     }
 
     ExprInfo(Type type, ArrayList<Integer> dimensions, Token token) {

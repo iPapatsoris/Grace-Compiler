@@ -657,7 +657,6 @@ class TreeVisitor extends DepthFirstAdapter {
     }
 
     /* L_value */
-
     @Override
     public void outAIdentifierLValue(AIdentifierLValue node) {
         removeIndentationLevel();
@@ -696,12 +695,12 @@ class TreeVisitor extends DepthFirstAdapter {
 
         for (Iterator<ExprInfo> it = exprs.iterator(); it.hasNext() ; ) {
             ExprInfo expr = it.next();
-            if (expr.getType() != Type.INT) {
+            if (expr.getType() != Type.INT && expr.getDimensions().size() == 0) {
                 System.err.println("Semantic error: expression " + expr.getToken().getText() +
                                    " at " + Symbol.getLocation(expr.getToken()) + " should be of type 'int', but it is '" +
                                     Symbol.typeToString(expr.getType()) + "' instead");
                 System.exit(1);
-            } else if (expr.getDimensions() != null && expr.getDimensions().size() > 0) {
+            } else if (expr.getDimensions().size() > 0) {
                 System.err.println("Semantic error: expression " + expr.getToken().getText() +
                                    " at " + Symbol.getLocation(expr.getToken()) + " should be of type 'int', but it is '" +
                                     Symbol.typeToString(expr.getType()) + String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) +
@@ -721,6 +720,35 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAStringLValue(AStringLValue node) {
         removeIndentationLevel();
+
+        if (node.getExpr().size() > 1) {
+            System.err.println("Semantic error: lvalue '" + node.getString().getText() +
+                               "' at " + Symbol.getLocation(node.getString()) +
+                               " expected at most 1 dimension but got " +
+                               node.getExpr().size() + " instead");
+            System.exit(1);
+        }
+        if (node.getExpr().size() == 1) {
+            ExprInfo expr = (ExprInfo)returnInfo.pop();
+            if (expr.getType() != Type.INT && expr.getDimensions().size() == 0) {
+                System.err.println("Semantic error: expression " + expr.getToken().getText() +
+                                   " at " + Symbol.getLocation(expr.getToken()) + " should be of type 'int', but it is '" +
+                                    Symbol.typeToString(expr.getType()) + "' instead");
+                System.exit(1);
+            } else if (expr.getDimensions().size() > 0) {
+                System.err.println("Semantic error: expression " + expr.getToken().getText() +
+                                   " at " + Symbol.getLocation(expr.getToken()) + " should be of type 'int', but it is '" +
+                                    Symbol.typeToString(expr.getType()) + String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) +
+                                    "' instead");
+                System.exit(1);
+            }
+        }
+
+        ArrayList<Integer> dimensionsLeft = new ArrayList<Integer>();
+        if (node.getExpr().size() == 0) {
+           dimensionsLeft.add(null);
+        }
+        returnInfo.push(new ExprInfo(Type.CHAR, dimensionsLeft, node.getString()));
     }
 
     /* Expr */
