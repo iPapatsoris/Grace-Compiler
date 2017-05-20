@@ -562,6 +562,19 @@ class TreeVisitor extends DepthFirstAdapter {
 
     /* Condition */
 
+    private static void checkSameTypeOperand(String operator, ExprInfo exprLeft, ExprInfo exprRight) {
+        if (exprLeft.getDimensions().size() > 0 || exprRight.getDimensions().size() > 0 ||
+            exprLeft.getType() != exprRight.getType() || exprLeft.getType() == Type.NOTHING) {
+            System.err.println("Semantic error: operator '" + operator + "' expected operand of the same type 'int' or 'char', but got '" +
+                                Symbol.typeToString(exprLeft.getType()) +
+                                String.join("", Collections.nCopies(exprLeft.getDimensions().size(), "[]")) + "' and '" +
+                                Symbol.typeToString(exprRight.getType()) +
+                                String.join("", Collections.nCopies(exprRight.getDimensions().size(), "[]"))+ "' instead at " +
+                                Symbol.getLocation(exprLeft.getToken()));
+            System.exit(1);
+        }
+    }
+
     @Override
     public void outADisjCond(ADisjCond node) {
         removeIndentationLevel();
@@ -580,6 +593,9 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAEqualCond(AEqualCond node) {
         removeIndentationLevel();
+        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
+        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
+        checkSameTypeOperand("=", exprLeft, exprRight);
     }
 
     @Override
@@ -656,13 +672,6 @@ class TreeVisitor extends DepthFirstAdapter {
                                    "', but got '" + Symbol.typeToString(arg.getType()) +
                                    String.join("", Collections.nCopies(arg.getDimensions().size(), "[]")) +
                                    "' instead at " + Symbol.getLocation(arg.getToken()));
-                System.exit(1);
-            } else if (arg.isLvalue() && !argCorrect.isReference()) {
-                System.err.println("Semantic error: method '" + node.getIdentifier().getText() +
-                                   "' called at " + Symbol.getLocation(node.getIdentifier()) +
-                                   " conflicts with header's argument at " +
-                                   Symbol.getLocation(function.getToken()) + ": argument " +
-                                   (i+1) + " is an lvalue, but is not passed by reference '");
                 System.exit(1);
             } else if (!arg.isLvalue() && argCorrect.isReference()) {
                 System.err.println("Semantic error: method '" + node.getIdentifier().getText() +

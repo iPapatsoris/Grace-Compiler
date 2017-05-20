@@ -1,7 +1,7 @@
 fun main() : nothing
     var myVar : int[1];
-    fun myFun(ref myArg: char): int
+    fun myFun(myArg: int): nothing
     {}
 {
-    myFun("asdf"[0]);
+    if (1 >= myFun(2)) then ;
 }
