@@ -104,6 +104,7 @@ class Argument extends Variable {
 class Function extends Symbol {
     private ArrayDeque<Argument> arguments;
     private boolean defined;
+    private boolean foundReturn;
 
     public Function(Token token, ArrayDeque<Argument> arguments, Type type, boolean defined) {
         super(token, type);

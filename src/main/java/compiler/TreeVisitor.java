@@ -376,7 +376,7 @@ class TreeVisitor extends DepthFirstAdapter {
         if(node.getHeader() != null)
         {
             node.getHeader().apply(this);
-            FunctionInfo functionInfo = (FunctionInfo) returnInfo.pop();
+            FunctionInfo functionInfo = (FunctionInfo) returnInfo.peek();
 
             /* Function symbol on current scope and arguments on new, unless it's main function */
             boolean mainFunction = symbolTable.onFirstScope();
@@ -389,12 +389,16 @@ class TreeVisitor extends DepthFirstAdapter {
             }
 
             /* Get arguments */
-            ArrayDeque<Argument> arguments = new ArrayDeque<Argument>();
+            ArrayDeque<Argument> arguments = new ArrayDeque<Argument>(); // For Symbol creation
+            ArrayDeque<ArgumentInfo> correctOrder = new ArrayDeque<ArgumentInfo>(); // For updating returnList
             for (ArgumentInfo argumentInfo : functionInfo.getArguments()) {
+                correctOrder.add(argumentInfo);
                 for (Token argument : argumentInfo.getIdentifiers()) {
                     arguments.add(new Argument(argument, argumentInfo.getType(), argumentInfo.getDimensions(), argumentInfo.hasReference(), argumentInfo.hasNoFirstDimension()));
                 }
             }
+
+            functionInfo.setArguments(correctOrder);
 
             /* Add function symbol on current scope */
             Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getReturnType(), true);
@@ -435,6 +439,16 @@ class TreeVisitor extends DepthFirstAdapter {
             }
         }
         outAFuncDef(node);
+        assert returnInfo.peek() instanceof FunctionInfo;
+        FunctionInfo functionInfo = ((FunctionInfo)returnInfo.pop());
+        if (functionInfo.getReturnType() != Type.NOTHING && !functionInfo.getFoundReturn()) {
+            System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
+                               "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
+                               " returns type " + functionInfo.getReturnType() +
+                               " but has no return statement");
+            System.exit(1);
+        }
+
         try {
             symbolTable.exit();
         } catch (SemanticException e) {
@@ -552,6 +566,25 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAReturnStatement(AReturnStatement node) {
         removeIndentationLevel();
+        ExprInfo expr = (node.getExpr() == null ? null : ((ExprInfo)returnInfo.pop()));
+        assert returnInfo.peek() instanceof FunctionInfo;
+        FunctionInfo functionInfo = ((FunctionInfo)returnInfo.peek());
+        if (expr != null && (expr.getDimensions().size() > 0 || functionInfo.getReturnType() != expr.getType())) {
+            System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
+                               "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
+                               " is of return type '" + Symbol.typeToString(functionInfo.getReturnType()) +
+                               "', but found return type '" + Symbol.typeToString(expr.getType()) +
+                               String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) +
+                               "' at " + Symbol.getLocation(expr.getToken()));
+            System.exit(1);
+        } else if (expr == null && functionInfo.getReturnType() != Type.NOTHING) {
+            System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
+                               "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
+                               " is of return type '" + Symbol.typeToString(functionInfo.getReturnType()) +
+                               "', but found no return type");
+            System.exit(1);
+        }
+        functionInfo.setFoundReturn(true);
     }
 
     @Override
@@ -601,26 +634,41 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outANotEqualCond(ANotEqualCond node) {
         removeIndentationLevel();
+        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
+        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
+        checkSameTypeOperand("#", exprLeft, exprRight);
     }
 
     @Override
     public void outAGreaterCond(AGreaterCond node) {
         removeIndentationLevel();
+        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
+        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
+        checkSameTypeOperand(">", exprLeft, exprRight);
     }
 
     @Override
     public void outALessCond(ALessCond node) {
         removeIndentationLevel();
+        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
+        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
+        checkSameTypeOperand("<", exprLeft, exprRight);
     }
 
     @Override
     public void outAGreaterEqualCond(AGreaterEqualCond node) {
         removeIndentationLevel();
+        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
+        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
+        checkSameTypeOperand(">=", exprLeft, exprRight);
     }
 
     @Override
     public void outALessEqualCond(ALessEqualCond node) {
         removeIndentationLevel();
+        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
+        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
+        checkSameTypeOperand("<=", exprLeft, exprRight);
     }
 
     /* Function call */

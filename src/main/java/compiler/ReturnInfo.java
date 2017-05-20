@@ -77,11 +77,13 @@ class FunctionInfo extends ReturnInfo {
     private Token token;
     private ArrayDeque<ArgumentInfo> arguments;
     private Type returnType;
+    private boolean foundReturn;
 
     public FunctionInfo(Token token, ArrayDeque<ArgumentInfo> arguments, Type returnType) {
         this.token = token;
         this.arguments = arguments;
         this.returnType = returnType;
+        this.foundReturn = false;
     }
 
     public Token getToken() {
@@ -92,8 +94,20 @@ class FunctionInfo extends ReturnInfo {
         return arguments;
     }
 
+    public void setArguments(ArrayDeque<ArgumentInfo> arguments) {
+        this.arguments = arguments;
+    }
+
     public Type getReturnType() {
         return returnType;
+    }
+
+    public boolean getFoundReturn() {
+        return foundReturn;
+    }
+
+    public void setFoundReturn(boolean foundReturn) {
+        this.foundReturn = foundReturn;
     }
 
 }
