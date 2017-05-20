@@ -553,9 +553,25 @@ class TreeVisitor extends DepthFirstAdapter {
         removeIndentationLevel();
     }
 
+    private static void checkSameTypeAssignment(ExprInfo lvalue, ExprInfo expr) {
+        if (lvalue.getDimensions().size() > 0 || expr.getDimensions().size() > 0 ||
+            lvalue.getType() != expr.getType()) {
+            System.err.println("Semantic error: assignment at " + Symbol.getLocation(lvalue.getToken()) +
+                               " expected lvalue and expression of the same type 'int' or 'char', but got '" +
+                                Symbol.typeToString(lvalue.getType()) +
+                                String.join("", Collections.nCopies(lvalue.getDimensions().size(), "[]")) + "' and '" +
+                                Symbol.typeToString(expr.getType()) +
+                                String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) + "' instead");
+            System.exit(1);
+        }
+    }
+
     @Override
     public void outAAssignmentStatement(AAssignmentStatement node) {
         removeIndentationLevel();
+        ExprInfo expr = (ExprInfo)returnInfo.pop();
+        ExprInfo lvalue = (ExprInfo)returnInfo.pop();
+        checkSameTypeAssignment(lvalue, expr);
     }
 
     @Override

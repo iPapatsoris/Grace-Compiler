@@ -1,9 +1,8 @@
 fun main() : nothing
     var a : int[1];
-    fun myFun(myArg: int): char
+    fun myFun(myArg: int): nothing
     {
-    return "asdf"[1][1];
     }
 {
-
+    a[1] <- myFun(a[1]);
 }
