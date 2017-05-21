@@ -25,7 +25,7 @@ class SymbolTable {
         curScope++;
     }
 
-    public void exit() throws SemanticException {
+    public void exit() {
         HashMap<String, Function> definedFunctions = new HashMap<String, Function>();
         for (Iterator<SymbolEntry> it = symbolList.iterator(); it.hasNext(); ) {
             SymbolEntry symbolEntry = it.next();
@@ -42,14 +42,16 @@ class SymbolTable {
                 } else {
                     Function definedFunction = definedFunctions.get(function.getToken().getText());
                     if (definedFunction == null) {
-                        throw new SemanticException("Semantic error: function " + function.getToken().getText() +
+                        System.err.println("Semantic error: function " + function.getToken().getText() +
                                                 " is declared at " + Symbol.getLocation(function.getToken()) +
                                                 " but not defined at the same scope");
+                        System.exit(1);
                     } else {
                         if (!function.sameHeader(definedFunction)) {
-                            throw new SemanticException("Semantic error: different headers between declared function " +
+                            System.err.println("Semantic error: different headers between declared function " +
                                                         function.getToken().getText() + " at " + Symbol.getLocation(function.getToken()) +
                                                         " and defined one at " + Symbol.getLocation(definedFunction.getToken()));
+                            System.exit(1);
                         }
                     }
                 }
@@ -69,7 +71,7 @@ class SymbolTable {
         //System.out.println(TreeVisitor.ANSI_BLUE + "After exit: " + this + TreeVisitor.ANSI_RESET);
     }
 
-    public void insert(Symbol symbol) throws SemanticException {
+    public void insert(Symbol symbol) {
         String identifier = symbol.getToken().getText();
         SymbolEntry oldSymbolEntry = lookupTable.get(identifier);
         if (oldSymbolEntry != null) {
@@ -78,8 +80,9 @@ class SymbolTable {
             || oldSymbol instanceof Function && ((Function)oldSymbol).isDefined() && (symbol instanceof Variable || symbol instanceof Argument)
             || oldSymbol instanceof Function && symbol instanceof Function && !( !((Function)oldSymbol).isDefined() && ((Function)symbol).isDefined())
             || !(oldSymbol instanceof Function && symbol instanceof Function) && oldSymbolEntry.getScope() == curScope) {
-                throw new SemanticException("Semantic error: symbol \'" + identifier +"\' at " + Symbol.getLocation(symbol.getToken()) +
+                System.err.println("Semantic error: symbol \'" + identifier +"\' at " + Symbol.getLocation(symbol.getToken()) +
                                             " is already defined at " + Symbol.getLocation(oldSymbolEntry.getSymbol().getToken()));
+                System.exit(1);
             }
         }
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
@@ -115,12 +118,7 @@ class SymbolTable {
         type = Type.NOTHING;
 
         Function function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
 
         /* putc */
         token = new TIdentifier("c", -1, -1);
@@ -137,12 +135,7 @@ class SymbolTable {
         type = Type.NOTHING;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
 
         /* puts */
         token = new TIdentifier("s", -1, -1);
@@ -159,12 +152,8 @@ class SymbolTable {
         type = Type.NOTHING;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* geti */
         arguments = new ArrayDeque<Argument>();
@@ -173,12 +162,8 @@ class SymbolTable {
         type = Type.INT;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* getc */
         arguments = new ArrayDeque<Argument>();
@@ -187,12 +172,8 @@ class SymbolTable {
         type = Type.CHAR;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* gets */
         token = new TIdentifier("n", -1, -1);
@@ -218,12 +199,8 @@ class SymbolTable {
         type = Type.NOTHING;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* abs */
         token = new TIdentifier("n", -1, -1);
@@ -240,12 +217,8 @@ class SymbolTable {
         type = Type.INT;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* ord */
         token = new TIdentifier("c", -1, -1);
@@ -262,12 +235,8 @@ class SymbolTable {
         type = Type.INT;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* chr */
         token = new TIdentifier("n", -1, -1);
@@ -284,12 +253,8 @@ class SymbolTable {
         type = Type.CHAR;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* strlen */
         token = new TIdentifier("s", -1, -1);
@@ -306,12 +271,8 @@ class SymbolTable {
         type = Type.INT;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* strcmp */
         token = new TIdentifier("s1", -1, -1);
@@ -337,12 +298,8 @@ class SymbolTable {
         type = Type.INT;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* strcpy */
         token = new TIdentifier("trg", -1, -1);
@@ -368,12 +325,8 @@ class SymbolTable {
         type = Type.NOTHING;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
+
 
         /* strcat */
         token = new TIdentifier("trg", -1, -1);
@@ -399,12 +352,7 @@ class SymbolTable {
         type = Type.NOTHING;
 
         function = new Function(token, arguments, type, true);
-        try {
-            this.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        this.insert(function);
     }
 
     @Override

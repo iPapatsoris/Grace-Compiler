@@ -348,14 +348,8 @@ class TreeVisitor extends DepthFirstAdapter {
                 arguments.add(new Argument(argument, argumentInfo.getType(), argumentInfo.getDimensions(), argumentInfo.hasReference(), argumentInfo.hasNoFirstDimension()));
             }
         }
-        Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getReturnType(), false);
-        try {
-            symbolTable.insert(function);
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
-
+        Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getType(), false);
+        symbolTable.insert(function);
         System.out.println("returnInfo size now: " + returnInfo.size());
     }
 
@@ -382,7 +376,7 @@ class TreeVisitor extends DepthFirstAdapter {
             boolean mainFunction = symbolTable.onFirstScope();
             if (mainFunction) {
                 symbolTable.enter();
-                if (functionInfo.getArguments().size() > 0 || functionInfo.getReturnType() != Type.NOTHING) {
+                if (functionInfo.getArguments().size() > 0 || functionInfo.getType() != Type.NOTHING) {
                     System.err.println("Semantic error: first method should have no arguments and \'nothing\' as return type");
                     System.exit(1);
                 }
@@ -402,25 +396,16 @@ class TreeVisitor extends DepthFirstAdapter {
             functionInfo.setArguments(correctOrder);
 
             /* Add function symbol on current scope */
-            Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getReturnType(), true);
-            try {
-                symbolTable.insert(function);
-            } catch (SemanticException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
+            Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getType(), true);
+            symbolTable.insert(function);
+
 
             /* Add arguments on new scope */
             if (! mainFunction) {
                 symbolTable.enter();
             }
             for (Argument argument : arguments) {
-                try {
-                    symbolTable.insert(argument);
-                } catch (SemanticException e) {
-                    System.err.println(e.getMessage());
-                    System.exit(1);
-                }
+                symbolTable.insert(argument);
             }
 
             System.out.println("returnInfo size now: " + returnInfo.size());
@@ -442,20 +427,14 @@ class TreeVisitor extends DepthFirstAdapter {
         outAFuncDef(node);
         assert returnInfo.peek() instanceof FunctionInfo;
         FunctionInfo functionInfo = ((FunctionInfo)returnInfo.pop());
-        if (functionInfo.getReturnType() != Type.NOTHING && !functionInfo.getFoundReturn()) {
+        if (functionInfo.getType() != Type.NOTHING && !functionInfo.getFoundReturn()) {
             System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
                                "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
-                               " returns type " + functionInfo.getReturnType() +
+                               " returns type " + functionInfo.getType() +
                                " but has no return statement");
             System.exit(1);
         }
-
-        try {
-            symbolTable.exit();
-        } catch (SemanticException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
-        }
+        symbolTable.exit();
     }
 
     @Override
@@ -519,12 +498,7 @@ class TreeVisitor extends DepthFirstAdapter {
         VariableInfo variableInfo = (VariableInfo) returnInfo.pop();
         for (Token token : node.getIdentifier()) {
             Symbol symbol = new Variable(token, variableInfo.getType(), variableInfo.getDimensions());
-            try {
-                symbolTable.insert(symbol);
-            } catch (SemanticException e) {
-                System.err.println(e.getMessage());
-                System.exit(1);
-            }
+            symbolTable.insert(symbol);
         }
     }
 
@@ -587,18 +561,18 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo expr = (node.getExpr() == null ? null : ((ExprInfo)returnInfo.pop()));
         assert returnInfo.peek() instanceof FunctionInfo;
         FunctionInfo functionInfo = ((FunctionInfo)returnInfo.peek());
-        if (expr != null && (expr.getDimensions().size() > 0 || functionInfo.getReturnType() != expr.getType())) {
+        if (expr != null && (expr.getDimensions().size() > 0 || functionInfo.getType() != expr.getType())) {
             System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
                                "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
-                               " is of return type '" + Symbol.typeToString(functionInfo.getReturnType()) +
+                               " is of return type '" + Symbol.typeToString(functionInfo.getType()) +
                                "', but found return type '" + Symbol.typeToString(expr.getType()) +
                                String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) +
                                "' at " + Symbol.getLocation(expr.getToken()));
             System.exit(1);
-        } else if (expr == null && functionInfo.getReturnType() != Type.NOTHING) {
+        } else if (expr == null && functionInfo.getType() != Type.NOTHING) {
             System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
                                "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
-                               " is of return type '" + Symbol.typeToString(functionInfo.getReturnType()) +
+                               " is of return type '" + Symbol.typeToString(functionInfo.getType()) +
                                "', but found no return type");
             System.exit(1);
         }
