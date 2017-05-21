@@ -386,6 +386,7 @@ class TreeVisitor extends DepthFirstAdapter {
                     System.err.println("Semantic error: first method should have no arguments and \'nothing\' as return type");
                     System.exit(1);
                 }
+                symbolTable.loadStandardLibrary();
             }
 
             /* Get arguments */
@@ -577,6 +578,7 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAFuncCallStatement(AFuncCallStatement node) {
         removeIndentationLevel();
+        ExprInfo expr = ((ExprInfo)returnInfo.pop()); // Consume function type: no need to check outside expression fcall
     }
 
     @Override

@@ -12,8 +12,6 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
 
 ## Notes
 * 'a'mod 2 apodekto?
-* pinakes de mporoun na ginoun return
-* check return statement, apousia return an nothing
 * anadromi stin main?
 * TODO: assertions for internal errors, no exceptions for semantic, getReturnType to getType
 

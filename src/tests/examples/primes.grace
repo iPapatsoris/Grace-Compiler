@@ -26,12 +26,12 @@ fun main () : nothing
    counter <- 0;
    if limit >= 2 then {
       counter <- counter + 1;
-      geti(2);
+      puti(2);
       puts("\n");
    }
    if limit >= 3 then {
       counter <- counter + 1;
-      geti(3);
+      puti(3);
       puts("\n");
    }
    number <- 6;

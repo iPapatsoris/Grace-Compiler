@@ -34,7 +34,9 @@ abstract class Symbol {
     }
 
     public static String getLocation(Token token) {
-        return "[" + token.getLine() + "," + token.getPos() + "]";
+        return (token.getLine() != -1 ?
+        "[" + token.getLine() + "," + token.getPos() + "]" :
+        "Standard Library");
     }
 
     public static String typeToString(Type type) {
@@ -104,7 +106,6 @@ class Argument extends Variable {
 class Function extends Symbol {
     private ArrayDeque<Argument> arguments;
     private boolean defined;
-    private boolean foundReturn;
 
     public Function(Token token, ArrayDeque<Argument> arguments, Type type, boolean defined) {
         super(token, type);

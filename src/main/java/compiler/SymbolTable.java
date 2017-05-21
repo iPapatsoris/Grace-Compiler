@@ -4,6 +4,7 @@ import compiler.analysis.DepthFirstAdapter;
 import compiler.node.*;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
@@ -61,7 +62,7 @@ class SymbolTable {
             } else {
                 lookupTable.remove(symbol.getToken().getText());
             }
-            System.out.println(TreeVisitor.ANSI_BLUE + "Removing " + symbolEntry + TreeVisitor.ANSI_RESET);
+            //System.out.println(TreeVisitor.ANSI_BLUE + "Removing " + symbolEntry + TreeVisitor.ANSI_RESET);
             it.remove();
         }
         curScope--;
@@ -85,7 +86,7 @@ class SymbolTable {
         symbolList.push(newSymbolEntry);
         lookupTable.put(identifier, newSymbolEntry);
 
-        System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
+        //System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
     }
 
     public Symbol lookup(String symbol) {
@@ -97,15 +98,319 @@ class SymbolTable {
         return curScope == -1;
     }
 
+    public void loadStandardLibrary() {
+
+        /* puti */
+        TIdentifier token = new TIdentifier("n", -1, -1);
+        Type type = Type.INT;
+        ArrayList<Integer> dimensions = new ArrayList<Integer>();
+        boolean reference = false;
+        boolean noFirstDimension = false;
+        Argument argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        ArrayDeque<Argument> arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("puti", -1, -1);
+        type = Type.NOTHING;
+
+        Function function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* putc */
+        token = new TIdentifier("c", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = false;
+        noFirstDimension = false;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("putc", -1, -1);
+        type = Type.NOTHING;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* puts */
+        token = new TIdentifier("s", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("puts", -1, -1);
+        type = Type.NOTHING;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* geti */
+        arguments = new ArrayDeque<Argument>();
+
+        token = new TIdentifier("geti", -1, -1);
+        type = Type.INT;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* getc */
+        arguments = new ArrayDeque<Argument>();
+
+        token = new TIdentifier("getc", -1, -1);
+        type = Type.CHAR;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* gets */
+        token = new TIdentifier("n", -1, -1);
+        type = Type.INT;
+        dimensions = new ArrayList<Integer>();
+        reference = false;
+        noFirstDimension = false;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("s", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments.add(argument);
+
+        token = new TIdentifier("gets", -1, -1);
+        type = Type.NOTHING;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* abs */
+        token = new TIdentifier("n", -1, -1);
+        type = Type.INT;
+        dimensions = new ArrayList<Integer>();
+        reference = false;
+        noFirstDimension = false;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("abs", -1, -1);
+        type = Type.INT;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* ord */
+        token = new TIdentifier("c", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = false;
+        noFirstDimension = false;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("ord", -1, -1);
+        type = Type.INT;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* chr */
+        token = new TIdentifier("n", -1, -1);
+        type = Type.INT;
+        dimensions = new ArrayList<Integer>();
+        reference = false;
+        noFirstDimension = false;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("chr", -1, -1);
+        type = Type.CHAR;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* strlen */
+        token = new TIdentifier("s", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("strlen", -1, -1);
+        type = Type.INT;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* strcmp */
+        token = new TIdentifier("s1", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("s2", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments.add(argument);
+
+        token = new TIdentifier("strcmp", -1, -1);
+        type = Type.INT;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* strcpy */
+        token = new TIdentifier("trg", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("src", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments.add(argument);
+
+        token = new TIdentifier("strcpy", -1, -1);
+        type = Type.NOTHING;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+
+        /* strcat */
+        token = new TIdentifier("trg", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments = new ArrayDeque<Argument>();
+        arguments.add(argument);
+
+        token = new TIdentifier("src", -1, -1);
+        type = Type.CHAR;
+        dimensions = new ArrayList<Integer>();
+        reference = true;
+        noFirstDimension = true;
+        argument = new Argument(token, type, dimensions, reference, noFirstDimension);
+
+        arguments.add(argument);
+
+        token = new TIdentifier("strcat", -1, -1);
+        type = Type.NOTHING;
+
+        function = new Function(token, arguments, type, true);
+        try {
+            this.insert(function);
+        } catch (SemanticException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+    }
+
     @Override
     public String toString() {
         return symbolList.toString();
     }
-
-    /* A function name may appear twice only if first one was declaration and current one is definition
-    private static boolean duplicateFunction(Symbol oldSymbol, Symbol symbol) {
-        return oldSymbol instanceof Function && symbol instanceof Function && !( !((Function)oldSymbol).isDefined() && ((Function)symbol).isDefined());
-    }*/
 
     private class SymbolEntry {
         private Symbol symbol;
