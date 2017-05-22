@@ -24,11 +24,13 @@ class TreeVisitor extends DepthFirstAdapter {
 
     private SymbolTable symbolTable;
     private ArrayDeque<ReturnInfo> returnInfo;
+    private IntermediateRepresentation ir;
     private int indentation;
 
     public TreeVisitor() {
         symbolTable = new SymbolTable();
         returnInfo = new ArrayDeque<ReturnInfo>();
+        ir = new IntermediateRepresentation();
         indentation = 0;
     }
 
@@ -42,6 +44,10 @@ class TreeVisitor extends DepthFirstAdapter {
 
     private void printIndentation() {
         System.out.print(String.join("", Collections.nCopies(indentation, " ")));
+    }
+
+    public void printIR() {
+        ir.print();
     }
 
     private static String getClassName(Node node) {
@@ -835,20 +841,31 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAAddExpr(AAddExpr node) {
         removeIndentationLevel();
-        Token token = null;
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
         }
 
+        Token token = null;
+        IRInfo irInfoLeft = null;
+        IRInfo irInfoRight = null;
         for (int i = 0 ; i < 2 ; i++) {
             ExprInfo expr = exprs.pop();
             if (i == 0) {
                 token = expr.getToken();
+                irInfoLeft = expr.getIRInfo();
+            } else if (i == 1) {
+                irInfoRight = expr.getIRInfo();
             }
             checkNumericOperand("+", expr);
         }
-        returnInfo.push(new ExprInfo(Type.INT, token));
+
+        int tempVar = ir.newTempVar(Type.INT);
+        Quad quad = new Quad(Quad.Op.ADD, new QuadOperand(irInfoLeft),
+                             new QuadOperand(irInfoRight), tempVar);
+        ir.insertQuad(quad);
+        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
     @Override
@@ -944,7 +961,8 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAIntConstantExpr(AIntConstantExpr node) {
-        returnInfo.push(new ExprInfo(Type.INT, node.getIntConstant()));
+        IRInfo irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getIntConstant().getText());
+        returnInfo.push(new ExprInfo(Type.INT, node.getIntConstant(), irInfo));
     }
 
     @Override

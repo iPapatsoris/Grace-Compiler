@@ -9,7 +9,15 @@ import java.util.ArrayList;
 import java.util.ArrayDeque;
 
 abstract class ReturnInfo {
+    protected IRInfo irInfo; // For intermediate representation
+                             // reduce to subclasses later if found possible
+    public ReturnInfo() {
+        irInfo = null;
+    }
 
+    public IRInfo getIRInfo() {
+        return irInfo;
+    }
 }
 
 class VariableInfo extends ReturnInfo {
@@ -39,6 +47,7 @@ class ArgumentInfo extends ReturnInfo {
     private boolean noFirstDimension;
 
     public ArgumentInfo(Type type, ArrayList<Integer> dimensions, boolean noFirstDimension) {
+        super();
         this.type = type;
         this.dimensions = dimensions;
         this.noFirstDimension = noFirstDimension;
@@ -80,6 +89,7 @@ class FunctionInfo extends ReturnInfo {
     private boolean foundReturn;
 
     public FunctionInfo(Token token, ArrayDeque<ArgumentInfo> arguments, Type type) {
+        super();
         this.token = token;
         this.arguments = arguments;
         this.type = type;
@@ -120,6 +130,7 @@ class ExprInfo extends ReturnInfo {
     private Token token; // For error printing
 
     ExprInfo(Type type, Token token) {
+        super();
         this.token = token;
         this.type = type;
         this.negative = false;
@@ -127,7 +138,13 @@ class ExprInfo extends ReturnInfo {
         this.dimensions = new ArrayList<Integer>();
     }
 
+    ExprInfo(Type type, Token token, IRInfo irInfo) {
+        this(type, token);
+        this.irInfo = irInfo;
+    }
+
     ExprInfo(Type type, ArrayList<Integer> dimensions, Token token) {
+        super();
         this.token = token;
         this.type = type;
         this.negative = false;
@@ -157,5 +174,40 @@ class ExprInfo extends ReturnInfo {
 
     public void toggleNegative() {
         negative = !negative;
+    }
+}
+
+class IRInfo {
+    QuadOperand.Type type;
+    private int tempVar;
+    private String identifier;
+
+    public IRInfo(QuadOperand.Type type, int tempVar) {
+        this.type = type;
+        this.tempVar = tempVar;
+        this.identifier = "";
+    }
+
+    public IRInfo(QuadOperand.Type type, String identifier) {
+        this.type = type;
+        this.tempVar = -1;
+        this.identifier = identifier;
+    }
+
+    public QuadOperand.Type getType() {
+        return type;
+    }
+
+    public int getTempVar() {
+        return tempVar;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    @Override
+    public String toString() {
+        return type + " " + tempVar + " " + identifier;
     }
 }

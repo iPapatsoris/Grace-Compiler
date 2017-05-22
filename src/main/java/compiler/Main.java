@@ -33,7 +33,9 @@ public class Main {
             }
             System.exit(1);
         }
-        tree.apply(new TreeVisitor());
+        TreeVisitor treeVisitor = new TreeVisitor();
+        tree.apply(treeVisitor);
+        treeVisitor.printIR();
         /*Lexer lexer = new Lexer(reader);
         for(;;) {
             try {
