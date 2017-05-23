@@ -785,12 +785,47 @@ class TreeVisitor extends DepthFirstAdapter {
             checkNumericExpession(expr);
         }
 
+        IRInfo irInfo = null;
+        switch (exprs.size()) {
+            case 0:
+                irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText());
+                break;
+            case 1: {
+                ExprInfo expr = exprs.get(0);
+                int tempVar = ir.newTempVar(expr.getType());
+                Quad quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText()),
+                                     new QuadOperand(QuadOperand.Type.IDENTIFIER, expr.getToken().getText()), tempVar);
+                ir.insertQuad(quad);
+                irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+            } break;
+            default: {
+                ExprInfo expr = exprs.get(0);
+                int columns = variable.getDimensions().get(1);
+                int multVar = ir.newTempVar(Type.INT);
+                Quad quad = new Quad(Quad.Op.MULT, new QuadOperand(QuadOperand.Type.IDENTIFIER, expr.getToken().getText()),
+                                     new QuadOperand(QuadOperand.Type.IDENTIFIER, columns), multVar);
+                ir.insertQuad(quad);
+
+                expr = exprs.get(1);
+                int addVar = ir.newTempVar(Type.INT);
+                quad = new Quad(Quad.Op.ADD, new QuadOperand(QuadOperand.Type.TEMPVAR, multVar),
+                                     new QuadOperand(QuadOperand.Type.IDENTIFIER, expr.getToken().getText()), addVar);
+                ir.insertQuad(quad);
+
+                int arrayVar = ir.newTempVar(variable.getType()); // last dimension from symbol table: getType instead of int
+                quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText()),
+                                     new QuadOperand(QuadOperand.Type.TEMPVAR, addVar), arrayVar);
+                ir.insertQuad(quad);
+                irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, arrayVar);
+            }
+    }
+
         /* Carry over the number of dimensions left, if any, to identify if lvalue remains an array */
         ArrayList<Integer> dimensionsLeft = new ArrayList<Integer>();
         for (int i = 0 ; i < dimensionsNum - node.getExpr().size() ; i++) {
             dimensionsLeft.add(null);
         }
-        returnInfo.push(new ExprInfo(variable.getType(), dimensionsLeft, node.getIdentifier()));
+        returnInfo.push(new ExprInfo(variable.getType(), dimensionsLeft, node.getIdentifier(), irInfo));
     }
 
     @Override
@@ -813,7 +848,9 @@ class TreeVisitor extends DepthFirstAdapter {
         if (node.getExpr().size() == 0) {
            dimensionsLeft.add(null);
         }
-        returnInfo.push(new ExprInfo(Type.CHAR, dimensionsLeft, node.getString()));
+        IRInfo dummy = new IRInfo(QuadOperand.Type.TEMPVAR, -1); // delete
+
+        returnInfo.push(new ExprInfo(Type.CHAR, dimensionsLeft, node.getString(), dummy));
     }
 
     /* Expr */
@@ -1014,6 +1051,7 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outACharConstantExpr(ACharConstantExpr node) {
+        IRInfo irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getCharConstant().getText());
         returnInfo.push(new ExprInfo(Type.CHAR, node.getCharConstant()));
     }
 

@@ -143,13 +143,14 @@ class ExprInfo extends ReturnInfo {
         this.irInfo = irInfo;
     }
 
-    ExprInfo(Type type, ArrayList<Integer> dimensions, Token token) {
+    ExprInfo(Type type, ArrayList<Integer> dimensions, Token token, IRInfo irInfo) {
         super();
         this.token = token;
         this.type = type;
         this.negative = false;
         this.lvalue = true;
         this.dimensions = dimensions;
+        this.irInfo = irInfo;
     }
 
     public Token getToken() {

@@ -11,11 +11,11 @@ import java.lang.String;
 
 class IntermediateRepresentation {
     private ArrayList<Quad> quads;
-    private ArrayList<Type> tempTempVars;
+    private ArrayList<Type> tempVars;
 
     public IntermediateRepresentation() {
         quads = new ArrayList<Quad>();
-        tempTempVars = new ArrayList<Type>();
+        tempVars = new ArrayList<Type>();
     }
 
     public int getNextQuadIndex() {
@@ -27,8 +27,8 @@ class IntermediateRepresentation {
     }
 
     public int newTempVar(Type type) {
-        tempTempVars.add(type);
-        return tempTempVars.size()-1;
+        tempVars.add(type);
+        return tempVars.size()-1;
     }
 
     public void backpatch(ArrayList<Integer> toBackpatch, int destinationQuad) {
@@ -39,6 +39,10 @@ class IntermediateRepresentation {
     }
 
     public void print() {
+        for (ListIterator it = tempVars.listIterator() ; it.hasNext() ; ) {
+            System.out.println("$" + " " + it.nextIndex() + it.next());
+        }
+        System.out.println("");
         for (Iterator it = quads.iterator() ; it.hasNext() ; ) {
             System.out.println(it.next());
         }

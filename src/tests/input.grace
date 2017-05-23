@@ -1,4 +1,6 @@
 fun main() : nothing
+    var x : int[10][11];
+    fun foo(bar: int) : nothing {}
 {
-    if (---3-2= 0) then ;
+    foo(x[3][0]);
 }
