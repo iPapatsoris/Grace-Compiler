@@ -859,7 +859,6 @@ class TreeVisitor extends DepthFirstAdapter {
             }
             checkNumericOperand("+", expr);
         }
-
         int tempVar = ir.newTempVar(Type.INT);
         Quad quad = new Quad(Quad.Op.ADD, new QuadOperand(irInfoLeft),
                              new QuadOperand(irInfoRight), tempVar);
@@ -871,77 +870,117 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outASubExpr(ASubExpr node) {
         removeIndentationLevel();
-        Token token = null;
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
         }
 
+        Token token = null;
+        IRInfo irInfoLeft = null;
+        IRInfo irInfoRight = null;
         for (int i = 0 ; i < 2 ; i++) {
             ExprInfo expr = exprs.pop();
             if (i == 0) {
                 token = expr.getToken();
+                irInfoLeft = expr.getIRInfo();
+            } else if (i == 1) {
+                irInfoRight = expr.getIRInfo();
             }
             checkNumericOperand("-", expr);
         }
-        returnInfo.push(new ExprInfo(Type.INT, token));
+        int tempVar = ir.newTempVar(Type.INT);
+        Quad quad = new Quad(Quad.Op.SUB, new QuadOperand(irInfoLeft),
+                             new QuadOperand(irInfoRight), tempVar);
+        ir.insertQuad(quad);
+        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
     @Override
     public void outAMultExpr(AMultExpr node) {
         removeIndentationLevel();
-        Token token = null;
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
         }
 
+        Token token = null;
+        IRInfo irInfoLeft = null;
+        IRInfo irInfoRight = null;
         for (int i = 0 ; i < 2 ; i++) {
             ExprInfo expr = exprs.pop();
             if (i == 0) {
                 token = expr.getToken();
+                irInfoLeft = expr.getIRInfo();
+            } else if (i == 1) {
+                irInfoRight = expr.getIRInfo();
             }
             checkNumericOperand("*", expr);
         }
-        returnInfo.push(new ExprInfo(Type.INT, token));
+        int tempVar = ir.newTempVar(Type.INT);
+        Quad quad = new Quad(Quad.Op.MULT, new QuadOperand(irInfoLeft),
+                             new QuadOperand(irInfoRight), tempVar);
+        ir.insertQuad(quad);
+        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
     @Override
     public void outADivExpr(ADivExpr node) {
         removeIndentationLevel();
-        Token token = null;
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
         }
 
+        Token token = null;
+        IRInfo irInfoLeft = null;
+        IRInfo irInfoRight = null;
         for (int i = 0 ; i < 2 ; i++) {
             ExprInfo expr = exprs.pop();
             if (i == 0) {
                 token = expr.getToken();
+                irInfoLeft = expr.getIRInfo();
+            } else if (i == 1) {
+                irInfoRight = expr.getIRInfo();
             }
             checkNumericOperand("div", expr);
         }
-        returnInfo.push(new ExprInfo(Type.INT, token));
+        int tempVar = ir.newTempVar(Type.INT);
+        Quad quad = new Quad(Quad.Op.DIV, new QuadOperand(irInfoLeft),
+                             new QuadOperand(irInfoRight), tempVar);
+        ir.insertQuad(quad);
+        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
     @Override
     public void outAModExpr(AModExpr node) {
         removeIndentationLevel();
-        Token token = null;
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
         }
 
+        Token token = null;
+        IRInfo irInfoLeft = null;
+        IRInfo irInfoRight = null;
         for (int i = 0 ; i < 2 ; i++) {
             ExprInfo expr = exprs.pop();
             if (i == 0) {
                 token = expr.getToken();
+                irInfoLeft = expr.getIRInfo();
+            } else if (i == 1) {
+                irInfoRight = expr.getIRInfo();
             }
             checkNumericOperand("mod", expr);
         }
-        returnInfo.push(new ExprInfo(Type.INT, token));
+        int tempVar = ir.newTempVar(Type.INT);
+        Quad quad = new Quad(Quad.Op.MOD, new QuadOperand(irInfoLeft),
+                             new QuadOperand(irInfoRight), tempVar);
+        ir.insertQuad(quad);
+        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
     @Override
@@ -957,6 +996,14 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo expr = (ExprInfo)returnInfo.peek();
         checkNumericOperand("-", expr);
         expr.toggleNegative();
+
+        IRInfo irInfo = expr.getIRInfo();
+        int tempVar = ir.newTempVar(Type.INT);
+        Quad quad = new Quad(Quad.Op.MULT, new QuadOperand(irInfo),
+                             new QuadOperand(QuadOperand.Type.IDENTIFIER, "-1"), tempVar);
+        ir.insertQuad(quad);
+        irInfo.setType(QuadOperand.Type.TEMPVAR);
+        irInfo.setTempVar(tempVar);
     }
 
     @Override

@@ -99,7 +99,7 @@ class Quad {
             string += "*";
         }
         else {
-            string += String.valueOf(output);
+            string += "$" + String.valueOf(output);
         }
         return string;
     }
@@ -126,7 +126,7 @@ class QuadOperand {
                 this.identifier = null;
                 break;
             case IDENTIFIER:
-                this.type = irInfo.getType();
+            this.type = irInfo.getType();
                 this.tempVar = -1;
                 this.pointer = false;
                 this.address = false;
@@ -170,6 +170,8 @@ class QuadOperand {
                     return "[$" + tempVar + "]";
                 } else if (address) {
                     return "{$" + tempVar + "}";
+                } else {
+                    return "$" + tempVar;
                 }
             case IDENTIFIER:
                 return identifier;

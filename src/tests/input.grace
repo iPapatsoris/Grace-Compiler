@@ -1,4 +1,4 @@
 fun main() : nothing
 {
-    if (1 + 2 + 3= 0) then ;
+    if (---3-2= 0) then ;
 }

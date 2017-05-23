@@ -206,6 +206,14 @@ class IRInfo {
         return identifier;
     }
 
+    public void setType(QuadOperand.Type type) {
+        this.type = type;
+    }
+
+    public void setTempVar(int tempVar) {
+        this.tempVar = tempVar;
+    }
+
     @Override
     public String toString() {
         return type + " " + tempVar + " " + identifier;
