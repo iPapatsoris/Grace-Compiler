@@ -11,11 +11,20 @@ We print the name of each Node in the CST in a DFS manner along with the
 matched input. This is implemented by simply overriding the *Node.defaultIn* method.
 
 ## Notes
-* reduce dimenionality by passing to method: temp var types DEN diakrinontai ws arrays
+* reduce dimenionality by passing to method: temp var types DEN diakrinontai ws arrays. tous dinw int an einai arrays.
 * tempVar gia ola ta ReturnInfo, meta isws perioristei
 * 'a'mod 2 apodekto?
 
 ## Samples
+`fun main() : nothing
+    var x : int[10][11][12];
+    var y: int[123][45];
+    fun foo(bar: int; y : char) : nothing {}
+{
+    foo(x[y[1][2]][y[4][7]][y[8][9]] + x[y[1][2]][y[4][7]][y[8][9]], 'a');
+}
+
+`
 `fun main() : nothing
     fun foo(ref array : int[5][6]) : nothing {}
     var myVar : int[5][6][7];

@@ -40,7 +40,7 @@ class IntermediateRepresentation {
 
     public void print() {
         for (ListIterator it = tempVars.listIterator() ; it.hasNext() ; ) {
-            System.out.println("$" + " " + it.nextIndex() + it.next());
+            System.out.println("$" + it.nextIndex() + " " + it.next());
         }
         System.out.println("");
         for (Iterator it = quads.iterator() ; it.hasNext() ; ) {
