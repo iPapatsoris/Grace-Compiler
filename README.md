@@ -19,6 +19,30 @@ matched input. This is implemented by simply overriding the *Node.defaultIn* met
 `fun main() : nothing
     var x : int[10][11][12];
     var y: int[123][45];
+{
+    if (y[1][2] = x[3][4][5]) then {
+        y[1][2] <- x[3][4][5];
+        if (y[1][2] = x[3][4][5]) then {
+            {}
+        }
+        else {
+            y[1][2] <- x[3][4][5];
+        }
+    }
+}
+`
+
+`fun main() : nothing
+    var x : int[10][11][12];
+    var y: int[123][45];
+    fun foo(bar: int; y : char) : char {return 'a';}
+{
+    y[1][2] <- x[3][4][5];
+}`
+
+`fun main() : nothing
+    var x : int[10][11][12];
+    var y: int[123][45];
     fun foo(bar: int; y : char) : nothing {}
 {
     foo(x[y[1][2]][y[4][7]][y[8][9]] + x[y[1][2]][y[4][7]][y[8][9]], 'a');

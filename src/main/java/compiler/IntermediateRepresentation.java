@@ -32,9 +32,8 @@ class IntermediateRepresentation {
     }
 
     public void backpatch(ArrayList<Integer> toBackpatch, int destinationQuad) {
-        for (ListIterator it = toBackpatch.listIterator() ; it.hasNext() ; ) {
-            quads.get(it.nextIndex()).setOutput(destinationQuad);
-            it.next();
+        for (Integer quad : toBackpatch) {
+            quads.get(quad).setOutput(destinationQuad);
         }
     }
 
@@ -43,8 +42,8 @@ class IntermediateRepresentation {
             System.out.println("$" + it.nextIndex() + " " + it.next());
         }
         System.out.println("");
-        for (Iterator it = quads.iterator() ; it.hasNext() ; ) {
-            System.out.println(it.next());
+        for (ListIterator it = quads.listIterator() ; it.hasNext() ; ) {
+            System.out.println(it.nextIndex() + ": " + it.next());
         }
     }
 }
@@ -103,7 +102,7 @@ class Quad {
             string += "*";
         }
         else {
-            string += "$" + String.valueOf(output);
+            string += (op != Op.JUMP ? "$" : "") + String.valueOf(output);
         }
         return string;
     }

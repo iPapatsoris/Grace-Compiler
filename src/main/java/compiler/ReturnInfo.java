@@ -178,6 +178,45 @@ class ExprInfo extends ReturnInfo {
     }
 }
 
+class BackpatchInfo extends ReturnInfo {
+    private ArrayList<Integer> falseList;
+    private ArrayList<Integer> trueList;
+    private ArrayList<Integer> nextList;
+
+    BackpatchInfo(ArrayList<Integer> falseList, ArrayList<Integer> trueList) {
+        this.falseList = falseList;
+        this.trueList = trueList;
+        this.nextList = null;
+    }
+
+    BackpatchInfo(ArrayList<Integer> nextList) {
+        this.falseList = null;
+        this.trueList = null;
+        this.nextList = nextList;
+    }
+
+    public ArrayList<Integer> getFalseList() {
+        return falseList;
+    }
+
+    public ArrayList<Integer> getNextList() {
+        return nextList;
+    }
+
+    public ArrayList<Integer> getTrueList() {
+        return trueList;
+    }
+
+    public void setFalseList(ArrayList<Integer> falseList) {
+        this.falseList = falseList;
+    }
+
+    public void setTrueList(ArrayList<Integer> trueList) {
+        this.trueList = trueList;
+    }
+
+}
+
 class IRInfo {
     QuadOperand.Type type;
     private int tempVar;

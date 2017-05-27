@@ -419,16 +419,31 @@ class TreeVisitor extends DepthFirstAdapter {
                 e.apply(this);
             }
         }
+
+        FunctionInfo functionInfo = ((FunctionInfo)returnInfo.peek());
+        Quad quad = new Quad(Quad.Op.UNIT,
+                             new QuadOperand(QuadOperand.Type.IDENTIFIER, functionInfo.getToken().getText()),
+                             null, -2);
+        ir.insertQuad(quad);
+
+        ArrayList<Integer> blockList = new ArrayList<Integer>();
         {
             List<PStatement> copy = new ArrayList<PStatement>(node.getStatement());
+            int i = 0;
             for(PStatement e : copy)
             {
+                if (i > 0) {
+                    ir.backpatch(blockList, ir.getNextQuadIndex());
+                }
                 e.apply(this);
+                BackpatchInfo backpatchStatement = (BackpatchInfo)(returnInfo.pop());
+                blockList = backpatchStatement.getNextList();
+                i++;
             }
         }
         outAFuncDef(node);
         assert returnInfo.peek() instanceof FunctionInfo;
-        FunctionInfo functionInfo = ((FunctionInfo)returnInfo.pop());
+        functionInfo = ((FunctionInfo)returnInfo.pop());
         if (functionInfo.getType() != Type.NOTHING && !functionInfo.getFoundReturn()) {
             System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
                                "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
@@ -436,6 +451,12 @@ class TreeVisitor extends DepthFirstAdapter {
                                " but has no return statement");
             System.exit(1);
         }
+        ir.backpatch(blockList, ir.getNextQuadIndex());
+        quad = new Quad(Quad.Op.ENDU,
+                             new QuadOperand(QuadOperand.Type.IDENTIFIER, functionInfo.getToken().getText()),
+                             null, -2);
+        ir.insertQuad(quad);
+
         symbolTable.exit();
     }
 
@@ -521,6 +542,62 @@ class TreeVisitor extends DepthFirstAdapter {
     /* Statement */
 
     @Override
+    public void caseAIfStatement(AIfStatement node)
+    {
+        BackpatchInfo backpatchCond = null;
+        inAIfStatement(node);
+        if(node.getCond() != null)
+        {
+            node.getCond().apply(this);
+            backpatchCond = (BackpatchInfo)(returnInfo.pop());
+        }
+
+        ir.backpatch(backpatchCond.getTrueList(), ir.getNextQuadIndex());
+        ArrayList<Integer> list = backpatchCond.getFalseList();
+        ArrayList<Integer> blockThenList = new ArrayList<Integer>();
+        ArrayList<Integer> blockElseList = new ArrayList<Integer>();
+        {
+            List<PStatement> copy = new ArrayList<PStatement>(node.getThen());
+            int i = 0;
+            for(PStatement e : copy)
+            {
+                if (i > 0) {
+                    ir.backpatch(blockThenList, ir.getNextQuadIndex());
+                }
+                e.apply(this);
+                BackpatchInfo backpatchStatement = (BackpatchInfo)(returnInfo.pop());
+                blockThenList = backpatchStatement.getNextList();
+                i++;
+            }
+        }
+        {
+            if (node.getElse().size() > 0) {
+                list = new ArrayList<Integer>();
+                list.add(ir.getNextQuadIndex());
+                Quad quad = new Quad(Quad.Op.JUMP, null, null, -1);
+                ir.insertQuad(quad);
+                ir.backpatch(backpatchCond.getFalseList(), ir.getNextQuadIndex());
+            }
+            List<PStatement> copy = new ArrayList<PStatement>(node.getElse());
+            int i = 0;
+            for(PStatement e : copy)
+            {
+                if (i > 0) {
+                    ir.backpatch(blockElseList, ir.getNextQuadIndex());
+                }
+                e.apply(this);
+                BackpatchInfo backpatchStatement = (BackpatchInfo)(returnInfo.pop());
+                blockElseList = backpatchStatement.getNextList();
+                i++;
+            }
+        }
+        list.addAll(blockThenList);
+        list.addAll(blockElseList);
+        returnInfo.push(new BackpatchInfo(list));
+        outAIfStatement(node);
+    }
+
+    @Override
     public void outAIfStatement(AIfStatement node) {
         removeIndentationLevel();
     }
@@ -549,6 +626,11 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo expr = (ExprInfo)returnInfo.pop();
         ExprInfo lvalue = (ExprInfo)returnInfo.pop();
         checkSameTypeAssignment(lvalue, expr);
+
+        Quad quad = new Quad(Quad.Op.ASSIGN, new QuadOperand(expr.getIRInfo()), null,
+                             lvalue.getIRInfo().getTempVar());
+        ir.insertQuad(quad);
+        returnInfo.push(new BackpatchInfo(new ArrayList<Integer>()));
     }
 
     @Override
@@ -584,6 +666,7 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outANullStatement(ANullStatement node) {
         removeIndentationLevel();
+        returnInfo.push(new BackpatchInfo(new ArrayList<Integer>()));
     }
 
 
@@ -607,6 +690,29 @@ class TreeVisitor extends DepthFirstAdapter {
         removeIndentationLevel();
     }
 
+
+    @Override
+    public void caseAConjCond(AConjCond node)
+    {
+        inAConjCond(node);
+        if(node.getLeft() != null)
+        {
+            node.getLeft().apply(this);
+        }
+        BackpatchInfo leftCond = (BackpatchInfo)(returnInfo.pop());
+        ir.backpatch(leftCond.getTrueList(), ir.getNextQuadIndex());
+
+        if(node.getRight() != null)
+        {
+            node.getRight().apply(this);
+        }
+        BackpatchInfo rightCond = (BackpatchInfo)(returnInfo.pop());
+        ArrayList<Integer> falseList = leftCond.getFalseList();
+        falseList.addAll(rightCond.getFalseList());
+        returnInfo.push(new BackpatchInfo(falseList, rightCond.getTrueList()));
+        outAConjCond(node);
+    }
+
     @Override
     public void outAConjCond(AConjCond node) {
         removeIndentationLevel();
@@ -615,6 +721,10 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outANegCond(ANegCond node) {
         removeIndentationLevel();
+        BackpatchInfo backpatchInfo = (BackpatchInfo)(returnInfo.peek());
+        ArrayList<Integer> tmp = backpatchInfo.getFalseList();
+        backpatchInfo.setFalseList(backpatchInfo.getTrueList());
+        backpatchInfo.setTrueList(tmp);
     }
 
     @Override
@@ -623,6 +733,19 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("=", exprLeft, exprRight);
+
+        ArrayList<Integer> trueList = new ArrayList<Integer>();
+        trueList.add(ir.getNextQuadIndex());
+        Quad quad = new Quad(Quad.Op.EQUAL, new QuadOperand(exprLeft.getIRInfo()),
+                             new QuadOperand(exprRight.getIRInfo()), -1);
+        ir.insertQuad(quad);
+
+        ArrayList<Integer> falseList = new ArrayList<Integer>();
+        falseList.add(ir.getNextQuadIndex());
+        quad = new Quad(Quad.Op.JUMP, null, null, -1);
+        ir.insertQuad(quad);
+
+        returnInfo.push(new BackpatchInfo(falseList, trueList));
     }
 
     @Override
@@ -1068,7 +1191,7 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outACharConstantExpr(ACharConstantExpr node) {
         IRInfo irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getCharConstant().getText());
-        returnInfo.push(new ExprInfo(Type.CHAR, node.getCharConstant()));
+        returnInfo.push(new ExprInfo(Type.CHAR, node.getCharConstant(), irInfo));
     }
 
 }

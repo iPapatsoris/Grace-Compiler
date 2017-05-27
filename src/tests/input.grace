@@ -1,6 +1,6 @@
 fun main() : nothing
-    fun foo(ref y : char) : nothing {}
-    var x : int[213][23];
+    var x : int[10][11][12];
+    var y: int[123][45];
 {
-    foo("asdf"[x[12][122]]);
+
 }
