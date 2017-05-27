@@ -544,14 +544,12 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void caseAIfStatement(AIfStatement node)
     {
-        BackpatchInfo backpatchCond = null;
         inAIfStatement(node);
         if(node.getCond() != null)
         {
             node.getCond().apply(this);
-            backpatchCond = (BackpatchInfo)(returnInfo.pop());
         }
-
+        BackpatchInfo backpatchCond = (BackpatchInfo)(returnInfo.pop());
         ir.backpatch(backpatchCond.getTrueList(), ir.getNextQuadIndex());
         ArrayList<Integer> list = backpatchCond.getFalseList();
         ArrayList<Integer> blockThenList = new ArrayList<Integer>();
@@ -600,6 +598,40 @@ class TreeVisitor extends DepthFirstAdapter {
     @Override
     public void outAIfStatement(AIfStatement node) {
         removeIndentationLevel();
+    }
+
+    @Override
+    public void caseAWhileStatement(AWhileStatement node)
+    {
+        inAWhileStatement(node);
+        int firstQuad = ir.getNextQuadIndex();
+        if(node.getCond() != null)
+        {
+            node.getCond().apply(this);
+        }
+        BackpatchInfo backpatchCond = (BackpatchInfo)(returnInfo.pop());
+        ir.backpatch(backpatchCond.getTrueList(), ir.getNextQuadIndex());
+        ArrayList<Integer> block = new ArrayList<Integer>();
+        {
+            List<PStatement> copy = new ArrayList<PStatement>(node.getStatement());
+            int i = 0;
+            for(PStatement e : copy)
+            {
+                if (i > 0) {
+                    ir.backpatch(block, ir.getNextQuadIndex());
+                }
+                e.apply(this);
+                BackpatchInfo backpatchStatement = (BackpatchInfo)(returnInfo.pop());
+                block = backpatchStatement.getNextList();
+                i++;
+            }
+        }
+        ir.backpatch(block, firstQuad);
+        Quad quad = new Quad(Quad.Op.JUMP, null, null, new QuadOperand(QuadOperand.Type.LABEL,
+                                                                       firstQuad));
+        ir.insertQuad(quad);
+        returnInfo.push(new BackpatchInfo(backpatchCond.getFalseList()));
+        outAWhileStatement(node);
     }
 
     @Override
