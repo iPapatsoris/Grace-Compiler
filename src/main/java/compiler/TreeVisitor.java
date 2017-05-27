@@ -692,6 +692,28 @@ class TreeVisitor extends DepthFirstAdapter {
     }
 
     @Override
+    public void caseADisjCond(ADisjCond node)
+    {
+        inADisjCond(node);
+        if(node.getLeft() != null)
+        {
+            node.getLeft().apply(this);
+        }
+        BackpatchInfo leftCond = (BackpatchInfo)(returnInfo.pop());
+        ir.backpatch(leftCond.getFalseList(), ir.getNextQuadIndex());
+
+        if(node.getRight() != null)
+        {
+            node.getRight().apply(this);
+        }
+        BackpatchInfo rightCond = (BackpatchInfo)(returnInfo.pop());
+        ArrayList<Integer> trueList = leftCond.getTrueList();
+        trueList.addAll(rightCond.getTrueList());
+        returnInfo.push(new BackpatchInfo(rightCond.getFalseList(), trueList));
+        outADisjCond(node);
+    }
+
+    @Override
     public void outADisjCond(ADisjCond node) {
         removeIndentationLevel();
     }
