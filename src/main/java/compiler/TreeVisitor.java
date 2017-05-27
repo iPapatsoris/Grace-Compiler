@@ -574,7 +574,7 @@ class TreeVisitor extends DepthFirstAdapter {
             if (node.getElse().size() > 0) {
                 list = new ArrayList<Integer>();
                 list.add(ir.getNextQuadIndex());
-                Quad quad = new Quad(Quad.Op.JUMP, null, null, new QuadOutput(QuadOutput.Type.BACKPATCH));
+                Quad quad = new Quad(Quad.Op.JUMP, null, null, new QuadOperand(QuadOperand.Type.BACKPATCH));
                 ir.insertQuad(quad);
                 ir.backpatch(backpatchCond.getFalseList(), ir.getNextQuadIndex());
             }
@@ -628,7 +628,7 @@ class TreeVisitor extends DepthFirstAdapter {
         checkSameTypeAssignment(lvalue, expr);
 
         Quad quad = new Quad(Quad.Op.ASSIGN, new QuadOperand(expr.getIRInfo()), null,
-                             new QuadOutput(lvalue.getIRInfo()));
+                             new QuadOperand(lvalue.getIRInfo()));
         ir.insertQuad(quad);
         returnInfo.push(new BackpatchInfo(new ArrayList<Integer>()));
     }
@@ -662,7 +662,7 @@ class TreeVisitor extends DepthFirstAdapter {
         }
         functionInfo.setFoundReturn(true);
         Quad quad = new Quad(Quad.Op.ASSIGN, new QuadOperand(expr.getIRInfo()), null,
-                             new QuadOutput(QuadOutput.Type.RET));
+                             new QuadOperand(QuadOperand.Type.RET));
         ir.insertQuad(quad);
         quad = new Quad(Quad.Op.RET, null, null, null);
         ir.insertQuad(quad);
@@ -744,12 +744,12 @@ class TreeVisitor extends DepthFirstAdapter {
         trueList.add(ir.getNextQuadIndex());
         Quad quad = new Quad(Quad.Op.EQUAL, new QuadOperand(exprLeft.getIRInfo()),
                              new QuadOperand(exprRight.getIRInfo()),
-                             new QuadOutput(QuadOutput.Type.BACKPATCH));
+                             new QuadOperand(QuadOperand.Type.BACKPATCH));
         ir.insertQuad(quad);
 
         ArrayList<Integer> falseList = new ArrayList<Integer>();
         falseList.add(ir.getNextQuadIndex());
-        quad = new Quad(Quad.Op.JUMP, null, null, new QuadOutput(QuadOutput.Type.BACKPATCH));
+        quad = new Quad(Quad.Op.JUMP, null, null, new QuadOperand(QuadOperand.Type.BACKPATCH));
         ir.insertQuad(quad);
 
         returnInfo.push(new BackpatchInfo(falseList, trueList));
@@ -914,16 +914,16 @@ class TreeVisitor extends DepthFirstAdapter {
         IRInfo irInfo = null;
         switch (exprs.size()) {
             case 0:
-                irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText());
+                irInfo = new IRInfo(IRInfo.Type.IDENTIFIER, node.getIdentifier().getText());
                 break;
             case 1: {
                 ExprInfo expr = exprs.get(0);
                 int tempVar = ir.newTempVar(exprs.size() == dimensionsNum ? variable.getType() : Type.INT);
                 Quad quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText()),
                                      new QuadOperand(expr.getIRInfo()),
-                                     new QuadOutput(QuadOutput.Type.ADDRESS, tempVar));
+                                     new QuadOperand(QuadOperand.Type.ADDRESS, tempVar));
                 ir.insertQuad(quad);
-                irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar, true);
+                irInfo = new IRInfo(IRInfo.Type.ADDRESS, tempVar);
             } break;
             default: {
                 ExprInfo expr = exprs.get(0);
@@ -931,14 +931,14 @@ class TreeVisitor extends DepthFirstAdapter {
                 int multVar = ir.newTempVar(Type.INT);
                 Quad quad = new Quad(Quad.Op.MULT, new QuadOperand(expr.getIRInfo()),
                                      new QuadOperand(QuadOperand.Type.IDENTIFIER, String.valueOf(columns)),
-                                     new QuadOutput(QuadOutput.Type.NORMAL, multVar));
+                                     new QuadOperand(QuadOperand.Type.TEMPVAR, multVar));
                 ir.insertQuad(quad);
 
                 expr = exprs.get(1);
                 int addVar = ir.newTempVar(Type.INT);
                 quad = new Quad(Quad.Op.ADD, new QuadOperand(QuadOperand.Type.TEMPVAR, multVar),
                                      new QuadOperand(expr.getIRInfo()),
-                                     new QuadOutput(QuadOutput.Type.NORMAL, addVar));
+                                     new QuadOperand(QuadOperand.Type.TEMPVAR, addVar));
                 ir.insertQuad(quad);
 
                 for (int i = 2 ; i < exprs.size() ; i++) {
@@ -946,14 +946,14 @@ class TreeVisitor extends DepthFirstAdapter {
                     multVar = ir.newTempVar(Type.INT);
                     quad = new Quad(Quad.Op.MULT, new QuadOperand(QuadOperand.Type.TEMPVAR, addVar),
                                     new QuadOperand(QuadOperand.Type.IDENTIFIER, String.valueOf(dimensionRange)),
-                                    new QuadOutput(QuadOutput.Type.NORMAL, multVar));
+                                    new QuadOperand(QuadOperand.Type.TEMPVAR, multVar));
                     ir.insertQuad(quad);
 
                     expr = exprs.get(i);
                     addVar = ir.newTempVar(Type.INT);
                     quad = new Quad(Quad.Op.ADD, new QuadOperand(QuadOperand.Type.TEMPVAR, multVar),
                                          new QuadOperand(expr.getIRInfo()),
-                                         new QuadOutput(QuadOutput.Type.NORMAL, addVar));
+                                         new QuadOperand(QuadOperand.Type.TEMPVAR, addVar));
                     ir.insertQuad(quad);
                 }
 
@@ -961,9 +961,9 @@ class TreeVisitor extends DepthFirstAdapter {
                 int arrayVar = ir.newTempVar(exprs.size() == dimensionsNum ? variable.getType() : Type.INT);
                 quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText()),
                                      new QuadOperand(QuadOperand.Type.TEMPVAR, addVar),
-                                     new QuadOutput(QuadOutput.Type.ADDRESS, arrayVar));
+                                     new QuadOperand(QuadOperand.Type.ADDRESS, arrayVar));
                 ir.insertQuad(quad);
-                irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, arrayVar, true);
+                irInfo = new IRInfo(IRInfo.Type.ADDRESS, arrayVar);
             }
     }
 
@@ -996,12 +996,12 @@ class TreeVisitor extends DepthFirstAdapter {
             tempVar = ir.newTempVar(Type.CHAR);
             Quad quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.IDENTIFIER, node.getString().getText()),
                                  new QuadOperand(expr.getIRInfo()),
-                                 new QuadOutput(QuadOutput.Type.ADDRESS, tempVar));
+                                 new QuadOperand(QuadOperand.Type.ADDRESS, tempVar));
             ir.insertQuad(quad);
-            irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar, true);
+            irInfo = new IRInfo(IRInfo.Type.ADDRESS, tempVar);
         } else {
             dimensionsLeft.add(null);
-            irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getString().getText());
+            irInfo = new IRInfo(IRInfo.Type.IDENTIFIER, node.getString().getText());
         }
         returnInfo.push(new ExprInfo(Type.CHAR, dimensionsLeft, node.getString(), irInfo));
     }
@@ -1052,9 +1052,9 @@ class TreeVisitor extends DepthFirstAdapter {
         int tempVar = ir.newTempVar(Type.INT);
         Quad quad = new Quad(Quad.Op.ADD, new QuadOperand(irInfoLeft),
                              new QuadOperand(irInfoRight),
-                             new QuadOutput(QuadOutput.Type.NORMAL, tempVar));
+                             new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
         ir.insertQuad(quad);
-        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        IRInfo irInfo = new IRInfo(IRInfo.Type.TEMPVAR, tempVar);
         returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
@@ -1082,9 +1082,9 @@ class TreeVisitor extends DepthFirstAdapter {
         int tempVar = ir.newTempVar(Type.INT);
         Quad quad = new Quad(Quad.Op.SUB, new QuadOperand(irInfoLeft),
                              new QuadOperand(irInfoRight),
-                             new QuadOutput(QuadOutput.Type.NORMAL, tempVar));
+                             new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
         ir.insertQuad(quad);
-        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        IRInfo irInfo = new IRInfo(IRInfo.Type.TEMPVAR, tempVar);
         returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
@@ -1112,9 +1112,9 @@ class TreeVisitor extends DepthFirstAdapter {
         int tempVar = ir.newTempVar(Type.INT);
         Quad quad = new Quad(Quad.Op.MULT, new QuadOperand(irInfoLeft),
                              new QuadOperand(irInfoRight),
-                             new QuadOutput(QuadOutput.Type.NORMAL, tempVar));
+                             new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
         ir.insertQuad(quad);
-        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        IRInfo irInfo = new IRInfo(IRInfo.Type.TEMPVAR, tempVar);
         returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
@@ -1142,9 +1142,9 @@ class TreeVisitor extends DepthFirstAdapter {
         int tempVar = ir.newTempVar(Type.INT);
         Quad quad = new Quad(Quad.Op.DIV, new QuadOperand(irInfoLeft),
                              new QuadOperand(irInfoRight),
-                             new QuadOutput(QuadOutput.Type.NORMAL, tempVar));
+                             new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
         ir.insertQuad(quad);
-        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        IRInfo irInfo = new IRInfo(IRInfo.Type.TEMPVAR, tempVar);
         returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
@@ -1172,9 +1172,9 @@ class TreeVisitor extends DepthFirstAdapter {
         int tempVar = ir.newTempVar(Type.INT);
         Quad quad = new Quad(Quad.Op.MOD, new QuadOperand(irInfoLeft),
                              new QuadOperand(irInfoRight),
-                             new QuadOutput(QuadOutput.Type.NORMAL, tempVar));
+                             new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
         ir.insertQuad(quad);
-        IRInfo irInfo = new IRInfo(QuadOperand.Type.TEMPVAR, tempVar);
+        IRInfo irInfo = new IRInfo(IRInfo.Type.TEMPVAR, tempVar);
         returnInfo.push(new ExprInfo(Type.INT, token, irInfo));
     }
 
@@ -1196,21 +1196,21 @@ class TreeVisitor extends DepthFirstAdapter {
         int tempVar = ir.newTempVar(Type.INT);
         Quad quad = new Quad(Quad.Op.MULT, new QuadOperand(irInfo),
                              new QuadOperand(QuadOperand.Type.IDENTIFIER, "-1"),
-                             new QuadOutput(QuadOutput.Type.NORMAL, tempVar));
+                             new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
         ir.insertQuad(quad);
-        irInfo.setType(QuadOperand.Type.TEMPVAR);
+        irInfo.setType(IRInfo.Type.TEMPVAR);
         irInfo.setTempVar(tempVar);
     }
 
     @Override
     public void outAIntConstantExpr(AIntConstantExpr node) {
-        IRInfo irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getIntConstant().getText());
+        IRInfo irInfo = new IRInfo(IRInfo.Type.IDENTIFIER, node.getIntConstant().getText());
         returnInfo.push(new ExprInfo(Type.INT, node.getIntConstant(), irInfo));
     }
 
     @Override
     public void outACharConstantExpr(ACharConstantExpr node) {
-        IRInfo irInfo = new IRInfo(QuadOperand.Type.IDENTIFIER, node.getCharConstant().getText());
+        IRInfo irInfo = new IRInfo(IRInfo.Type.IDENTIFIER, node.getCharConstant().getText());
         returnInfo.push(new ExprInfo(Type.CHAR, node.getCharConstant(), irInfo));
     }
 
