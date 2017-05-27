@@ -733,16 +733,10 @@ class TreeVisitor extends DepthFirstAdapter {
         backpatchInfo.setTrueList(tmp);
     }
 
-    @Override
-    public void outAEqualCond(AEqualCond node) {
-        removeIndentationLevel();
-        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
-        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
-        checkSameTypeOperand("=", exprLeft, exprRight);
-
+    private BackpatchInfo generateRelationalOpIR(Quad.Op op, ExprInfo exprLeft, ExprInfo exprRight) {
         ArrayList<Integer> trueList = new ArrayList<Integer>();
         trueList.add(ir.getNextQuadIndex());
-        Quad quad = new Quad(Quad.Op.EQUAL, new QuadOperand(exprLeft.getIRInfo()),
+        Quad quad = new Quad(op, new QuadOperand(exprLeft.getIRInfo()),
                              new QuadOperand(exprRight.getIRInfo()),
                              new QuadOperand(QuadOperand.Type.BACKPATCH));
         ir.insertQuad(quad);
@@ -751,8 +745,16 @@ class TreeVisitor extends DepthFirstAdapter {
         falseList.add(ir.getNextQuadIndex());
         quad = new Quad(Quad.Op.JUMP, null, null, new QuadOperand(QuadOperand.Type.BACKPATCH));
         ir.insertQuad(quad);
+        return new BackpatchInfo(falseList, trueList);
+    }
 
-        returnInfo.push(new BackpatchInfo(falseList, trueList));
+    @Override
+    public void outAEqualCond(AEqualCond node) {
+        removeIndentationLevel();
+        ExprInfo exprRight = (ExprInfo)returnInfo.pop();
+        ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
+        checkSameTypeOperand("=", exprLeft, exprRight);
+        returnInfo.push(generateRelationalOpIR(Quad.Op.EQUAL, exprLeft, exprRight));
     }
 
     @Override
@@ -761,6 +763,7 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("#", exprLeft, exprRight);
+        returnInfo.push(generateRelationalOpIR(Quad.Op.NOT_EQUAL, exprLeft, exprRight));
     }
 
     @Override
@@ -769,6 +772,7 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand(">", exprLeft, exprRight);
+        returnInfo.push(generateRelationalOpIR(Quad.Op.GREATER, exprLeft, exprRight));
     }
 
     @Override
@@ -777,6 +781,7 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("<", exprLeft, exprRight);
+        returnInfo.push(generateRelationalOpIR(Quad.Op.LESS, exprLeft, exprRight));
     }
 
     @Override
@@ -785,6 +790,7 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand(">=", exprLeft, exprRight);
+        returnInfo.push(generateRelationalOpIR(Quad.Op.GREATER_EQUAL, exprLeft, exprRight));
     }
 
     @Override
@@ -793,6 +799,7 @@ class TreeVisitor extends DepthFirstAdapter {
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("<=", exprLeft, exprRight);
+        returnInfo.push(generateRelationalOpIR(Quad.Op.LESS_EQUAL, exprLeft, exprRight));
     }
 
     /* Function call */

@@ -2,9 +2,9 @@ fun main() : nothing
     var x : int[10][11][12];
     var y: int[123][45];
     fun foo(): char {
-    if (y[1][2] = x[3][4][5]) then {
+    if (y[1][2] >= x[3][4][5]) then {
         y[1][2] <- x[3][4][5];
-        if (y[1][2] = x[3][4][5]) then {
+        if (y[1][2] < x[3][4][5]) then {
             {}
         }
         else {
@@ -12,7 +12,7 @@ fun main() : nothing
         }
     }
         return 'c';
-        if (y[1][2] = x[3][4][5]) then {
+        if (y[1][2] # x[3][4][5]) then {
             y[1][2] <- x[3][4][5];
             if (y[1][2] = x[3][4][5]) then {
                 {}
@@ -23,7 +23,7 @@ fun main() : nothing
         }
     }
 {
-    if (y[1][2] = x[3][4][5]) then {
+    if (y[1][2] <= x[3][4][5] and x[1][2][3] # x[1][3][x[4][5][6]]) then {
         y[1][2] <- x[3][4][5];
         if (y[1][2] = x[3][4][5]) then {
             {}
