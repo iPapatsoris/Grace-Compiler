@@ -1,37 +1,8 @@
 fun main() : nothing
     var x : int[10][11][12];
     var y: int[123][45];
-    fun foo(): char {
-    if (y[1][2] >= x[3][4][5]) then {
-        y[1][2] <- x[3][4][5];
-        if (y[1][2] < x[3][4][5]) then {
-            {}
-        }
-        else {
-            y[1][2] <- x[3][4][5];
-        }
-    }
-        return 'c';
-        if (y[1][2] # x[3][4][5]) then {
-            y[1][2] <- x[3][4][5];
-            if (y[1][2] = x[3][4][5]) then {
-                {}
-            }
-            else {
-                y[1][2] <- x[3][4][5];
-            }
-        }
-    }
+    fun foo(ref x: int[]; y: int): char {return 'a';}
+    fun bar() : int {return 1;}
 {
-    while (y[1][2] <= x[3][4][5] or x[1][2][3] # x[1][3][x[4][5][6]]) do {
-        y[1][2] <- x[3][4][5];
-        if (y[1][2] = x[3][4][5]) then {
-            {}
-        }
-        else {
-            y[1][2] <- x[3][4][5];
-        }
-    }
-    "dsfg"[1] <- '1';
-
+    foo(x[1][2], bar());
 }

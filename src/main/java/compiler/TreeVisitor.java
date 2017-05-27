@@ -669,6 +669,7 @@ class TreeVisitor extends DepthFirstAdapter {
     public void outAFuncCallStatement(AFuncCallStatement node) {
         removeIndentationLevel();
         ExprInfo expr = ((ExprInfo)returnInfo.pop()); // Consume function type: no need to check outside expression fcall
+        returnInfo.push(new BackpatchInfo(new ArrayList<Integer>()));
     }
 
     @Override
@@ -694,7 +695,7 @@ class TreeVisitor extends DepthFirstAdapter {
         }
         functionInfo.setFoundReturn(true);
         Quad quad = new Quad(Quad.Op.ASSIGN, new QuadOperand(expr.getIRInfo()), null,
-                             new QuadOperand(QuadOperand.Type.RET));
+                             new QuadOperand(QuadOperand.Type.RETCALLED));
         ir.insertQuad(quad);
         quad = new Quad(Quad.Op.RET, null, null, null);
         ir.insertQuad(quad);
@@ -914,8 +915,22 @@ class TreeVisitor extends DepthFirstAdapter {
                                    (i+1) + " is passed by reference, but is not an lvalue'");
                 System.exit(1);
             }
+            QuadOperand.Type pass = (argCorrect.isReference() ? QuadOperand.Type.R
+                                                               : QuadOperand.Type.V);
+            Quad quad = new Quad(Quad.Op.PAR, new QuadOperand(arg.getIRInfo()),
+                                 new QuadOperand(pass), null);
+            ir.insertQuad(quad);
         }
-        returnInfo.push(new ExprInfo(function.getType(), node.getIdentifier()));
+        int result = ir.newTempVar(function.getType());
+        Quad quad = new Quad(Quad.Op.PAR,
+                             new QuadOperand(QuadOperand.Type.TEMPVAR, result),
+                             new QuadOperand(QuadOperand.Type.RETCALLER), null);
+        ir.insertQuad(quad);
+        quad = new Quad(Quad.Op.CALL, null, null,
+                        new QuadOperand(QuadOperand.Type.IDENTIFIER, function.getToken().getText()));
+        ir.insertQuad(quad);
+        returnInfo.push(new ExprInfo(function.getType(), node.getIdentifier(),
+                        new IRInfo(IRInfo.Type.TEMPVAR, result)));
     }
 
     /* L_value */

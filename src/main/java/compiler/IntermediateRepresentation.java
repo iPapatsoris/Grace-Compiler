@@ -100,7 +100,7 @@ class Quad {
 
 class QuadOperand {
     enum Type {
-        TEMPVAR, IDENTIFIER, ADDRESS, RET, BACKPATCH, LABEL
+        TEMPVAR, IDENTIFIER, ADDRESS, RETCALLED, RETCALLER, BACKPATCH, LABEL, V, R
     }
 
     private Type type;
@@ -157,14 +157,16 @@ class QuadOperand {
                 return "[$" + tempVar + "]";
             case LABEL:
                 return String.valueOf(tempVar);
-            case RET:
+            case RETCALLED:
                 return "$$";
+            case RETCALLER:
+                return "RET";
             case BACKPATCH:
                 return "*";
             case IDENTIFIER:
                 return identifier;
             default:
-                return "";
+                return type.toString();
         }
     }
 }
