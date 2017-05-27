@@ -33,7 +33,7 @@ class IntermediateRepresentation {
 
     public void backpatch(ArrayList<Integer> toBackpatch, int destinationQuad) {
         for (Integer quad : toBackpatch) {
-            quads.get(quad).setOutput(destinationQuad);
+            quads.get(quad).setOutput(new QuadOutput(QuadOutput.Type.LABEL, destinationQuad));
         }
     }
 
@@ -60,16 +60,16 @@ class Quad {
     private Op op;
     private QuadOperand operand1;
     private QuadOperand operand2;
-    private int output;
+    private QuadOutput output;
 
-    public Quad(Op op, QuadOperand operand1, QuadOperand operand2, int output) {
+    public Quad(Op op, QuadOperand operand1, QuadOperand operand2, QuadOutput output) {
         this.op = op;
         this.operand1 = operand1;
         this.operand2 = operand2;
         this.output = output;
     }
 
-    void setOutput(int output) {
+    void setOutput(QuadOutput output) {
         this.output = output;
     }
 
@@ -93,18 +93,8 @@ class Quad {
 
     @Override
     public String toString() {
-        String string = opToString(op) + ", " + (operand1 == null ? "-" : operand1) + ", "
-                        + (operand2 == null ? "-" : operand2) + ", ";
-        if (output == -2) {
-            string += "-";
-        }
-        else if (output == -1) {
-            string += "*";
-        }
-        else {
-            string += (op != Op.JUMP ? "$" : "") + String.valueOf(output);
-        }
-        return string;
+        return opToString(op) + ", " + (operand1 == null ? "-" : operand1) + ", "
+                        + (operand2 == null ? "-" : operand2) + ", " + (output == null ? "-" : output);
     }
 }
 
@@ -115,8 +105,7 @@ class QuadOperand {
 
     private Type type;
     private int tempVar;
-    private boolean pointer;
-    private boolean address;
+    private boolean isAddress;
     private String identifier;
 
     public QuadOperand(IRInfo irInfo) {
@@ -124,15 +113,13 @@ class QuadOperand {
             case TEMPVAR:
                 this.type = irInfo.getType();
                 this.tempVar = irInfo.getTempVar();
-                this.pointer = false;
-                this.address = false;
+                this.isAddress = irInfo.isAddress();
                 this.identifier = null;
                 break;
             case IDENTIFIER:
-            this.type = irInfo.getType();
+                this.type = irInfo.getType();
                 this.tempVar = -1;
-                this.pointer = false;
-                this.address = false;
+                this.isAddress = irInfo.isAddress();
                 this.identifier = irInfo.getIdentifier();
                 break;
             default:
@@ -144,24 +131,21 @@ class QuadOperand {
     public QuadOperand(Type type, int tempVar) {
         this.type = type;
         this.tempVar = tempVar;
-        this.pointer = false;
-        this.address = false;
+        this.isAddress = false;
         this.identifier = null;
     }
 
-    public QuadOperand(Type type, int tempVar, boolean pointer, boolean address) {
+    public QuadOperand(Type type, int tempVar, boolean isAddress) {
         this.type = type;
         this.tempVar = tempVar;
-        this.pointer = pointer;
-        this.address = address;
+        this.isAddress = isAddress;
         this.identifier = null;
     }
 
     public QuadOperand(Type type, String identifier) {
         this.type = type;
         this.tempVar = -1;
-        this.pointer = false;
-        this.address = false;
+        this.isAddress = false;
         this.identifier = identifier;
     }
 
@@ -169,15 +153,58 @@ class QuadOperand {
     public String toString() {
         switch (type) {
             case TEMPVAR:
-                if (pointer) {
+                if (isAddress) {
                     return "[$" + tempVar + "]";
-                } else if (address) {
-                    return "{$" + tempVar + "}";
                 } else {
                     return "$" + tempVar;
                 }
             case IDENTIFIER:
                 return identifier;
+            default:
+                return "";
+        }
+    }
+}
+
+class QuadOutput {
+    enum Type {
+        NORMAL, ADDRESS, RET, BACKPATCH, LABEL
+    }
+
+    private Type type;
+    private int tempVar;
+
+    public QuadOutput(IRInfo irInfo) {
+        assert(irInfo.getType() == QuadOperand.Type.TEMPVAR);
+        this.type = (irInfo.isAddress() ? Type.ADDRESS : Type.NORMAL);
+        this.tempVar = irInfo.getTempVar();
+    }
+
+    public QuadOutput(Type type, int tempVar) {
+        assert(type != Type.RET && type != Type.BACKPATCH);
+        this.type = type;
+        this.tempVar = tempVar;
+    }
+
+    public QuadOutput(Type type) {
+        assert(type == Type.RET || type == Type.BACKPATCH);
+        this.type = type;
+        this.tempVar = -1;
+    }
+
+    @Override
+    public String toString() {
+        switch (type) {
+            case NORMAL:
+                return "$" + tempVar;
+            case ADDRESS:
+                return "[$" + tempVar + "]";
+            case LABEL:
+                return String.valueOf(tempVar);
+            case RET:
+                return "$$";
+            case BACKPATCH:
+                return "*";
             default:
                 return "";
         }

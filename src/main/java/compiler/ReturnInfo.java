@@ -221,17 +221,34 @@ class IRInfo {
     QuadOperand.Type type;
     private int tempVar;
     private String identifier;
+    private boolean isAddress;
 
     public IRInfo(QuadOperand.Type type, int tempVar) {
         this.type = type;
         this.tempVar = tempVar;
         this.identifier = "";
+        this.isAddress = false;
     }
 
     public IRInfo(QuadOperand.Type type, String identifier) {
         this.type = type;
         this.tempVar = -1;
         this.identifier = identifier;
+        this.isAddress = false;
+    }
+
+    public IRInfo(QuadOperand.Type type, int tempVar, boolean isAddress) {
+        this.type = type;
+        this.tempVar = tempVar;
+        this.identifier = "";
+        this.isAddress = isAddress;
+    }
+
+    public IRInfo(QuadOperand.Type type, String identifier, boolean isAddress) {
+        this.type = type;
+        this.tempVar = -1;
+        this.identifier = identifier;
+        this.isAddress = isAddress;
     }
 
     public QuadOperand.Type getType() {
@@ -244,6 +261,10 @@ class IRInfo {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public boolean isAddress() {
+        return isAddress;
     }
 
     public void setType(QuadOperand.Type type) {
