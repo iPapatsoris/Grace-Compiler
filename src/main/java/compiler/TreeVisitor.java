@@ -15,12 +15,7 @@ import java.lang.String;
 class TreeVisitor extends DepthFirstAdapter {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
     public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_PURPLE = "\u001B[35m";
-    public static final String ANSI_CYAN = "\u001B[36m";
-    public static final String ANSI_WHITE = "\u001B[37m";
 
     private SymbolTable symbolTable;
     private ArrayDeque<ReturnInfo> returnInfo;
@@ -96,271 +91,6 @@ class TreeVisitor extends DepthFirstAdapter {
             System.out.println(node);
         }
     }
-
-    @Override
-    public void defaultIn(Node node) {
-        System.out.println(ANSI_RED + node.getClass() + " " + ANSI_RESET + node);
-    }
-
-    /* ******** In ******** */
-
-    @Override
-    public void inAFuncDefLocalDef(AFuncDefLocalDef node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncDeclLocalDef(AFuncDeclLocalDef node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAVarDefLocalDef(AVarDefLocalDef node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncDef(AFuncDef node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAHeader(AHeader node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ":  " + node.getIdentifier());
-            addIndentationLevel();
-        }
-    }
-
-    @Override
-    public void inAFparDef(AFparDef node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ":  " +
-                (node.getRef() != null ? "ref " : "")  + node.getIdentifier());
-            addIndentationLevel();
-        }
-    }
-
-    @Override
-    public void inAFparType(AFparType node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ":  " +
-                (node.getLsquareBracket() != null ? "empty dimension, " : "")  + node.getIntConstant());
-            addIndentationLevel();
-        }
-    }
-
-    @Override
-    public void inAIntDataType(AIntDataType node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inACharDataType(ACharDataType node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANothingDataType(ANothingDataType node) {
-        printNode(node);
-    }
-
-    /* Variable */
-
-    @Override
-    public void inAVarDef(AVarDef node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ":  " + node.getIdentifier());
-            addIndentationLevel();
-        }
-    }
-
-    @Override
-    public void inAVarType(AVarType node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ":  " + node.getIntConstant());
-            addIndentationLevel();
-        }
-    }
-
-    /* Statement */
-
-    @Override
-    public void inAIfStatement(AIfStatement node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ": then " + node.getThen().size() + ", else " + node.getElse().size());
-            addIndentationLevel();
-        }
-    }
-
-    @Override
-    public void inAWhileStatement(AWhileStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAAssignmentStatement(AAssignmentStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncCallStatement(AFuncCallStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAReturnStatement(AReturnStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANullStatement(ANullStatement node) {
-        printNode(node);
-    }
-
-    /* Condition */
-
-    @Override
-    public void inADisjCond(ADisjCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAConjCond(AConjCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANegCond(ANegCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAEqualCond(AEqualCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANotEqualCond(ANotEqualCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAGreaterCond(AGreaterCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inALessCond(ALessCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAGreaterEqualCond(AGreaterEqualCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inALessEqualCond(ALessEqualCond node) {
-        printNode(node);
-    }
-
-    /* Function call */
-
-    @Override
-    public void inAFuncCall(AFuncCall node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ": " + node.getIdentifier());
-            addIndentationLevel();
-        }
-    }
-
-   /* L_value */
-
-    @Override
-    public void inAIdentifierLValue(AIdentifierLValue node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ": " + node.getIdentifier());
-            addIndentationLevel();
-        }
-    }
-
-    @Override
-    public void inAStringLValue(AStringLValue node) {
-        if (printAST) {
-            printIndentation();
-            System.out.println(getClassName(node) + ": " + node.getString());
-            addIndentationLevel();
-        }
-    }
-
-    /* Expr */
-
-    @Override
-    public void inALValueExpr(ALValueExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncCallExpr(AFuncCallExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAAddExpr(AAddExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inASubExpr(ASubExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAMultExpr(AMultExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inADivExpr(ADivExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAModExpr(AModExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAPositiveExpr(APositiveExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANegativeExpr(ANegativeExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAIntConstantExpr(AIntConstantExpr node) {
-        printTokenVal(node);
-    }
-
-    @Override
-    public void inACharConstantExpr(ACharConstantExpr node) {
-        printTokenVal(node);
-    }
-
-    @Override
-    public void inStart(Start node) {}
 
     /* ******** Out & Case  ******** */
 
@@ -1390,5 +1120,270 @@ class TreeVisitor extends DepthFirstAdapter {
         IRInfo irInfo = new IRInfo(IRInfo.Type.IDENTIFIER, node.getCharConstant().getText());
         returnInfo.push(new ExprInfo(Type.CHAR, node.getCharConstant(), irInfo));
     }
+
+    /* ******** In ******** */
+
+    @Override
+    public void defaultIn(Node node) {
+        System.out.println(ANSI_RED + node.getClass() + " " + ANSI_RESET + node);
+    }
+
+    @Override
+    public void inAFuncDefLocalDef(AFuncDefLocalDef node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncDeclLocalDef(AFuncDeclLocalDef node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAVarDefLocalDef(AVarDefLocalDef node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncDef(AFuncDef node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAHeader(AHeader node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " + node.getIdentifier());
+            addIndentationLevel();
+        }
+    }
+
+    @Override
+    public void inAFparDef(AFparDef node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " +
+                (node.getRef() != null ? "ref " : "")  + node.getIdentifier());
+            addIndentationLevel();
+        }
+    }
+
+    @Override
+    public void inAFparType(AFparType node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " +
+                (node.getLsquareBracket() != null ? "empty dimension, " : "")  + node.getIntConstant());
+            addIndentationLevel();
+        }
+    }
+
+    @Override
+    public void inAIntDataType(AIntDataType node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inACharDataType(ACharDataType node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANothingDataType(ANothingDataType node) {
+        printNode(node);
+    }
+
+    /* Variable */
+
+    @Override
+    public void inAVarDef(AVarDef node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " + node.getIdentifier());
+            addIndentationLevel();
+        }
+    }
+
+    @Override
+    public void inAVarType(AVarType node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " + node.getIntConstant());
+            addIndentationLevel();
+        }
+    }
+
+    /* Statement */
+
+    @Override
+    public void inAIfStatement(AIfStatement node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": then " + node.getThen().size() + ", else " + node.getElse().size());
+            addIndentationLevel();
+        }
+    }
+
+    @Override
+    public void inAWhileStatement(AWhileStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAAssignmentStatement(AAssignmentStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncCallStatement(AFuncCallStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAReturnStatement(AReturnStatement node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANullStatement(ANullStatement node) {
+        printNode(node);
+    }
+
+    /* Condition */
+
+    @Override
+    public void inADisjCond(ADisjCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAConjCond(AConjCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANegCond(ANegCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAEqualCond(AEqualCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANotEqualCond(ANotEqualCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAGreaterCond(AGreaterCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inALessCond(ALessCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAGreaterEqualCond(AGreaterEqualCond node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inALessEqualCond(ALessEqualCond node) {
+        printNode(node);
+    }
+
+    /* Function call */
+
+    @Override
+    public void inAFuncCall(AFuncCall node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": " + node.getIdentifier());
+            addIndentationLevel();
+        }
+    }
+
+   /* L_value */
+
+    @Override
+    public void inAIdentifierLValue(AIdentifierLValue node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": " + node.getIdentifier());
+            addIndentationLevel();
+        }
+    }
+
+    @Override
+    public void inAStringLValue(AStringLValue node) {
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": " + node.getString());
+            addIndentationLevel();
+        }
+    }
+
+    /* Expr */
+
+    @Override
+    public void inALValueExpr(ALValueExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAFuncCallExpr(AFuncCallExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAAddExpr(AAddExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inASubExpr(ASubExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAMultExpr(AMultExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inADivExpr(ADivExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAModExpr(AModExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAPositiveExpr(APositiveExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inANegativeExpr(ANegativeExpr node) {
+        printNode(node);
+    }
+
+    @Override
+    public void inAIntConstantExpr(AIntConstantExpr node) {
+        printTokenVal(node);
+    }
+
+    @Override
+    public void inACharConstantExpr(ACharConstantExpr node) {
+        printTokenVal(node);
+    }
+
+    @Override
+    public void inStart(Start node) {}
 
 }
