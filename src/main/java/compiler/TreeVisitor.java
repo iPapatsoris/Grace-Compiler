@@ -26,20 +26,26 @@ class TreeVisitor extends DepthFirstAdapter {
     private ArrayDeque<ReturnInfo> returnInfo;
     private IntermediateRepresentation ir;
     private int indentation;
+    private final boolean printAST;
 
-    public TreeVisitor() {
-        symbolTable = new SymbolTable();
-        returnInfo = new ArrayDeque<ReturnInfo>();
-        ir = new IntermediateRepresentation();
-        indentation = 0;
+    public TreeVisitor(boolean printAST) {
+        this.symbolTable = new SymbolTable();
+        this.returnInfo = new ArrayDeque<ReturnInfo>();
+        this.ir = new IntermediateRepresentation();
+        this.indentation = 0;
+        this.printAST = printAST;
     }
 
     private void addIndentationLevel() {
-        indentation++;
+        if (printAST) {
+            indentation++;
+        }
     }
 
     private void removeIndentationLevel() {
-        indentation--;
+        if (printAST) {
+            indentation--;
+        }
     }
 
     private void printIndentation() {
@@ -77,16 +83,18 @@ class TreeVisitor extends DepthFirstAdapter {
 
     /* Generic printing that does not print pure token attributes */
     private void printNode(Node node) {
-        printIndentation();
-        String nodeClass = node.getClass().toString();
-        int suffixIndex = nodeClass.lastIndexOf('.');
-        System.out.println(nodeClass.substring(suffixIndex+2));
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node));
+            addIndentationLevel();
+        }
     }
 
     private void printTokenVal(Node node) {
-        printIndentation();
-        System.out.println(node);
+        if (printAST) {
+            printIndentation();
+            System.out.println(node);
+        }
     }
 
     @Override
@@ -118,25 +126,31 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void inAHeader(AHeader node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ":  " + node.getIdentifier());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " + node.getIdentifier());
+            addIndentationLevel();
+        }
     }
 
     @Override
     public void inAFparDef(AFparDef node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ":  " +
-            (node.getRef() != null ? "ref " : "")  + node.getIdentifier());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " +
+                (node.getRef() != null ? "ref " : "")  + node.getIdentifier());
+            addIndentationLevel();
+        }
     }
 
     @Override
     public void inAFparType(AFparType node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ":  " +
-            (node.getLsquareBracket() != null ? "empty dimension, " : "")  + node.getIntConstant());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " +
+                (node.getLsquareBracket() != null ? "empty dimension, " : "")  + node.getIntConstant());
+            addIndentationLevel();
+        }
     }
 
     @Override
@@ -158,25 +172,31 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void inAVarDef(AVarDef node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ":  " + node.getIdentifier());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " + node.getIdentifier());
+            addIndentationLevel();
+        }
     }
 
     @Override
     public void inAVarType(AVarType node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ":  " + node.getIntConstant());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ":  " + node.getIntConstant());
+            addIndentationLevel();
+        }
     }
 
     /* Statement */
 
     @Override
     public void inAIfStatement(AIfStatement node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ": then " + node.getThen().size() + ", else " + node.getElse().size());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": then " + node.getThen().size() + ", else " + node.getElse().size());
+            addIndentationLevel();
+        }
     }
 
     @Override
@@ -255,25 +275,31 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void inAFuncCall(AFuncCall node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ": " + node.getIdentifier());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": " + node.getIdentifier());
+            addIndentationLevel();
+        }
     }
 
    /* L_value */
 
     @Override
     public void inAIdentifierLValue(AIdentifierLValue node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ": " + node.getIdentifier());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": " + node.getIdentifier());
+            addIndentationLevel();
+        }
     }
 
     @Override
     public void inAStringLValue(AStringLValue node) {
-        printIndentation();
-        System.out.println(getClassName(node) + ": " + node.getString());
-        addIndentationLevel();
+        if (printAST) {
+            printIndentation();
+            System.out.println(getClassName(node) + ": " + node.getString());
+            addIndentationLevel();
+        }
     }
 
     /* Expr */
@@ -340,12 +366,16 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAFuncDefLocalDef(AFuncDefLocalDef node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
     public void outAFuncDeclLocalDef(AFuncDeclLocalDef node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         FunctionInfo functionInfo = (FunctionInfo) returnInfo.pop();
         ArrayDeque<Argument> arguments = new ArrayDeque<Argument>();
@@ -356,17 +386,20 @@ class TreeVisitor extends DepthFirstAdapter {
         }
         Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getType(), false);
         symbolTable.insert(function);
-        System.out.println("returnInfo size now: " + returnInfo.size());
     }
 
     @Override
     public void outAVarDefLocalDef(AVarDefLocalDef node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
     public void outAFuncDef(AFuncDef node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
@@ -409,8 +442,6 @@ class TreeVisitor extends DepthFirstAdapter {
             for (Argument argument : arguments) {
                 symbolTable.insert(argument);
             }
-
-            System.out.println("returnInfo size now: " + returnInfo.size());
         }
         {
             List<PLocalDef> copy = new ArrayList<PLocalDef>(node.getLocalDef());
@@ -462,7 +493,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAHeader(AHeader node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         ArrayDeque<ArgumentInfo> arguments = new ArrayDeque<ArgumentInfo>();
         for (int argumentCount = node.getFparDef().size() ; argumentCount > 0 ; argumentCount--) {
@@ -480,7 +513,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAFparDef(AFparDef node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         ArgumentInfo argumentInfo = (ArgumentInfo) returnInfo.peek();
         boolean reference =  (node.getRef() != null ? true : false);
@@ -490,7 +525,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAFparType(AFparType node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         boolean noFirstDimension = (node.getLsquareBracket() != null ? true : false);
         ArgumentInfo argumentInfo = new ArgumentInfo(convertNodeToType(node.getDataType()), convertTokensToNumbers(node.getIntConstant()), noFirstDimension);
@@ -499,24 +536,32 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAIntDataType(AIntDataType node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
     public void outACharDataType(ACharDataType node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
     public void outANothingDataType(ANothingDataType node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     /* Variable */
 
     @Override
     public void outAVarDef(AVarDef node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         VariableInfo variableInfo = (VariableInfo) returnInfo.pop();
         for (Token token : node.getIdentifier()) {
@@ -527,7 +572,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAVarType(AVarType node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         Type type = convertNodeToType(node.getDataType());
         if (type == Type.NOTHING) {
@@ -597,7 +644,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAIfStatement(AIfStatement node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
@@ -636,7 +685,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAWhileStatement(AWhileStatement node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     private static void checkSameTypeAssignment(ExprInfo lvalue, ExprInfo expr) {
@@ -654,7 +705,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAAssignmentStatement(AAssignmentStatement node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo expr = (ExprInfo)returnInfo.pop();
         ExprInfo lvalue = (ExprInfo)returnInfo.pop();
         checkSameTypeAssignment(lvalue, expr);
@@ -667,14 +720,18 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAFuncCallStatement(AFuncCallStatement node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo expr = ((ExprInfo)returnInfo.pop()); // Consume function type: no need to check outside expression fcall
         returnInfo.push(new BackpatchInfo(new ArrayList<Integer>()));
     }
 
     @Override
     public void outAReturnStatement(AReturnStatement node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo expr = (node.getExpr() == null ? null : ((ExprInfo)returnInfo.pop()));
         assert returnInfo.peek() instanceof FunctionInfo;
         FunctionInfo functionInfo = ((FunctionInfo)returnInfo.peek());
@@ -704,7 +761,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outANullStatement(ANullStatement node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         returnInfo.push(new BackpatchInfo(new ArrayList<Integer>()));
     }
 
@@ -748,7 +807,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outADisjCond(ADisjCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
 
@@ -776,12 +837,16 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAConjCond(AConjCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
     public void outANegCond(ANegCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         BackpatchInfo backpatchInfo = (BackpatchInfo)(returnInfo.peek());
         ArrayList<Integer> tmp = backpatchInfo.getFalseList();
         backpatchInfo.setFalseList(backpatchInfo.getTrueList());
@@ -805,7 +870,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAEqualCond(AEqualCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("=", exprLeft, exprRight);
@@ -814,7 +881,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outANotEqualCond(ANotEqualCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("#", exprLeft, exprRight);
@@ -823,7 +892,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAGreaterCond(AGreaterCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand(">", exprLeft, exprRight);
@@ -832,7 +903,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outALessCond(ALessCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("<", exprLeft, exprRight);
@@ -841,7 +914,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAGreaterEqualCond(AGreaterEqualCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand(">=", exprLeft, exprRight);
@@ -850,7 +925,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outALessEqualCond(ALessEqualCond node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo exprRight = (ExprInfo)returnInfo.pop();
         ExprInfo exprLeft = (ExprInfo)returnInfo.pop();
         checkSameTypeOperand("<=", exprLeft, exprRight);
@@ -861,7 +938,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAFuncCall(AFuncCall node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         Symbol symbol = symbolTable.lookup(node.getIdentifier().getText());
         if (symbol == null || !(symbol instanceof Function)) {
             System.err.println("Semantic error: undeclared method \'" +
@@ -948,7 +1027,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAIdentifierLValue(AIdentifierLValue node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         Symbol symbol = symbolTable.lookup(node.getIdentifier().getText());
         if (symbol == null || !(symbol instanceof Variable || symbol instanceof Argument)) {
@@ -1053,7 +1134,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAStringLValue(AStringLValue node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
 
         if (node.getExpr().size() > 1) {
             System.err.println("Semantic error: lvalue '" + node.getString().getText() +
@@ -1086,12 +1169,16 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAFuncCallExpr(AFuncCallExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     @Override
     public void outALValueExpr(ALValueExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
     }
 
     private static void checkNumericOperand(String operator, ExprInfo expr) {
@@ -1106,7 +1193,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAAddExpr(AAddExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
@@ -1136,7 +1225,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outASubExpr(ASubExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
@@ -1166,7 +1257,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAMultExpr(AMultExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
@@ -1196,7 +1289,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outADivExpr(ADivExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
@@ -1226,7 +1321,9 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAModExpr(AModExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ArrayDeque<ExprInfo> exprs = new ArrayDeque<ExprInfo>();
         for (int i = 0 ; i < 2 ; i++) {
             exprs.push(((ExprInfo)returnInfo.pop()));
@@ -1256,14 +1353,18 @@ class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void outAPositiveExpr(APositiveExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo expr = (ExprInfo)returnInfo.peek();
         checkNumericOperand("+", expr);
     }
 
     @Override
     public void outANegativeExpr(ANegativeExpr node) {
-        removeIndentationLevel();
+        if (printAST) {
+            removeIndentationLevel();
+        }
         ExprInfo expr = (ExprInfo)returnInfo.peek();
         checkNumericOperand("-", expr);
         expr.toggleNegative();

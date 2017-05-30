@@ -93,8 +93,14 @@ class Quad {
 
     @Override
     public String toString() {
-        return opToString(op) + ", " + (operand1 == null ? "-" : operand1) + ", "
-                        + (operand2 == null ? "-" : operand2) + ", " + (output == null ? "-" : output);
+        String string = opToString(op) + ", " + (operand1 == null ? "-" : operand1) + ", "
+                        + (operand2 == null ? "-" : operand2) + ", ";
+        if (op == Quad.Op.ARRAY) {
+            string += "$" + output.getTempVar();
+        } else {
+            string += (output == null ? "-" : output);
+        }
+        return string;
     }
 }
 
@@ -146,6 +152,10 @@ class QuadOperand {
         this.type = type;
         this.tempVar = -1;
         this.identifier = null;
+    }
+
+    public int getTempVar() {
+        return tempVar;
     }
 
     @Override

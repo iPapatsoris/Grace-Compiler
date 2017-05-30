@@ -15,12 +15,10 @@ import java.lang.IllegalArgumentException;
 public class Main {
 
     public static void main(String args[]) {
-        if (args.length < 1) {
-            throw new IllegalArgumentException("No input file");
-        }
+        Options options = new Options(args);
         Start tree = null;
         try {
-            PushbackReader reader = new PushbackReader(new FileReader(args[0]), 1024);
+            PushbackReader reader = new PushbackReader(new FileReader(options.getInput()), 1024);
             Parser p = new Parser(new Lexer(reader));
             tree = p.parse();
         } catch (Exception e) {
@@ -33,20 +31,39 @@ public class Main {
             }
             System.exit(1);
         }
-        TreeVisitor treeVisitor = new TreeVisitor();
+        TreeVisitor treeVisitor = new TreeVisitor(options.getPrintAST());
         tree.apply(treeVisitor);
         treeVisitor.printIR();
-        /*Lexer lexer = new Lexer(reader);
-        for(;;) {
-            try {
-            	Token t = lexer.next();
-        		if (t instanceof EOF)
-                	break;
-            	System.out.println(t.getClass() + ": " +  t.toString());
-        	} catch (Exception e) {
-                System.err.println(e.getMessage());
+        System.exit(0);
+    }
+
+    public static class Options {
+        String input;
+        boolean printAST;
+
+        public Options(String args[]) {
+            input = null;
+            printAST = false;
+            for (int i = 0 ; i < args.length ; i++) {
+                switch (args[i]) {
+                    case "-ast":
+                        printAST = true;
+                        break;
+                    default:
+                        input = args[i];
+                }
+            }
+            if (input == null) {
+                throw new IllegalArgumentException("No input file");
             }
         }
-        System.exit(0); */
+
+        public String getInput() {
+            return input;
+        }
+
+        public boolean getPrintAST() {
+            return printAST;
+        }
     }
 }
