@@ -34,11 +34,18 @@ public class Main {
         TreeVisitor treeVisitor = new TreeVisitor(options.getPrintAST());
         tree.apply(treeVisitor);
         treeVisitor.printIR();
+        FinalCode finalCode = new FinalCode(treeVisitor.getIR(), options.getOutput());
+        try {
+            finalCode.generate();
+        } catch (IOException e) {
+            System.err.println("I/O error regarding output file: " + e.getMessage());
+        }
         System.exit(0);
     }
 
     public static class Options {
         String input;
+        String output;
         boolean printAST;
 
         public Options(String args[]) {
@@ -56,10 +63,19 @@ public class Main {
             if (input == null) {
                 throw new IllegalArgumentException("No input file");
             }
+            int suffixIndex = input.lastIndexOf('.');
+            if (suffixIndex < 0) {
+                suffixIndex = input.length();
+            }
+            output = input.substring(0, suffixIndex) + ".s";
         }
 
         public String getInput() {
             return input;
+        }
+
+        public String getOutput() {
+            return output;
         }
 
         public boolean getPrintAST() {

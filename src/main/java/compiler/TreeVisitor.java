@@ -51,6 +51,10 @@ class TreeVisitor extends DepthFirstAdapter {
         ir.print();
     }
 
+    public IntermediateRepresentation getIR() {
+        return ir;
+    }
+
     private static String getClassName(Node node) {
         String nodeClass = node.getClass().toString();
         int suffixIndex = nodeClass.lastIndexOf('.');

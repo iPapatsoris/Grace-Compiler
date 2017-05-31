@@ -46,6 +46,14 @@ class IntermediateRepresentation {
             System.out.println(it.nextIndex() + ": " + it.next());
         }
     }
+
+    public ArrayList<Quad> getQuads() {
+        return quads;
+    }
+
+    public ArrayList<Type> getTempVars() {
+        return tempVars;
+    }
 }
 
 class Quad {
@@ -102,6 +110,22 @@ class Quad {
         }
         return string;
     }
+
+    public Op getOp() {
+        return op;
+    }
+
+    public QuadOperand getOperand1() {
+        return operand1;
+    }
+
+    public QuadOperand getOperand2() {
+        return operand2;
+    }
+
+    public QuadOperand getOutput() {
+        return output;
+    }
 }
 
 class QuadOperand {
@@ -154,8 +178,16 @@ class QuadOperand {
         this.identifier = null;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     public int getTempVar() {
         return tempVar;
+    }
+
+    public String getIdentifier() {
+        return identifier;
     }
 
     @Override
