@@ -76,19 +76,18 @@ class SymbolTable {
         SymbolEntry oldSymbolEntry = lookupTable.get(identifier);
         if (oldSymbolEntry != null) {
             Symbol oldSymbol = oldSymbolEntry.getSymbol();
-            if (symbol instanceof Function && ((Function)symbol).isDefined() && (oldSymbol instanceof Variable || oldSymbol instanceof Argument)
-            || oldSymbol instanceof Function && ((Function)oldSymbol).isDefined() && (symbol instanceof Variable || symbol instanceof Argument)
-            || oldSymbol instanceof Function && symbol instanceof Function && !( !((Function)oldSymbol).isDefined() && ((Function)symbol).isDefined())
-            || !(oldSymbol instanceof Function && symbol instanceof Function) && oldSymbolEntry.getScope() == curScope) {
+            if(oldSymbolEntry.getScope() == curScope && !(oldSymbol instanceof Function
+                && symbol instanceof Function && !((Function)oldSymbol).isDefined()
+                && ((Function)symbol).isDefined())) {
                 System.err.println("Semantic error: symbol \'" + identifier +"\' at " + Symbol.getLocation(symbol.getToken()) +
-                                            " is already defined at " + Symbol.getLocation(oldSymbolEntry.getSymbol().getToken()));
+                                            " is already defined at " + Symbol.getLocation(oldSymbolEntry.getSymbol().getToken()) +
+                                            " at current scope");
                 System.exit(1);
             }
         }
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
         symbolList.push(newSymbolEntry);
         lookupTable.put(identifier, newSymbolEntry);
-
         //System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
     }
 

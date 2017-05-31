@@ -144,12 +144,12 @@ class TreeVisitor extends DepthFirstAdapter {
             /* Function symbol on current scope and arguments on new, unless it's main function */
             boolean mainFunction = symbolTable.onFirstScope();
             if (mainFunction) {
+                symbolTable.loadStandardLibrary();
                 symbolTable.enter();
                 if (functionInfo.getArguments().size() > 0 || functionInfo.getType() != Type.NOTHING) {
                     System.err.println("Semantic error: first method should have no arguments and \'nothing\' as return type");
                     System.exit(1);
                 }
-                symbolTable.loadStandardLibrary();
             }
 
             /* Get arguments */
