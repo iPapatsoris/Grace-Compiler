@@ -31,15 +31,9 @@ public class Main {
             }
             System.exit(1);
         }
-        TreeVisitor treeVisitor = new TreeVisitor(options.getPrintAST());
+        TreeVisitor treeVisitor = new TreeVisitor(options.getOutput(), options.getPrintAST());
         tree.apply(treeVisitor);
         treeVisitor.printIR();
-        FinalCode finalCode = new FinalCode(treeVisitor.getIR(), options.getOutput());
-        try {
-            finalCode.generate();
-        } catch (IOException e) {
-            System.err.println("I/O error regarding output file: " + e.getMessage());
-        }
         System.exit(0);
     }
 

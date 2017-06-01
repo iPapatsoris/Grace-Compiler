@@ -1,4 +1,6 @@
 fun main() : nothing
 fun f(x : int) : nothing
-    {f(2);}
+    fun f(y : char) : nothing
+        {}
+    {}
 {}

@@ -1,11 +1,11 @@
 /* This source is used to easily generate assembly for
-   the Grace Standard Library. The names putc and puts
-   are macros defined inside stdio.h, so putcc and putss
+   the Grace Standard Library. The names putc, puts and getc
+   are already defined inside headers, so putcc, putss and getcc
    are used instead. The actual assembly files contain the
-   correct names (putc and puts). You should use those
+   correct names (putc, puts, getc). You should use those
    pre-compiled files. If you recompile from here instead,
-   you should manually change every putcc and putss name
-   instance inside the generated assembly code to putc and puts. */
+   you should manually change every name instance inside the
+   generated assembly code */
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -54,15 +54,3 @@ int32_t ord (char c) {
 char chr (int32_t i) {
     return (char)i;
 }
-
-/*size_t strlenn(const char *str) {
-    return strlen(str);
-}*/
-
-/*int main() {
-    char c[14];
-    gets(3, c);
-    printf("%s", c);
-    gets(3, c);
-    printf("%s", c);
-}*/

@@ -88,12 +88,16 @@ class SymbolTable {
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
         symbolList.push(newSymbolEntry);
         lookupTable.put(identifier, newSymbolEntry);
-        //System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
+        System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
     }
 
     public Symbol lookup(String symbol) {
         SymbolEntry symbolEntry = lookupTable.get(symbol);
         return (symbolEntry == null ? null : symbolEntry.getSymbol());
+    }
+
+    public long getCurScope() {
+        return curScope;
     }
 
     public boolean onFirstScope() {

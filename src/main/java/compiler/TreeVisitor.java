@@ -10,6 +10,7 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Iterator;
 import java.lang.String;
+import java.io.IOException;
 
 
 class TreeVisitor extends DepthFirstAdapter {
@@ -20,13 +21,19 @@ class TreeVisitor extends DepthFirstAdapter {
     private SymbolTable symbolTable;
     private ArrayDeque<ReturnInfo> returnInfo;
     private IntermediateRepresentation ir;
+    FinalCode finalCode;
     private int indentation;
     private final boolean printAST;
 
-    public TreeVisitor(boolean printAST) {
+    public TreeVisitor(String output, boolean printAST) {
         this.symbolTable = new SymbolTable();
         this.returnInfo = new ArrayDeque<ReturnInfo>();
         this.ir = new IntermediateRepresentation();
+        try {
+            this.finalCode = new FinalCode(ir, output);
+        } catch (IOException e) {
+            System.err.println("I/O error regarding output file: " + e.getMessage());
+        }
         this.indentation = 0;
         this.printAST = printAST;
     }
@@ -140,6 +147,7 @@ class TreeVisitor extends DepthFirstAdapter {
     public void caseAFuncDef(AFuncDef node)
     {
         inAFuncDef(node);
+        long functionScope = -2;
         if(node.getHeader() != null)
         {
             node.getHeader().apply(this);
@@ -167,6 +175,7 @@ class TreeVisitor extends DepthFirstAdapter {
             /* Add function symbol on current scope */
             Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getType(), true);
             symbolTable.insert(function);
+            functionScope = symbolTable.getCurScope();
 
 
             /* Add arguments on new scope */
@@ -186,8 +195,11 @@ class TreeVisitor extends DepthFirstAdapter {
         }
 
         FunctionInfo functionInfo = ((FunctionInfo)returnInfo.peek());
+
+        /* Append scope to function name for unique labeling */
+        String uniqueFunctionName = functionInfo.getToken().getText() + String.valueOf(functionScope);
         Quad quad = new Quad(Quad.Op.UNIT,
-                             new QuadOperand(QuadOperand.Type.IDENTIFIER, functionInfo.getToken().getText()),
+                             new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName),
                              null, null);
         ir.insertQuad(quad);
 
@@ -218,11 +230,14 @@ class TreeVisitor extends DepthFirstAdapter {
         }
         ir.backpatch(blockList, ir.getNextQuadIndex());
         quad = new Quad(Quad.Op.ENDU,
-                             new QuadOperand(QuadOperand.Type.IDENTIFIER, functionInfo.getToken().getText()),
+                             new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName),
                              null, null);
         ir.insertQuad(quad);
-
+        finalCode.generate();
         symbolTable.exit();
+        if (symbolTable.onFirstScope()) {
+            finalCode.closeWriter();
+        }
     }
 
     @Override
