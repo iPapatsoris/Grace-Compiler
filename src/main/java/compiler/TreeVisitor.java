@@ -759,7 +759,7 @@ class TreeVisitor extends DepthFirstAdapter {
 
         /* Append scope to function name for unique labeling */
         long calledFunctionScope = symbolTable.lookupEntry(function.getToken().getText()).getScope();
-        String uniqueFunctionName = function.getToken().getText() + "%" + String.valueOf(calledFunctionScope);
+        String uniqueFunctionName = "_" + function.getToken().getText() + "_" + String.valueOf(calledFunctionScope);
         quad = new Quad(Quad.Op.CALL, null, null,
                         new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName));
         ir.insertQuad(quad);

@@ -15,6 +15,7 @@ class FinalCode {
     private SymbolTable symbolTable;
     private PrintWriter writer;
     private int curQuad;
+    private String curFunction;
     private final int wordSize;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
@@ -25,6 +26,7 @@ class FinalCode {
         this.writer.println(".intel_syntax noprefix\n" +
                             ".text");
         this.curQuad = 0;
+        this.curFunction = null;
         this.wordSize = 4;
     }
 
@@ -49,27 +51,35 @@ class FinalCode {
             writer.println("\n" + curQuad + ":");
             switch (quad.getOp()) {
                 case UNIT:
-                    String originalName = uniqueToOriginal(quad.getOperand1().getIdentifier());
+                    curFunction = quad.getOperand1().getIdentifier();
+                    String originalName = uniqueToOriginal(curFunction);
                     ArrayDeque<Variable> localVars = symbolTable.getLocalVars();
                     long curScope = symbolTable.getCurScope();
-                    System.out.println("unique is " + quad.getOperand1().getIdentifier() + " original is " + originalName);
+                    System.out.println("unique is " + curFunction + " original is " + originalName);
                     System.out.println("Local vars are " + localVars);
-                    writer.println(quad.getOperand1().getIdentifier() + ":\n" +
+                    writer.println(curFunction + ":\n" +
                                    "push ebp\n" +
                                    "mov ebp, esp\n" +
                                    "sub esp, " + localVars.size() * wordSize);
                     break;
                 case ENDU:
-                    writer.println(quad.getOperand1().getIdentifier() + "_end:\n" +
+                    writer.println(curFunction + "_end:\n" +
                                    "mov esp, ebp\n" +
                                    "pop ebp\n" +
                                    "ret");
+                    break;
+                case RET:
+                    writer.println("jmp " + curFunction + "_end");
                     break;
                 default:
                     //System.err.println("Internal error: wrong quad OP in FinalCode");
                     //System.exit(1);
             }
         }
+    }
+
+    private void load(String register, QuadOperand quadOperand) {
+
     }
 
     public void closeWriter() {

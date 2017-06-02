@@ -1,4 +1,4 @@
-fun main() : nothing
+fun puti() : nothing
 var mainVar1, mainVar2 : int;
 fun f(cc : char) : nothing;
 var mainVar3 : char;
@@ -7,8 +7,8 @@ fun f(cc : char) : nothing
     fun h(y : char) : nothing;
     var f2 : int;
     fun h(y : char) : nothing
-        fun g() : nothing
-            {f(f1[1][2]);}
+        fun g() : char
+            {f(f1[1][2]); return 'a';}
         {}
     var f3: int;
     {}
