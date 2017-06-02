@@ -30,7 +30,7 @@ class TreeVisitor extends DepthFirstAdapter {
         this.returnInfo = new ArrayDeque<ReturnInfo>();
         this.ir = new IntermediateRepresentation();
         try {
-            this.finalCode = new FinalCode(ir, output);
+            this.finalCode = new FinalCode(ir, symbolTable, output);
         } catch (IOException e) {
             System.err.println("I/O error regarding output file: " + e.getMessage());
         }
@@ -197,7 +197,8 @@ class TreeVisitor extends DepthFirstAdapter {
         FunctionInfo functionInfo = ((FunctionInfo)returnInfo.peek());
 
         /* Append scope to function name for unique labeling */
-        String uniqueFunctionName = functionInfo.getToken().getText() + String.valueOf(functionScope);
+        String uniqueFunctionName = functionInfo.getToken().getText() + "%" +
+                                    String.valueOf(functionScope);
         Quad quad = new Quad(Quad.Op.UNIT,
                              new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName),
                              null, null);
@@ -754,8 +755,12 @@ class TreeVisitor extends DepthFirstAdapter {
                              new QuadOperand(QuadOperand.Type.TEMPVAR, result),
                              new QuadOperand(QuadOperand.Type.RETCALLER), null);
         ir.insertQuad(quad);
+
+        /* Append scope to function name for unique labeling */
+        long calledFunctionScope = symbolTable.lookupEntry(function.getToken().getText()).getScope();
+        String uniqueFunctionName = function.getToken().getText() + "%" + String.valueOf(calledFunctionScope);
         quad = new Quad(Quad.Op.CALL, null, null,
-                        new QuadOperand(QuadOperand.Type.IDENTIFIER, function.getToken().getText()));
+                        new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName));
         ir.insertQuad(quad);
         returnInfo.push(new ExprInfo(function.getType(), node.getIdentifier(),
                         new IRInfo(IRInfo.Type.TEMPVAR, result)));

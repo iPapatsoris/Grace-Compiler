@@ -71,6 +71,21 @@ class SymbolTable {
         //System.out.println(TreeVisitor.ANSI_BLUE + "After exit: " + this + TreeVisitor.ANSI_RESET);
     }
 
+    public ArrayDeque<Variable> getLocalVars() {
+        ArrayDeque<Variable> localVars = new ArrayDeque<Variable>();
+        for (Iterator<SymbolEntry> it = symbolList.iterator(); it.hasNext(); ) {
+            SymbolEntry symbolEntry = it.next();
+            Symbol symbol = symbolEntry.getSymbol();
+            if (symbolEntry.getScope() != curScope || symbol instanceof Argument) {
+                break;
+            }
+            if (symbol instanceof Variable) {
+                localVars.push((Variable)symbol);
+            }
+        }
+        return localVars;
+    }
+
     public void insert(Symbol symbol) {
         String identifier = symbol.getToken().getText();
         SymbolEntry oldSymbolEntry = lookupTable.get(identifier);
@@ -94,6 +109,10 @@ class SymbolTable {
     public Symbol lookup(String symbol) {
         SymbolEntry symbolEntry = lookupTable.get(symbol);
         return (symbolEntry == null ? null : symbolEntry.getSymbol());
+    }
+
+    public SymbolEntry lookupEntry(String symbol) {
+        return lookupTable.get(symbol);
     }
 
     public long getCurScope() {
@@ -363,7 +382,7 @@ class SymbolTable {
         return symbolList.toString();
     }
 
-    private class SymbolEntry {
+    public class SymbolEntry {
         private Symbol symbol;
         private long scope;
         private SymbolEntry shadowedSymbolEntry;

@@ -2,7 +2,6 @@
 /ex
 /src/tests/*.s
 grades_part1.pdf
-ir.txt
-ir2.txt
-test.s
+*.txt
+*.s
 a.out
