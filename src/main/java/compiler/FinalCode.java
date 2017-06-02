@@ -15,6 +15,7 @@ class FinalCode {
     private SymbolTable symbolTable;
     private PrintWriter writer;
     private int curQuad;
+    private final int wordSize;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
                      String output) throws IOException {
@@ -24,7 +25,19 @@ class FinalCode {
         this.writer.println(".intel_syntax noprefix\n" +
                             ".text");
         this.curQuad = 0;
+        this.wordSize = 4;
     }
+
+        public void addMainFunction(String name) {
+            writer.println("\t.global main\n" +
+                           "main:\n" +
+                           "push ebp\n" +
+                           "mov ebp, esp\n" +
+                           "call _" + name + "_0\n" +
+                           "mov esp, ebp\n" +
+                           "pop ebp\n" +
+                           "ret");
+        }
 
     public void generate() {
         ArrayList<Quad> quads = ir.getQuads();
@@ -33,7 +46,7 @@ class FinalCode {
         for (ListIterator<Quad> it = quads.listIterator(curQuad) ; it.hasNext() ; curQuad++) {
             Quad quad = it.next();
 
-            writer.println("\n@" + curQuad + ":");
+            writer.println("\n" + curQuad + ":");
             switch (quad.getOp()) {
                 case UNIT:
                     String originalName = uniqueToOriginal(quad.getOperand1().getIdentifier());
@@ -41,9 +54,16 @@ class FinalCode {
                     long curScope = symbolTable.getCurScope();
                     System.out.println("unique is " + quad.getOperand1().getIdentifier() + " original is " + originalName);
                     System.out.println("Local vars are " + localVars);
-                    writer.println(quad.getOperand1().getIdentifier() + " proc near\n" +
-                                   "push bp\n" +
-                                   "mov bp, sp");
+                    writer.println(quad.getOperand1().getIdentifier() + ":\n" +
+                                   "push ebp\n" +
+                                   "mov ebp, esp\n" +
+                                   "sub esp, " + localVars.size() * wordSize);
+                    break;
+                case ENDU:
+                    writer.println(quad.getOperand1().getIdentifier() + "_end:\n" +
+                                   "mov esp, ebp\n" +
+                                   "pop ebp\n" +
+                                   "ret");
                     break;
                 default:
                     //System.err.println("Internal error: wrong quad OP in FinalCode");
@@ -57,10 +77,10 @@ class FinalCode {
     }
 
     public static String uniqueToOriginal(String unique) {
-        int index = unique.lastIndexOf("%");
+        int index = unique.lastIndexOf("_");
         if (index == -1) {
             index = unique.length();
         }
-        return unique.substring(0, index);
+        return unique.substring(1, index);
     }
 }

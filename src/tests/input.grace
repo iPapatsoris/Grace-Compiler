@@ -1,7 +1,7 @@
 fun main() : nothing
 var mainVar1, mainVar2 : int;
 fun f(cc : char) : nothing;
-var mainVar3 : int;
+var mainVar3 : char;
 fun f(cc : char) : nothing
     var f1 : char[12][13];
     fun h(y : char) : nothing;

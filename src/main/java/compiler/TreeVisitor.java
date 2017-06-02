@@ -162,6 +162,7 @@ class TreeVisitor extends DepthFirstAdapter {
                     System.err.println("Semantic error: first method should have no arguments and \'nothing\' as return type");
                     System.exit(1);
                 }
+                finalCode.addMainFunction(functionInfo.getToken().getText());
             }
 
             /* Get arguments */
@@ -197,7 +198,7 @@ class TreeVisitor extends DepthFirstAdapter {
         FunctionInfo functionInfo = ((FunctionInfo)returnInfo.peek());
 
         /* Append scope to function name for unique labeling */
-        String uniqueFunctionName = functionInfo.getToken().getText() + "%" +
+        String uniqueFunctionName = "_" + functionInfo.getToken().getText() + "_" +
                                     String.valueOf(functionScope);
         Quad quad = new Quad(Quad.Op.UNIT,
                              new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName),
