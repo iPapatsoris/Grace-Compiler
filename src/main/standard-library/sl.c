@@ -11,31 +11,31 @@
 #include <stdio.h>
 #include <string.h>
 
-void puti (int32_t n) {
+void _puti (int32_t n) {
     printf("%" PRId32, n);
 }
 
-void putcc (char c) {
+void _putc (char c) {
     putchar(c);
 }
 
-void putss(char string[]) {
+void _puts(char string[]) {
     printf("%s", string);
 }
 
-int32_t geti() {
+int32_t _geti() {
     int32_t i;
     scanf("%" SCNd32, &i);
     return i;
 }
 
-char getcc() {
+char _getc() {
     char c;
     scanf(" %c", &c);
     return c;
 }
 
-void gets (int32_t n, char s[]) {
+void _gets(int32_t n, char s[]) {
     fgets(s, n, stdin);
     size_t len = strlen(s);
     if (s[len-1] == '\n') {
@@ -43,14 +43,14 @@ void gets (int32_t n, char s[]) {
     }
 }
 
-int32_t abs (int32_t n) {
+int32_t _abs (int32_t n) {
     return (n >= 0 ? n : n*-1);
 }
 
-int32_t ord (char c) {
+int32_t _ord (char c) {
     return (int32_t)c;
 }
 
-char chr (int32_t i) {
+char _chr(int32_t i) {
     return (char)i;
 }

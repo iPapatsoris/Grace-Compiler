@@ -15,8 +15,11 @@ class FinalCode {
     private SymbolTable symbolTable;
     private PrintWriter writer;
     private int curQuad;
-    private String curFunction;
     private final int wordSize;
+
+    private ArrayDeque<Variable> localVars;
+    private int numLocalVars;
+    private int numTempVars;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
                      String output) throws IOException {
@@ -26,24 +29,28 @@ class FinalCode {
         this.writer.println(".intel_syntax noprefix\n" +
                             ".text");
         this.curQuad = 0;
-        this.curFunction = null;
         this.wordSize = 4;
+        this.localVars = null;
+        this.numLocalVars = 0;
+        this.numTempVars = 0;
     }
 
-        public void addMainFunction(String name) {
-            writer.println("\t.global main\n" +
-                           "main:\n" +
-                           "push ebp\n" +
-                           "mov ebp, esp\n" +
-                           "call _" + name + "_0\n" +
-                           "mov esp, ebp\n" +
-                           "pop ebp\n" +
-                           "ret");
-        }
+    public void addMainFunction(String name) {
+        writer.println("\t.global main\n" +
+                       "main:\n" +
+                       "push ebp\n" +
+                       "mov ebp, esp\n" +
+                       "call _" + name + "_0\n" +
+                       "mov esp, ebp\n" +
+                       "pop ebp\n" +
+                       "ret");
+    }
 
     public void generate() {
         ArrayList<Quad> quads = ir.getQuads();
         ArrayList<Type> tempVars = ir.getTempVars();
+
+        String curFunction = null;
 
         for (ListIterator<Quad> it = quads.listIterator(curQuad) ; it.hasNext() ; curQuad++) {
             Quad quad = it.next();
@@ -53,14 +60,15 @@ class FinalCode {
                 case UNIT:
                     curFunction = quad.getOperand1().getIdentifier();
                     String originalName = uniqueToOriginal(curFunction);
-                    ArrayDeque<Variable> localVars = symbolTable.getLocalVars();
-                    long curScope = symbolTable.getCurScope();
+                    localVars = symbolTable.getLocalVars();
+                    numLocalVars = localVars.size();
+                    numTempVars = tempVars.size() - curQuad;
                     System.out.println("unique is " + curFunction + " original is " + originalName);
-                    System.out.println("Local vars are " + localVars);
+                    //System.out.println("Local vars are " + localVars);
                     writer.println(curFunction + ":\n" +
                                    "push ebp\n" +
                                    "mov ebp, esp\n" +
-                                   "sub esp, " + localVars.size() * wordSize);
+                                   "sub esp, " + (numLocalVars + numTempVars) * wordSize);
                     break;
                 case ENDU:
                     writer.println(curFunction + "_end:\n" +
@@ -71,15 +79,42 @@ class FinalCode {
                 case RET:
                     writer.println("jmp " + curFunction + "_end");
                     break;
+                case ASSIGN:
+                    load("eax", quad.getOperand1());
+                    store("eax", quad.getOutput());
+                    break;
                 default:
-                    //System.err.println("Internal error: wrong quad OP in FinalCode");
+                    System.err.println("Internal error: wrong quad OP " + quad.getOp() +
+                                       " in FinalCode");
                     //System.exit(1);
             }
         }
     }
 
     private void load(String register, QuadOperand quadOperand) {
+        switch (quadOperand.getType()) {
+            case INT:
+                writer.println("mov " + register + ", " + Integer.parseInt(quadOperand.getIdentifier()));
+                break;
+            default:
+                System.err.println("Internal error: wrong quadOperand Type " +
+                                   quadOperand.getType() + " in FinalCode load");
+                //System.exit(1);
+        }
+    }
 
+    private void store(String register, QuadOperand quadOperand) {
+        switch (quadOperand.getType()) {
+            case TEMPVAR:
+                int tempVar = quadOperand.getTempVar();
+                long offset = (numLocalVars + tempVar) * wordSize;
+                writer.println("mov word ptr [bp-" + offset + "], " + register);
+                break;
+            default:
+                System.err.println("Internal error: wrong quadOperand Type " +
+                                   quadOperand.getType() + " in FinalCode store");
+                //System.exit(1);
+        }
     }
 
     public void closeWriter() {
