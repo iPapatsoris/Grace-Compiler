@@ -130,7 +130,8 @@ class Quad {
 
 class QuadOperand {
     enum Type {
-        TEMPVAR, IDENTIFIER, ADDRESS, RETCALLED, RETCALLER, BACKPATCH, LABEL, V, R
+        TEMPVAR, IDENTIFIER, ADDRESS, RETCALLED, RETCALLER, BACKPATCH, LABEL, V, R,
+        STRING, CHAR, INT
     }
 
     private Type type;
@@ -151,6 +152,21 @@ class QuadOperand {
                 break;
             case IDENTIFIER:
                 this.type = Type.IDENTIFIER;
+                this.tempVar = -1;
+                this.identifier = irInfo.getIdentifier();
+                break;
+            case INT:
+                this.type = Type.INT;
+                this.tempVar = -1;
+                this.identifier = irInfo.getIdentifier();
+                break;
+            case CHAR:
+                this.type = Type.CHAR;
+                this.tempVar = -1;
+                this.identifier = irInfo.getIdentifier();
+                break;
+            case STRING:
+                this.type = Type.STRING;
                 this.tempVar = -1;
                 this.identifier = irInfo.getIdentifier();
                 break;
@@ -207,6 +223,13 @@ class QuadOperand {
                 return "*";
             case IDENTIFIER:
                 return identifier;
+            case INT:
+                return identifier;
+            case STRING:
+                return identifier;
+            case CHAR:
+                return identifier;
+
             default:
                 return type.toString();
         }

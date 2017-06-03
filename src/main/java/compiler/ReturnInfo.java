@@ -219,7 +219,7 @@ class BackpatchInfo extends ReturnInfo {
 
 class IRInfo {
     enum Type {
-        TEMPVAR, ADDRESS, IDENTIFIER
+        TEMPVAR, ADDRESS, IDENTIFIER, STRING, CHAR, INT
     }
     Type type;
     private int tempVar;
