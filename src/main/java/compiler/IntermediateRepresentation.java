@@ -4,7 +4,6 @@ import compiler.node.*;
 
 import java.util.Collections;
 import java.util.ArrayList;
-import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.lang.String;

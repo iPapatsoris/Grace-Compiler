@@ -7,5 +7,6 @@ fun main() : nothing
     }
 {
     myVar <- 1;
-    myOtherVar <- myVar * 14;
+    $myOtherVar <- myVar * 14;
+
 }
