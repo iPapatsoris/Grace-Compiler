@@ -43,8 +43,10 @@ class FinalCode {
         writer.println("\t.global main\n" +
                        "main:\n" +
                        "push ebp\n" +
-                       "mov ebp, esp\n" +
+                       "mov ebp, esp\n\n" +
+                       "sub esp, 8\n" +
                        "call _" + name + "_0\n" +
+                       "add esp, 8\n\n" +
                        "mov esp, ebp\n" +
                        "pop ebp\n" +
                        "ret");
@@ -68,10 +70,11 @@ class FinalCode {
                     curTempVar += numTempVars;
                     //System.out.println("unique is " + curFunction + " original is " + originalName);
                     //System.out.println("Local vars are " + localVars);
+                    long totalSize = getTotalLocalVarsSize(localVars) + numTempVars * wordSize;
                     writer.println(curFunction + ":\n" +
                                    "push ebp\n" +
                                    "mov ebp, esp\n" +
-                                   "sub esp, " + (numLocalVars + numTempVars) * wordSize);
+                            /* */  "sub esp, " + totalSize);
                     break;
                 case ENDU:
                     writer.println(curFunction + "_end:\n" +
@@ -94,34 +97,40 @@ class FinalCode {
         }
     }
 
+    /* Register is changed to 'al' if char datatype is involved */
     private void load(String register, QuadOperand quadOperand) {
         switch (quadOperand.getType()) {
             case INT:
                 writer.println("mov " + register + ", " + Integer.parseInt(quadOperand.getIdentifier()));
                 break;
             case CHAR:
+                register = "al";
                 writer.println("mov " + register + ", " + quadOperand.getIdentifier());
                 break;
             case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
                 long offset = (numLocalVars + tempVar+1) * wordSize;
-                writer.println("mov " + register + ", DWORD PTR [ebp-" + offset + "]");
+                //writer.println("mov " + register + ", DWORD PTR [ebp-" + offset + "]");
                 break;
             case IDENTIFIER:
                 String identifier = quadOperand.getIdentifier();
-                int index = indexOfVariable(localVars, identifier);
-                if (index >= 0) {
-                    offset = (index+1) * wordSize;
-                    writer.println("mov " + register + ", DWORD PTR [ebp-" + offset + "]");
+                SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
+                if (localVarInfo != null) {
+                    if (localVarInfo.getType() == Type.CHAR) {
+                        register = "al";
+                    }
+                    writer.println("mov " + register + ", " +
+                                    getTypeSizeName(localVarInfo.getType()) +
+                                    " [ebp-" + (localVarInfo.getOffset() + wordSize) + "]");
                     break;
                 }
-                String originalName = uniqueToOriginal(curFunction);
+                /*String originalName = uniqueToOriginal(curFunction);
                 Function function = (Function)symbolTable.lookup(originalName);
                 index = indexOfArgument(function.getArguments(), identifier);
                 if (index >= 0) {
                     offset = (getArgumentIndex(index, function.getArguments().size()) + 1) * wordSize;
-                    writer.println("mov " + register + ", DWORD PTR [ebp+" + offset + "]");
-                }
+                    //writer.println("mov " + register + ", DWORD PTR [ebp+" + offset + "]");
+                }*/
                 break;
 
             default:
@@ -136,23 +145,26 @@ class FinalCode {
             case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
                 long offset = (numLocalVars + tempVar + 1) * wordSize;
-                writer.println("mov DWORD PTR [ebp-" + offset + "], " + register);
+            //    writer.println("mov DWORD PTR [ebp-" + offset + "], " + register);
                 break;
             case IDENTIFIER:
                 String identifier = quadOperand.getIdentifier();
-                int index = indexOfVariable(localVars, identifier);
-                if (index >= 0) {
-                    offset = (index + 1) * wordSize;
-                    writer.println("mov DWORD PTR [ebp-" + offset + "], " + register);
+                SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
+                if (localVarInfo != null) {
+                    if (localVarInfo.getType() == Type.CHAR) {
+                        register = "al";
+                    }
+                    writer.println("mov " + getTypeSizeName(localVarInfo.getType()) +
+                                   " [ebp-" + (localVarInfo.getOffset() + wordSize) + "], " + register);
                     break;
                 }
-                String originalName = uniqueToOriginal(curFunction);
+                /*String originalName = uniqueToOriginal(curFunction);
                 Function function = (Function)symbolTable.lookup(originalName);
                 index = indexOfArgument(function.getArguments(), identifier);
                 if (index >= 0) {
                     offset = (getArgumentIndex(index, function.getArguments().size()) + 1) * wordSize;
                     writer.println("mov DWORD PTR [bp+" + offset + "], " + register);
-                }
+                }*/
                 break;
             default:
                 System.err.println("Internal error: wrong quadOperand Type " +
@@ -165,8 +177,7 @@ class FinalCode {
         writer.close();
     }
 
-    /* Generalize later */
-    public int indexOfArgument(ArrayDeque<Argument> arguments, String identifier) {
+    public int getIndexOfArgument(ArrayDeque<Argument> arguments, String identifier) {
         int index = 0;
         for (Iterator<Argument> it = arguments.iterator() ; it.hasNext() ; index++) {
             if (it.next().getToken().getText().equals(identifier)) {
@@ -176,21 +187,76 @@ class FinalCode {
         return -1;
     }
 
-    /* Genaralize later */
-    public int indexOfVariable(ArrayDeque<Variable> variables, String identifier) {
-        int index = 0;
-        for (Iterator<Variable> it = variables.iterator() ; it.hasNext() ; index++) {
-            if (it.next().getToken().getText().equals(identifier)) {
-                return index;
-            }
+    /* Used to get info about a particular symbol within a list of local vars,
+     * arguments or temp vars:
+     *  - its byte position in that list, taking into account the size of the other symbols
+     *  - its type
+     */
+    private class SymbolInfo {
+        private long offset;
+        private Type type;
+
+        public SymbolInfo(long offset, Type type) {
+            this.offset = offset;
+            this.type = type;
         }
-        return -1;
+
+        public long getOffset() {
+            return offset;
+        }
+
+        public Type getType() {
+            return type;
+        }
+    }
+
+    public SymbolInfo getLocalVarInfo(ArrayDeque<Variable> variables, String identifier) {
+        int offset = 0;
+        for (Iterator<Variable> it = variables.iterator() ; it.hasNext() ; ) {
+            Variable variable = it.next();
+            if (variable.getToken().getText().equals(identifier)) {
+                return new SymbolInfo(offset, variable.getType());
+            }
+            offset += getTypeSize(variable.getType());
+        }
+        return null;
     }
 
     private static int getArgumentIndex(int argumentPos, int totalArguments) {
         return (totalArguments - argumentPos) + 4;
     }
 
+    private static long getTotalLocalVarsSize(ArrayDeque<Variable> localVars) {
+        long index = 0;
+        for (Variable variable: localVars) {
+            index += getTypeSize(variable.getType());
+        }
+        return index;
+    }
+
+    private static int getTypeSize(Type type) {
+        switch (type) {
+            case INT:
+                return 4;
+            case CHAR:
+                return 1;
+            default:
+                System.err.println("Internal error: invalid variable type " + type + " in getTypeSize");
+        }
+        return -1;
+    }
+
+    public static String getTypeSizeName(Type type) {
+        switch (type) {
+            case INT:
+                return "DWORD PTR";
+            case CHAR:
+                return "BYTE PTR";
+            default:
+                System.err.println("Internal error: invalid variable type " + type + " in getTypeSizeName");
+        }
+        return null;
+    }
     public static String uniqueToOriginal(String unique) {
         int index = unique.lastIndexOf("_");
         if (index == -1) {

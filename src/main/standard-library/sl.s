@@ -3,9 +3,9 @@
 .LC0:
 	.string	"%d"
 	.text
-	.globl	puti
-	.type	puti, @function
-puti:
+	.globl	_puti
+	.type	_puti, @function
+_puti:
 .LFB0:
 	.cfi_startproc
 	pushl	%ebp
@@ -26,10 +26,10 @@ puti:
 	ret
 	.cfi_endproc
 .LFE0:
-	.size	puti, .-puti
-	.globl	putcc
-	.type	putcc, @function
-putcc:
+	.size	_puti, .-_puti
+	.globl	_putc
+	.type	_putc, @function
+_putc:
 .LFB1:
 	.cfi_startproc
 	pushl	%ebp
@@ -52,14 +52,14 @@ putcc:
 	ret
 	.cfi_endproc
 .LFE1:
-	.size	putcc, .-putcc
+	.size	_putc, .-_putc
 	.section	.rodata
 .LC1:
 	.string	"%s"
 	.text
-	.globl	putss
-	.type	putss, @function
-putss:
+	.globl	_puts
+	.type	_puts, @function
+_puts:
 .LFB2:
 	.cfi_startproc
 	pushl	%ebp
@@ -80,10 +80,10 @@ putss:
 	ret
 	.cfi_endproc
 .LFE2:
-	.size	putss, .-putss
-	.globl	geti
-	.type	geti, @function
-geti:
+	.size	_puts, .-_puts
+	.globl	_geti
+	.type	_geti, @function
+_geti:
 .LFB3:
 	.cfi_startproc
 	pushl	%ebp
@@ -113,14 +113,14 @@ geti:
 	ret
 	.cfi_endproc
 .LFE3:
-	.size	geti, .-geti
+	.size	_geti, .-_geti
 	.section	.rodata
 .LC2:
 	.string	" %c"
 	.text
-	.globl	getcc
-	.type	getcc, @function
-getcc:
+	.globl	_getc
+	.type	_getc, @function
+_getc:
 .LFB4:
 	.cfi_startproc
 	pushl	%ebp
@@ -150,10 +150,10 @@ getcc:
 	ret
 	.cfi_endproc
 .LFE4:
-	.size	getcc, .-getcc
-	.globl	gets
-	.type	gets, @function
-gets:
+	.size	_getc, .-_getc
+	.globl	_gets
+	.type	_gets, @function
+_gets:
 .LFB5:
 	.cfi_startproc
 	pushl	%ebp
@@ -194,10 +194,10 @@ gets:
 	ret
 	.cfi_endproc
 .LFE5:
-	.size	gets, .-gets
-	.globl	abs
-	.type	abs, @function
-abs:
+	.size	_gets, .-_gets
+	.globl	_abs
+	.type	_abs, @function
+_abs:
 .LFB6:
 	.cfi_startproc
 	pushl	%ebp
@@ -216,10 +216,10 @@ abs:
 	ret
 	.cfi_endproc
 .LFE6:
-	.size	abs, .-abs
-	.globl	ord
-	.type	ord, @function
-ord:
+	.size	_abs, .-_abs
+	.globl	_ord
+	.type	_ord, @function
+_ord:
 .LFB7:
 	.cfi_startproc
 	pushl	%ebp
@@ -237,10 +237,10 @@ ord:
 	ret
 	.cfi_endproc
 .LFE7:
-	.size	ord, .-ord
-	.globl	chr
-	.type	chr, @function
-chr:
+	.size	_ord, .-_ord
+	.globl	_chr
+	.type	_chr, @function
+_chr:
 .LFB8:
 	.cfi_startproc
 	pushl	%ebp
@@ -255,6 +255,6 @@ chr:
 	ret
 	.cfi_endproc
 .LFE8:
-	.size	chr, .-chr
+	.size	_chr, .-_chr
 	.ident	"GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609"
 	.section	.note.GNU-stack,"",@progbits
