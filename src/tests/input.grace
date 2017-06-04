@@ -12,6 +12,6 @@ fun main() : nothing
     ne <- 'd';
     neti <- ne;
     myVar <- 12;
-    $myOtherVar <- myVar * 14;
+    putc('a');
 
 }

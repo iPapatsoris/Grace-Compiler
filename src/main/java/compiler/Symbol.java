@@ -146,4 +146,10 @@ class Function extends Symbol {
         }
         return true;
     }
+
+    public static boolean isStandardLibrary(String function) {
+        return function.equals("puti") || function.equals("putc") || function.equals("puts") ||
+               function.equals("geti") || function.equals("getc") || function.equals("gets") ||
+               function.equals("abs") || function.equals("ord") || function.equals("chr");
+    }
 }

@@ -61,6 +61,18 @@ class FinalCode {
 
             writer.println("\n" + curQuad + ":");
             switch (quad.getOp()) {
+                case PAR:
+                    switch (quad.getOperand2().getType()) {
+                        case V:
+                            boolean charInvolved = load("eax", quad.getOperand1());
+                            push("eax", charInvolved);
+                            break;
+                        default:
+                            System.err.println("Internal error: wrong QuadOperand type " +
+                                               quad.getOperand2().getType() + " in FinalCode");
+                            //System.exit(1);
+                    }
+                    break;
                 case UNIT:
                     curFunction = quad.getOperand1().getIdentifier();
                     String originalName = uniqueToOriginal(curFunction);
@@ -90,20 +102,29 @@ class FinalCode {
                     store("eax", quad.getOutput());
                     break;
                 default:
-                    System.err.println("Internal error: wrong quad OP " + quad.getOp() +
+                    System.err.println("Internal error: wrong Quad OP " + quad.getOp() +
                                        " in FinalCode");
                     //System.exit(1);
             }
         }
     }
 
+    private void push(String register, boolean charInvolved) {
+        if (charInvolved) {
+            writer.println("movzx " + register + ", al");
+        }
+        writer.println("push " + register);
+    }
+
     /* Register is changed to 'al' if char datatype is involved */
-    private void load(String register, QuadOperand quadOperand) {
+    private boolean load(String register, QuadOperand quadOperand) {
+        boolean charInvolved = false;
         switch (quadOperand.getType()) {
             case INT:
                 writer.println("mov " + register + ", " + Integer.parseInt(quadOperand.getIdentifier()));
                 break;
             case CHAR:
+                charInvolved = true;
                 register = "al";
                 writer.println("mov " + register + ", " + quadOperand.getIdentifier());
                 break;
@@ -117,6 +138,7 @@ class FinalCode {
                 SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
                 if (localVarInfo != null) {
                     if (localVarInfo.getType() == Type.CHAR) {
+                        charInvolved = true;
                         register = "al";
                     }
                     writer.println("mov " + register + ", " +
@@ -138,8 +160,10 @@ class FinalCode {
                                    quadOperand.getType() + " in FinalCode load");
                 //System.exit(1);
         }
+        return charInvolved;
     }
 
+    /* Register is changed to 'al' if char datatype is involved */
     private void store(String register, QuadOperand quadOperand) {
         switch (quadOperand.getType()) {
             case TEMPVAR:
@@ -257,6 +281,11 @@ class FinalCode {
         }
         return null;
     }
+
+    public static String makeUniqueFunctionName(String function, String scope) {
+        return "_" + function + "_" + String.valueOf(scope);
+    }
+
     public static String uniqueToOriginal(String unique) {
         int index = unique.lastIndexOf("_");
         if (index == -1) {
