@@ -12,6 +12,6 @@ fun main() : nothing
     ne <- 'd';
     neti <- ne;
     myVar <- 12;
-    putc('a');
-
+    myVar <- geti();
+    puti(myVar);
 }

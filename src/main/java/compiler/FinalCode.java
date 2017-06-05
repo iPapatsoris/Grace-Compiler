@@ -67,22 +67,43 @@ class FinalCode {
                             boolean charInvolved = load("eax", quad.getOperand1());
                             push("eax", charInvolved);
                             break;
+                        case R: ;
+                        case RETCALLER:
+                            loadAddr("si", quad.getOperand1());
+                            writer.println("push si"); // needs special char treatment?
+                            break;
                         default:
                             System.err.println("Internal error: wrong QuadOperand type " +
                                                quad.getOperand2().getType() + " in FinalCode");
                             //System.exit(1);
                     }
                     break;
+                case CALL:
+                    String calledFunction = quad.getOutput().getIdentifier();
+                    String originalName = uniqueToOriginal(calledFunction);
+                    Function function = (Function)symbolTable.lookup(originalName);
+                    long totalSize = function.getArguments().size() * wordSize;
+                    boolean isStandardLibrary = Function.isStandardLibrary(calledFunction);
+                    if (function.getType() == Type.NOTHING && !isStandardLibrary) {
+                        writer.println("sub sp, " + wordSize);
+                        totalSize += wordSize;
+                    }
+                    if (isStandardLibrary) {
+                        calledFunction =  "_" + originalName;
+                    }
+                    writer.println("call " + calledFunction + "\n" +
+                                   "add sp, " + totalSize);
+                    break;
                 case UNIT:
                     curFunction = quad.getOperand1().getIdentifier();
-                    String originalName = uniqueToOriginal(curFunction);
+                    originalName = uniqueToOriginal(curFunction);
                     localVars = symbolTable.getLocalVars();
                     numLocalVars = localVars.size();
                     numTempVars = tempVars.size() - curTempVar;
                     curTempVar += numTempVars;
                     //System.out.println("unique is " + curFunction + " original is " + originalName);
                     //System.out.println("Local vars are " + localVars);
-                    long totalSize = getTotalLocalVarsSize(localVars) + numTempVars * wordSize;
+                    totalSize = getTotalLocalVarsSize(localVars) + numTempVars * wordSize;
                     writer.println(curFunction + ":\n" +
                                    "push ebp\n" +
                                    "mov ebp, esp\n" +
@@ -163,6 +184,23 @@ class FinalCode {
         return charInvolved;
     }
 
+    private void loadAddr(String register, QuadOperand quadOperand) {
+        switch (quadOperand.getType()) {
+            case TEMPVAR:
+                int tempVar = quadOperand.getTempVar();
+                ArrayList<Type> tempVars = ir.getTempVars();
+                long offset = getTotalLocalVarsSize(localVars) + getTempVarInfo(tempVars, tempVar).getOffset()
+                                                               + wordSize;
+                writer.println("lea " + register + "DWORD PTR [ebp-" + offset + "]");
+                break;
+            default:
+                System.err.println("Internal error: wrong quadOperand Type " +
+                                   quadOperand.getType() + " in FinalCode loadAddr");
+                //System.exit(1);
+
+        }
+    }
+
     /* Register is changed to 'al' if char datatype is involved */
     private void store(String register, QuadOperand quadOperand) {
         switch (quadOperand.getType()) {
@@ -235,7 +273,7 @@ class FinalCode {
     }
 
     public SymbolInfo getLocalVarInfo(ArrayDeque<Variable> variables, String identifier) {
-        int offset = 0;
+        long offset = 0;
         for (Iterator<Variable> it = variables.iterator() ; it.hasNext() ; ) {
             Variable variable = it.next();
             if (variable.getToken().getText().equals(identifier)) {
@@ -243,6 +281,25 @@ class FinalCode {
             }
             offset += getTypeSize(variable.getType());
         }
+        return null;
+    }
+
+    public SymbolInfo getTempVarInfo(ArrayList<Type> tempVars, int tempVar) {
+        long offset = 0;
+        if (tempVar < curTempVar) {
+            System.err.println("Internal error: tempVar is less than curTempVar in getTempVarInfo");
+            System.exit(1);
+        }
+        for (ListIterator<Type> i = tempVars.listIterator(curTempVar) ; i.hasNext() ; ) {
+            Type tempVarType = i.next();
+            if (i.previousIndex() == tempVar) {
+                return new SymbolInfo(offset, tempVarType);
+            }
+            offset += getTypeSize(tempVarType);
+        }
+        System.err.println("Internal error: tempVar " + tempVar + " does not exist in " +
+                           "tempVars in getTempVarInfo");
+        System.exit(1);
         return null;
     }
 

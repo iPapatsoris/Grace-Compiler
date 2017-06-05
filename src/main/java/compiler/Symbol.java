@@ -148,8 +148,8 @@ class Function extends Symbol {
     }
 
     public static boolean isStandardLibrary(String function) {
-        return function.equals("puti") || function.equals("putc") || function.equals("puts") ||
-               function.equals("geti") || function.equals("getc") || function.equals("gets") ||
-               function.equals("abs") || function.equals("ord") || function.equals("chr");
+        return function.equals("_puti_-1") || function.equals("_putc_-1") || function.equals("_puts_-1") ||
+               function.equals("_geti_-1") || function.equals("_getc_-1") || function.equals("_gets_-1") ||
+               function.equals("_abs_-1") || function.equals("_ord_-1") || function.equals("_chr_-1");
     }
 }
