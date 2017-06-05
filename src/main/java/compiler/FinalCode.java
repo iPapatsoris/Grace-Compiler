@@ -332,6 +332,14 @@ class FinalCode {
         return null;
     }
 
+    public int getCurTempVar() {
+        return curTempVar;
+    }
+
+    public int getCurQuad() {
+        return curQuad;
+    }
+
     private static int getArgumentIndex(int argumentPos, int totalArguments) {
         return (totalArguments - argumentPos) + 4;
     }
