@@ -235,6 +235,7 @@ class TreeVisitor extends DepthFirstAdapter {
                              new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName),
                              null, null);
         ir.insertQuad(quad);
+        ir.print();
         finalCode.generate();
         symbolTable.exit();
         if (symbolTable.onFirstScope()) {

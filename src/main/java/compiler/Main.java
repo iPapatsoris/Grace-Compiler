@@ -33,7 +33,7 @@ public class Main {
         }
         TreeVisitor treeVisitor = new TreeVisitor(options.getOutput(), options.getPrintAST());
         tree.apply(treeVisitor);
-        treeVisitor.printIR();
+        //treeVisitor.printIR();
         System.exit(0);
     }
 

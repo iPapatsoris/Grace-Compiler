@@ -11,7 +11,14 @@ fun main() : nothing
 {
     ne <- 'd';
     neti <- ne;
-    myVar <- 12;
-    myVar <- geti();
-    puti(myVar);
+    putc(getc());
+    ti <- geti();
+    puti(ti);
+
+    puti(abs(ti));
+
+    putc(chr(ti));
+    puti(ord(chr(ti)));
+
+    puti(foo(9));
 }

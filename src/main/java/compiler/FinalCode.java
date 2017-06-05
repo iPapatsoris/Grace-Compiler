@@ -22,6 +22,7 @@ class FinalCode {
     private ArrayDeque<Variable> localVars;
     private int numLocalVars;
     private int numTempVars;
+    private QuadOperand curReturnTempVar;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
                      String output) throws IOException {
@@ -37,6 +38,7 @@ class FinalCode {
         this.localVars = null;
         this.numLocalVars = 0;
         this.numTempVars = 0;
+        this.curReturnTempVar = null;
     }
 
     public void addMainFunction(String name) {
@@ -69,8 +71,9 @@ class FinalCode {
                             break;
                         case R: ;
                         case RETCALLER:
-                            loadAddr("si", quad.getOperand1());
-                            writer.println("push si"); // needs special char treatment?
+                            curReturnTempVar = quad.getOperand1();
+                            //loadAddr("si", quad.getOperand1());
+                            //writer.println("push si"); // needs special char treatment?
                             break;
                         default:
                             System.err.println("Internal error: wrong QuadOperand type " +
@@ -84,15 +87,23 @@ class FinalCode {
                     Function function = (Function)symbolTable.lookup(originalName);
                     long totalSize = function.getArguments().size() * wordSize;
                     boolean isStandardLibrary = Function.isStandardLibrary(calledFunction);
-                    if (function.getType() == Type.NOTHING && !isStandardLibrary) {
-                        writer.println("sub sp, " + wordSize);
-                        totalSize += wordSize;
-                    }
                     if (isStandardLibrary) {
                         calledFunction =  "_" + originalName;
                     }
-                    writer.println("call " + calledFunction + "\n" +
-                                   "add sp, " + totalSize);
+                    writer.println("call " + calledFunction + (totalSize > 0 ? "\n" +
+                                   "add esp, " + totalSize : ""));
+                    if (function.getType() != Type.NOTHING) {
+                        loadAddr("esi", curReturnTempVar);
+                        String register = "eax";
+                        if (function.getType() == Type.CHAR) {
+                            writer.println("push eax\n" +
+                                           "mov al, BYTE PTR [esp]\n" +
+                                           "pop eax");
+                            register = "al";
+                        }
+                        writer.println("mov " + getTypeSizeName(function.getType()) +
+                                       " [esi], " + register);
+                    }
                     break;
                 case UNIT:
                     curFunction = quad.getOperand1().getIdentifier();
@@ -100,7 +111,6 @@ class FinalCode {
                     localVars = symbolTable.getLocalVars();
                     numLocalVars = localVars.size();
                     numTempVars = tempVars.size() - curTempVar;
-                    curTempVar += numTempVars;
                     //System.out.println("unique is " + curFunction + " original is " + originalName);
                     //System.out.println("Local vars are " + localVars);
                     totalSize = getTotalLocalVarsSize(localVars) + numTempVars * wordSize;
@@ -110,6 +120,7 @@ class FinalCode {
                             /* */  "sub esp, " + totalSize);
                     break;
                 case ENDU:
+                    curTempVar += numTempVars;
                     writer.println(curFunction + "_end:\n" +
                                    "mov esp, ebp\n" +
                                    "pop ebp\n" +
@@ -151,8 +162,13 @@ class FinalCode {
                 break;
             case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
-                long offset = (numLocalVars + tempVar+1) * wordSize;
-                //writer.println("mov " + register + ", DWORD PTR [ebp-" + offset + "]");
+                long offset = getTempVarOffset(tempVar);
+                Type tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                if (tempVarType == Type.CHAR) {
+                    register = "al";
+                }
+                writer.println("mov " + register + ", " + getTypeSizeName(tempVarType) +
+                              " [ebp-" + offset + "]");
                 break;
             case IDENTIFIER:
                 String identifier = quadOperand.getIdentifier();
@@ -186,12 +202,10 @@ class FinalCode {
 
     private void loadAddr(String register, QuadOperand quadOperand) {
         switch (quadOperand.getType()) {
-            case TEMPVAR:
+            case TEMPVAR: // char treatment?
                 int tempVar = quadOperand.getTempVar();
-                ArrayList<Type> tempVars = ir.getTempVars();
-                long offset = getTotalLocalVarsSize(localVars) + getTempVarInfo(tempVars, tempVar).getOffset()
-                                                               + wordSize;
-                writer.println("lea " + register + "DWORD PTR [ebp-" + offset + "]");
+                long offset = getTempVarOffset(tempVar);
+                writer.println("lea " + register + ", DWORD PTR [ebp-" + offset + "]");
                 break;
             default:
                 System.err.println("Internal error: wrong quadOperand Type " +
@@ -206,8 +220,13 @@ class FinalCode {
         switch (quadOperand.getType()) {
             case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
-                long offset = (numLocalVars + tempVar + 1) * wordSize;
-            //    writer.println("mov DWORD PTR [ebp-" + offset + "], " + register);
+                long offset = getTempVarOffset(tempVar);
+                Type tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                if (tempVarType == Type.CHAR) {
+                    register = "al";
+                }
+                writer.println("mov " + getTypeSizeName(tempVarType) +
+                              " [ebp-" + offset + "], " + register);
                 break;
             case IDENTIFIER:
                 String identifier = quadOperand.getIdentifier();
@@ -227,6 +246,9 @@ class FinalCode {
                     offset = (getArgumentIndex(index, function.getArguments().size()) + 1) * wordSize;
                     writer.println("mov DWORD PTR [bp+" + offset + "], " + register);
                 }*/
+                break;
+            case RETCALLED:
+                writer.println("mov eax, " + register);
                 break;
             default:
                 System.err.println("Internal error: wrong quadOperand Type " +
@@ -272,6 +294,12 @@ class FinalCode {
         }
     }
 
+    public long getTempVarOffset(int tempVar) {
+        ArrayList<Type> tempVars = ir.getTempVars();
+        return getTotalLocalVarsSize(localVars) + getTempVarInfo(tempVars, tempVar).getOffset()
+                                                + wordSize;
+    }
+
     public SymbolInfo getLocalVarInfo(ArrayDeque<Variable> variables, String identifier) {
         long offset = 0;
         for (Iterator<Variable> it = variables.iterator() ; it.hasNext() ; ) {
@@ -287,7 +315,8 @@ class FinalCode {
     public SymbolInfo getTempVarInfo(ArrayList<Type> tempVars, int tempVar) {
         long offset = 0;
         if (tempVar < curTempVar) {
-            System.err.println("Internal error: tempVar is less than curTempVar in getTempVarInfo");
+            System.err.println("Internal error: tempVar " + tempVar +
+                               " is less than curTempVar " + curTempVar + " in getTempVarInfo");
             System.exit(1);
         }
         for (ListIterator<Type> i = tempVars.listIterator(curTempVar) ; i.hasNext() ; ) {
