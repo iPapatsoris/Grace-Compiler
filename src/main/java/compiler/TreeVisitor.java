@@ -839,7 +839,9 @@ class TreeVisitor extends DepthFirstAdapter {
                 break;
             case 1: {
                 ExprInfo expr = exprs.get(0);
-                int tempVar = ir.newTempVar(exprs.size() == dimensionsNum ? variable.getType() : Type.INT);
+                int tempVar = ir.newTempVar(Type.INT);
+                ArrayInfo arrayInfo = new ArrayInfo(variable.getType(), dimensionsNum - node.getExpr().size());
+                ir.getArrayInfo().put(tempVar, arrayInfo);
                 Quad quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText()),
                                      new QuadOperand(expr.getIRInfo()),
                                      new QuadOperand(QuadOperand.Type.ADDRESS, tempVar));
@@ -878,8 +880,9 @@ class TreeVisitor extends DepthFirstAdapter {
                     ir.insertQuad(quad);
                 }
 
-                /* ERASED: Specified all dimmensions: actual type instead of int */
                 int arrayVar = ir.newTempVar(Type.INT);
+                ArrayInfo arrayInfo = new ArrayInfo(variable.getType(), dimensionsNum - node.getExpr().size());
+                ir.getArrayInfo().put(arrayVar, arrayInfo);
                 quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.IDENTIFIER, node.getIdentifier().getText()),
                                      new QuadOperand(QuadOperand.Type.TEMPVAR, addVar),
                                      new QuadOperand(QuadOperand.Type.ADDRESS, arrayVar));

@@ -4,6 +4,7 @@ import compiler.node.*;
 
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.lang.String;
@@ -11,10 +12,12 @@ import java.lang.String;
 class IntermediateRepresentation {
     private ArrayList<Quad> quads;
     private ArrayList<Type> tempVars;
+    private HashMap<Integer, ArrayInfo> arrayInfo;
 
     public IntermediateRepresentation() {
         quads = new ArrayList<Quad>();
         tempVars = new ArrayList<Type>();
+        arrayInfo = new HashMap<Integer, ArrayInfo>();
     }
 
     public int getNextQuadIndex() {
@@ -39,6 +42,12 @@ class IntermediateRepresentation {
     public void print(int quadIndex, int tempVarIndex) {
         for (ListIterator it = tempVars.listIterator(tempVarIndex) ; it.hasNext() ; ) {
             System.out.println("$" + it.nextIndex() + " " + it.next());
+            ArrayInfo arrayVar = arrayInfo.get(it.previousIndex());
+            if (arrayVar != null) {
+                System.out.println(" with " + arrayVar.getDimensionsLeft() +
+                                   " dimensions left " + " and array type of " +
+                                   arrayVar.getArrayType());
+            }
         }
         System.out.println("");
         for (ListIterator it = quads.listIterator(quadIndex) ; it.hasNext() ; ) {
@@ -56,6 +65,10 @@ class IntermediateRepresentation {
 
     public ArrayList<Type> getTempVars() {
         return tempVars;
+    }
+
+    public HashMap<Integer, ArrayInfo> getArrayInfo() {
+        return arrayInfo;
     }
 }
 
@@ -236,5 +249,23 @@ class QuadOperand {
             default:
                 return type.toString();
         }
+    }
+}
+
+class ArrayInfo {
+    private Type arrayType;
+    private int dimensionsLeft;
+
+    ArrayInfo(Type arrayType, int dimensionsLeft) {
+        this.arrayType = arrayType;
+        this.dimensionsLeft = dimensionsLeft;
+    }
+
+    public Type getArrayType() {
+        return arrayType;
+    }
+
+    public int getDimensionsLeft() {
+        return dimensionsLeft;
     }
 }

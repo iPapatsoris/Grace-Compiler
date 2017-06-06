@@ -299,13 +299,20 @@ class FinalCode {
                     writer.println("mov DWORD PTR [bp+" + offset + "], " + register);
                 }*/
                 break;
-            /*case ADDRESS:
+            case ADDRESS:
                 tempVar = quadOperand.getTempVar();
-                tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                ArrayInfo arrayInfo = ir.getArrayInfo().get(tempVar);
+                if (arrayInfo == null) {
+                    System.err.println("Internal error: tempVar " + tempVar +
+                                       " not found in arrayInfo map");
+                    System.exit(1);
+                }
+                tempVarType = (arrayInfo.getDimensionsLeft() > 0 ? Type.INT : 
+                               arrayInfo.getArrayType());
                 load("edi", new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
                 writer.println("mov " + getTypeSizeName(tempVarType) +
                                " [edi], " + register);
-                break;*/
+                break;
             case RETCALLED:
                 writer.println("mov eax, " + register);
                 break;
