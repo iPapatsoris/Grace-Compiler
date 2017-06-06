@@ -135,6 +135,16 @@ class FinalCode {
                     load("eax", quad.getOperand1());
                     store("eax", quad.getOutput());
                     break;
+                case ARRAY:
+                    boolean charInvolved = load("eax", quad.getOperand2());
+                    writer.println("mov ecx, " + (charInvolved ? 1 : wordSize) + "\n" +
+                                   "imul ecx");
+                    loadAddr("ecx", quad.getOperand1());
+                    writer.println("add eax, ecx");
+
+                    /* Change type from ADDRESS to TEMPVAR for store */
+                    store("eax", new QuadOperand(QuadOperand.Type.TEMPVAR, quad.getOutput().getTempVar()));
+                    break;
                 default:
                     System.err.println("Internal error: wrong Quad OP " + quad.getOp() +
                                        " in FinalCode");
@@ -213,7 +223,13 @@ class FinalCode {
                     //writer.println("mov " + register + ", DWORD PTR [ebp+" + offset + "]");
                 }*/
                 break;
-
+            case ADDRESS:
+                tempVar = quadOperand.getTempVar();
+                tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                load("edi", new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
+                writer.println("mov " + register + ", " + getTypeSizeName(tempVarType) +
+                               " [edi]");
+                break;
             default:
                 System.err.println("Internal error: wrong quadOperand Type " +
                                    quadOperand.getType() + " in FinalCode load");
@@ -239,7 +255,7 @@ class FinalCode {
                 SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
                 if (localVarInfo != null) {
                     writer.println("lea " + register + ", DWORD PTR [ebp-" +
-                                   localVarInfo.getOffset() + "]");
+                                   (localVarInfo.getOffset() + wordSize) + "]");
                     break;
                 }
                 break;
@@ -283,6 +299,13 @@ class FinalCode {
                     writer.println("mov DWORD PTR [bp+" + offset + "], " + register);
                 }*/
                 break;
+            /*case ADDRESS:
+                tempVar = quadOperand.getTempVar();
+                tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                load("edi", new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
+                writer.println("mov " + getTypeSizeName(tempVarType) +
+                               " [edi], " + register);
+                break;*/
             case RETCALLED:
                 writer.println("mov eax, " + register);
                 break;
@@ -318,6 +341,8 @@ class FinalCode {
     /* Temp var offset in current stack frame */
     public long getTempVarOffset(int tempVar) {
         ArrayList<Type> tempVars = ir.getTempVars();
+        System.out.println("it's " + getTotalLocalVarsSize(localVars) + " " + getTempVarInfo(tempVars, tempVar).getOffset() + " " +
+                                                + wordSize);
         return getTotalLocalVarsSize(localVars) + getTempVarInfo(tempVars, tempVar).getOffset()
                                                 + wordSize;
     }
