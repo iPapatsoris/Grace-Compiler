@@ -11,6 +11,7 @@ We print the name of each Node in the CST in a DFS manner along with the
 matched input. This is implemented by simply overriding the *Node.defaultIn* method.
 
 ## Notes
+* "adsf"[3] <- 'z';
 * statements after return?
 * reduce dimenionality by passing to method: temp var types DEN diakrinontai ws arrays. tous dinw int an einai arrays.
 * tempVar gia ola ta ReturnInfo, meta isws perioristei

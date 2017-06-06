@@ -24,6 +24,7 @@ class FinalCode {
     private int numTempVars;
     private QuadOperand curReturnTempVar;
     private ArrayList<String> stringLiterals;
+    private ArrayDeque<Quad> passParameters;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
                      String output) throws IOException {
@@ -41,6 +42,7 @@ class FinalCode {
         this.numTempVars = 0;
         this.curReturnTempVar = null;
         this.stringLiterals = new ArrayList<String>();
+        this.passParameters = new ArrayDeque<Quad>();
     }
 
     public void addMainFunction(String name) {
@@ -68,12 +70,8 @@ class FinalCode {
                 case PAR:
                     switch (quad.getOperand2().getType()) {
                         case V:
-                            boolean charInvolved = load("eax", quad.getOperand1());
-                            push("eax", charInvolved);
-                            break;
                         case R:
-                            loadAddr("esi", quad.getOperand1());
-                            writer.println("push esi"); // needs special char treatment?
+                            passParameters.push(quad);
                             break;
                         case RETCALLER:
                             curReturnTempVar = quad.getOperand1();
@@ -85,6 +83,7 @@ class FinalCode {
                     }
                     break;
                 case CALL:
+                    handleParameters();
                     String calledFunction = quad.getOutput().getIdentifier();
                     String originalName = uniqueToOriginal(calledFunction);
                     Function function = (Function)symbolTable.lookup(originalName);
@@ -142,6 +141,26 @@ class FinalCode {
                     //System.exit(1);
             }
         }
+    }
+
+    private void handleParameters() {
+        for (Quad quad: passParameters) {
+            switch (quad.getOperand2().getType()) {
+                case V:
+                    boolean charInvolved = load("eax", quad.getOperand1());
+                    push("eax", charInvolved);
+                    break;
+                case R:
+                    loadAddr("esi", quad.getOperand1());
+                    writer.println("push esi"); // needs special char treatment?
+                    break;
+                default:
+                    System.err.println("Internal error: wrong QuadOperand type " +
+                                       quad.getOperand2().getType() + " in handleParameters");
+                    //System.exit(1);
+            }
+        }
+        passParameters.clear();
     }
 
     private void push(String register, boolean charInvolved) {
@@ -215,6 +234,15 @@ class FinalCode {
                 long offset = getTempVarOffset(tempVar);
                 writer.println("lea " + register + ", DWORD PTR [ebp-" + offset + "]");
                 break;
+            case IDENTIFIER:
+                String identifier = quadOperand.getIdentifier();
+                SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
+                if (localVarInfo != null) {
+                    writer.println("lea " + register + ", DWORD PTR [ebp-" +
+                                   localVarInfo.getOffset() + "]");
+                    break;
+                }
+                break;
             default:
                 System.err.println("Internal error: wrong quadOperand Type " +
                                    quadOperand.getType() + " in FinalCode loadAddr");
@@ -287,6 +315,13 @@ class FinalCode {
         return -1;
     }
 
+    /* Temp var offset in current stack frame */
+    public long getTempVarOffset(int tempVar) {
+        ArrayList<Type> tempVars = ir.getTempVars();
+        return getTotalLocalVarsSize(localVars) + getTempVarInfo(tempVars, tempVar).getOffset()
+                                                + wordSize;
+    }
+
     /* Used to get info about a particular symbol within a list of local vars,
      * arguments or temp vars:
      *  - its byte position in that list, taking into account the size of the other symbols
@@ -310,12 +345,6 @@ class FinalCode {
         }
     }
 
-    public long getTempVarOffset(int tempVar) {
-        ArrayList<Type> tempVars = ir.getTempVars();
-        return getTotalLocalVarsSize(localVars) + getTempVarInfo(tempVars, tempVar).getOffset()
-                                                + wordSize;
-    }
-
     public SymbolInfo getLocalVarInfo(ArrayDeque<Variable> variables, String identifier) {
         long offset = 0;
         for (Iterator<Variable> it = variables.iterator() ; it.hasNext() ; ) {
@@ -323,7 +352,7 @@ class FinalCode {
             if (variable.getToken().getText().equals(identifier)) {
                 return new SymbolInfo(offset, variable.getType());
             }
-            offset += getTypeSize(variable.getType());
+            offset += getLocalVarSize(variable);
         }
         return null;
     }
@@ -348,22 +377,22 @@ class FinalCode {
         return null;
     }
 
-    public int getCurTempVar() {
-        return curTempVar;
-    }
-
-    public int getCurQuad() {
-        return curQuad;
-    }
-
-    private static int getArgumentIndex(int argumentPos, int totalArguments) {
-        return (totalArguments - argumentPos) + 4;
-    }
-
     private static long getTotalLocalVarsSize(ArrayDeque<Variable> localVars) {
         long index = 0;
         for (Variable variable: localVars) {
+            index += getLocalVarSize(variable);
+        }
+        return index;
+    }
+
+    private static long getLocalVarSize(Variable variable) {
+        long index = 0;
+        if (variable.getDimensions().size() == 0) {
             index += getTypeSize(variable.getType());
+        } else {
+            for (Integer dimension: variable.getDimensions()) {
+                index += (dimension * getTypeSize(variable.getType()));
+            }
         }
         return index;
     }
@@ -390,6 +419,19 @@ class FinalCode {
                 System.err.println("Internal error: invalid variable type " + type + " in getTypeSizeName");
         }
         return null;
+    }
+
+
+    public int getCurTempVar() {
+        return curTempVar;
+    }
+
+    public int getCurQuad() {
+        return curQuad;
+    }
+
+    private static int getArgumentIndex(int argumentPos, int totalArguments) {
+        return (totalArguments - argumentPos) + 4;
     }
 
     public static String makeUniqueFunctionName(String function, String scope) {

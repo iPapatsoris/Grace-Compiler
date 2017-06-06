@@ -150,6 +150,8 @@ class Function extends Symbol {
     public static boolean isStandardLibrary(String function) {
         return function.equals("_puti_-1") || function.equals("_putc_-1") || function.equals("_puts_-1") ||
                function.equals("_geti_-1") || function.equals("_getc_-1") || function.equals("_gets_-1") ||
-               function.equals("_abs_-1") || function.equals("_ord_-1") || function.equals("_chr_-1");
+               function.equals("_abs_-1") || function.equals("_ord_-1") || function.equals("_chr_-1") ||
+               function.equals("_strlen_-1") || function.equals("_strcpy_-1") || function.equals("_strcmp_-1") ||
+               function.equals("_strcat_-1");
     }
 }

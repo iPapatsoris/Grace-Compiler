@@ -54,3 +54,19 @@ int32_t _ord (char c) {
 char _chr(int32_t i) {
     return (char)i;
 }
+
+int32_t _strlen(char s[]) {
+    return strlen(s);
+}
+
+int32_t _strcmp(char s1[], char s2[]) {
+    return strcmp(s1, s2);
+}
+
+void _strcpy(char trg[], char src[]) {
+    strcpy(trg, src);
+}
+
+void _strcat(char trg[], char src[]) {
+    strcat(trg, src);
+}

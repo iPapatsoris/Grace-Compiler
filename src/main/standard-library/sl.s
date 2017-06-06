@@ -256,5 +256,98 @@ _chr:
 	.cfi_endproc
 .LFE8:
 	.size	_chr, .-_chr
+	.globl	_strlen
+	.type	_strlen, @function
+_strlen:
+.LFB9:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	subl	$12, %esp
+	pushl	8(%ebp)
+	call	strlen
+	addl	$16, %esp
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE9:
+	.size	_strlen, .-_strlen
+	.globl	_strcmp
+	.type	_strcmp, @function
+_strcmp:
+.LFB10:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	subl	$8, %esp
+	pushl	12(%ebp)
+	pushl	8(%ebp)
+	call	strcmp
+	addl	$16, %esp
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE10:
+	.size	_strcmp, .-_strcmp
+	.globl	_strcpy
+	.type	_strcpy, @function
+_strcpy:
+.LFB11:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	subl	$8, %esp
+	pushl	12(%ebp)
+	pushl	8(%ebp)
+	call	strcpy
+	addl	$16, %esp
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE11:
+	.size	_strcpy, .-_strcpy
+	.globl	_strcat
+	.type	_strcat, @function
+_strcat:
+.LFB12:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	subl	$8, %esp
+	pushl	12(%ebp)
+	pushl	8(%ebp)
+	call	strcat
+	addl	$16, %esp
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE12:
+	.size	_strcat, .-_strcat
 	.ident	"GCC: (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609"
 	.section	.note.GNU-stack,"",@progbits
