@@ -23,6 +23,7 @@ class FinalCode {
     private int numLocalVars;
     private int numTempVars;
     private QuadOperand curReturnTempVar;
+    private ArrayList<String> stringLiterals;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
                      String output) throws IOException {
@@ -39,6 +40,7 @@ class FinalCode {
         this.numLocalVars = 0;
         this.numTempVars = 0;
         this.curReturnTempVar = null;
+        this.stringLiterals = new ArrayList<String>();
     }
 
     public void addMainFunction(String name) {
@@ -69,11 +71,12 @@ class FinalCode {
                             boolean charInvolved = load("eax", quad.getOperand1());
                             push("eax", charInvolved);
                             break;
-                        case R: ;
+                        case R:
+                            loadAddr("esi", quad.getOperand1());
+                            writer.println("push esi"); // needs special char treatment?
+                            break;
                         case RETCALLER:
                             curReturnTempVar = quad.getOperand1();
-                            //loadAddr("si", quad.getOperand1());
-                            //writer.println("push si"); // needs special char treatment?
                             break;
                         default:
                             System.err.println("Internal error: wrong QuadOperand type " +
@@ -202,6 +205,11 @@ class FinalCode {
 
     private void loadAddr(String register, QuadOperand quadOperand) {
         switch (quadOperand.getType()) {
+            case STRING:
+                writer.println("mov " + register + ", OFFSET FLAT:string_literal_" +
+                               stringLiterals.size());
+                stringLiterals.add(quadOperand.getIdentifier());
+                break;
             case TEMPVAR: // char treatment?
                 int tempVar = quadOperand.getTempVar();
                 long offset = getTempVarOffset(tempVar);
@@ -258,6 +266,14 @@ class FinalCode {
     }
 
     public void closeWriter() {
+        if (stringLiterals.size() > 0) {
+            writer.println("\n.data");
+        }
+        for (ListIterator<String> it = stringLiterals.listIterator() ; it.hasNext() ; ) {
+            String stringLiteral = it.next();
+            writer.println("string_literal_" + it.previousIndex() + ": .asciz " +
+                           stringLiteral);
+        }
         writer.close();
     }
 

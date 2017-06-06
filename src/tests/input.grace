@@ -4,12 +4,19 @@ fun main() : nothing
     var ne : char;
     var ti: int;
     var neti: char;
+    var array: char[5];
     fun foo(i: int) : int
     {
         return 10;
+        puts("str");
     }
 {
-    ne <- 'd';
+
+    puts("str");
+    puts("Str");
+    puts("asdfasdfa\ta");
+
+$$    ne <- 'd';
     neti <- ne;
     putc(getc());
     ti <- geti();
@@ -20,5 +27,5 @@ fun main() : nothing
     putc(chr(ti));
     puti(ord(chr(ti)));
 
-    puti(foo(9));
+    puti(foo(9));$$
 }
