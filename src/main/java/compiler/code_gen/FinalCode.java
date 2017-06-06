@@ -1,5 +1,6 @@
-package compiler;
+package compiler.code_gen;
 
+import compiler.symbol_table.*;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
@@ -10,7 +11,7 @@ import java.io.PrintWriter;
 import java.io.IOException;
 
 
-class FinalCode {
+public class FinalCode {
     private IntermediateRepresentation ir;
     private SymbolTable symbolTable;
     private PrintWriter writer;
@@ -143,7 +144,7 @@ class FinalCode {
                     writer.println("add eax, ecx");
 
                     /* Change type from ADDRESS to TEMPVAR for store */
-                    store("eax", new QuadOperand(QuadOperand.Type.TEMPVAR, quad.getOutput().getTempVar()));
+                    store("eax", new QuadOperand(QuadOperandType.TEMPVAR, quad.getOutput().getTempVar()));
                     break;
                 default:
                     System.err.println("Internal error: wrong Quad OP " + quad.getOp() +
@@ -226,7 +227,7 @@ class FinalCode {
             case ADDRESS:
                 tempVar = quadOperand.getTempVar();
                 tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
-                load("edi", new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
+                load("edi", new QuadOperand(QuadOperandType.TEMPVAR, tempVar));
                 writer.println("mov " + register + ", " + getTypeSizeName(tempVarType) +
                                " [edi]");
                 break;
@@ -307,9 +308,9 @@ class FinalCode {
                                        " not found in arrayInfo map");
                     System.exit(1);
                 }
-                tempVarType = (arrayInfo.getDimensionsLeft() > 0 ? Type.INT : 
+                tempVarType = (arrayInfo.getDimensionsLeft() > 0 ? Type.INT :
                                arrayInfo.getArrayType());
-                load("edi", new QuadOperand(QuadOperand.Type.TEMPVAR, tempVar));
+                load("edi", new QuadOperand(QuadOperandType.TEMPVAR, tempVar));
                 writer.println("mov " + getTypeSizeName(tempVarType) +
                                " [edi], " + register);
                 break;

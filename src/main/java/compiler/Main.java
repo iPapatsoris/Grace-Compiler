@@ -5,6 +5,7 @@ import compiler.lexer.LexerException;
 import compiler.parser.Parser;
 import compiler.parser.ParserException;
 import compiler.node.Start;
+import compiler.tree_visitor.TreeVisitor;
 
 import java.io.PushbackReader;
 import java.io.InputStreamReader;

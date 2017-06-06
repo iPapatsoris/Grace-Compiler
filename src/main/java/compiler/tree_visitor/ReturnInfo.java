@@ -1,8 +1,9 @@
 /* This collection of classes is used to carry
  * information when returning from nested AST nodes */
 
-package compiler;
+package compiler.tree_visitor;
 
+import compiler.symbol_table.Type;
 import compiler.node.*;
 
 import java.util.ArrayList;
@@ -215,50 +216,4 @@ class BackpatchInfo extends ReturnInfo {
         this.trueList = trueList;
     }
 
-}
-
-class IRInfo {
-    enum Type {
-        TEMPVAR, ADDRESS, IDENTIFIER, STRING, CHAR, INT
-    }
-    Type type;
-    private int tempVar;
-    private String identifier;
-
-    public IRInfo(Type type, int tempVar) {
-        this.type = type;
-        this.tempVar = tempVar;
-        this.identifier = "";
-    }
-
-    public IRInfo(Type type, String identifier) {
-        this.type = type;
-        this.tempVar = -1;
-        this.identifier = identifier;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public int getTempVar() {
-        return tempVar;
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public void setTempVar(int tempVar) {
-        this.tempVar = tempVar;
-    }
-
-    @Override
-    public String toString() {
-        return type + " " + tempVar + " " + identifier;
-    }
 }

@@ -1,15 +1,13 @@
-package compiler;
+package compiler.symbol_table;
 
-import compiler.analysis.DepthFirstAdapter;
 import compiler.node.*;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
 
-class SymbolTable {
+public class SymbolTable {
 
     private ArrayDeque<SymbolEntry> symbolList;
     private HashMap<String, SymbolEntry> lookupTable;
@@ -103,7 +101,7 @@ class SymbolTable {
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
         symbolList.push(newSymbolEntry);
         lookupTable.put(identifier, newSymbolEntry);
-        System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
+        //System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
     }
 
     public Symbol lookup(String symbol) {
