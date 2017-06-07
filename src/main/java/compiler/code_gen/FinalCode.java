@@ -137,8 +137,15 @@ public class FinalCode {
                     store("eax", quad.getOutput());
                     break;
                 case ARRAY:
-                    boolean charInvolved = load("eax", quad.getOperand2());
-                    writer.println("mov ecx, " + (charInvolved ? 1 : wordSize) + "\n" +
+                    load("eax", quad.getOperand2());
+                    Symbol symbol = symbolTable.lookup(quad.getOperand1().getIdentifier());
+                    Type type = null;
+                    if (symbol instanceof Variable) {
+                        type = symbol.getType();
+                    } else if (symbol instanceof Argument) {
+                        System.err.println("Internal error: haven't handled argument array yet");
+                    }
+                    writer.println("mov ecx, " + getTypeSize(type) + "\n" +
                                    "imul ecx");
                     loadAddr("ecx", quad.getOperand1());
                     writer.println("add eax, ecx");
@@ -190,8 +197,9 @@ public class FinalCode {
                 break;
             case CHAR:
                 charInvolved = true;
+                String character = handleSpecialCharacter(quadOperand.getIdentifier());
                 register = "al";
-                writer.println("mov " + register + ", " + quadOperand.getIdentifier());
+                writer.println("mov " + register + ", " + character);
                 break;
             case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
@@ -339,7 +347,7 @@ public class FinalCode {
         writer.close();
     }
 
-    public int getIndexOfArgument(ArrayDeque<Argument> arguments, String identifier) {
+    private int getIndexOfArgument(ArrayDeque<Argument> arguments, String identifier) {
         int index = 0;
         for (Iterator<Argument> it = arguments.iterator() ; it.hasNext() ; index++) {
             if (it.next().getToken().getText().equals(identifier)) {
@@ -350,7 +358,7 @@ public class FinalCode {
     }
 
     /* Temp var offset in current stack frame */
-    public long getTempVarOffset(int tempVar) {
+    private long getTempVarOffset(int tempVar) {
         ArrayList<Type> tempVars = ir.getTempVars();
         System.out.println("it's " + getTotalLocalVarsSize() + " " + getTempVarInfo(tempVars, tempVar).getOffset() + " " +
                                                 + wordSize);
@@ -389,6 +397,11 @@ public class FinalCode {
                 offset = nextWordAlignedByte(offset, wordSize);
             }
             if (variable.getToken().getText().equals(identifier)) {
+                long dimensions = variable.getDimensions().size();
+                if (dimensions > 0) {
+                    System.out.println(variable + " total cells: " + variable.getTotalCells());
+                    offset += ((variable.getTotalCells() - 1) * getTypeSize(variable.getType()));
+                }
                 return new SymbolInfo(offset, variable.getType());
             }
             offset += getLocalVarSize(variable);
@@ -435,9 +448,7 @@ public class FinalCode {
         if (variable.getDimensions().size() == 0) {
             index += getTypeSize(variable.getType());
         } else {
-            for (Integer dimension: variable.getDimensions()) {
-                index += (dimension * getTypeSize(variable.getType()));
-            }
+            index += (variable.getTotalCells() * getTypeSize(variable.getType()));
         }
         return index;
     }
@@ -499,5 +510,14 @@ public class FinalCode {
             index = unique.length();
         }
         return unique.substring(1, index);
+    }
+
+    private static String handleSpecialCharacter(String character) {
+        switch (character) {
+            case "'\\0'":
+                return "0";
+            default:
+                return character;
+        }
     }
 }

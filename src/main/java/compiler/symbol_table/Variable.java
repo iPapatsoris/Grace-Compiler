@@ -16,6 +16,14 @@ public class Variable extends Symbol {
         return dimensions;
     }
 
+    public long getTotalCells() {
+        long cells = 0;
+        for (Integer dimension: dimensions) {
+            cells += dimension;
+        }
+        return cells;
+    }
+
     @Override
     public String toString() {
         return super.toString() + " " + dimensions;
