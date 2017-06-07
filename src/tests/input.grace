@@ -1,20 +1,20 @@
 fun main() : nothing
-    $$var myVar: int;
+    var myVar: int;
     var myOtherVar : int;
     var ne : char;
     var ti: int;
     var neti: char;
-    var array: char[5];$$
-    var arrayInt: int[6];
+    var array: char[5];
+    var arrayInt: int[3];
     var k: int;
-    $$fun foo(i: int) : int
+    fun foo(i: int) : int
     {
         return 10;
         puts("str");
-    }$$
+    }
 {
-    $myVar <- 1;
-    $$strcpy(array, "abc");
+    $$myVar <- 1;
+    strcpy(array, "abc");
     puts(array);
     strcat(array, "d");
     puts(array);
@@ -22,12 +22,14 @@ fun main() : nothing
     puti(k);
     putc('\n');$$
 
-    k <- 3;
-    arrayInt[3] <- 4;
-    puti(arrayInt[3]);
+    $$k <- 2;
+    arrayInt[2] <- 10;
+    $puti(arrayInt[k]);
+    $array[3] <- 'w';
+    $putc(array[3]);$$
 
 
-$$    ne <- 'd';
+    $$ne <- 'd';
     neti <- ne;
     putc(getc());
     ti <- geti();
