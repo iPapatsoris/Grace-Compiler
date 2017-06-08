@@ -68,7 +68,7 @@ public class FinalCode {
         for (ListIterator<Quad> it = quads.listIterator(curQuad) ; it.hasNext() ; curQuad++) {
             Quad quad = it.next();
 
-            writer.println("\n" + curQuad + ":");
+            writer.println("\nL" + curQuad + ":");
             switch (quad.getOp()) {
                 case PAR:
                     switch (quad.getOperand2().getType()) {
@@ -179,6 +179,20 @@ public class FinalCode {
                     load("ebx", quad.getOperand2());
                     writer.println("idiv ebx");
                     store(register, quad.getOutput());
+                    break;
+                case JUMP:
+                    writer.println("jmp L" + quad.getOutput());
+                    break;
+                case EQUAL:
+                case NOT_EQUAL:
+                case GREATER:
+                case LESS:
+                case GREATER_EQUAL:
+                case LESS_EQUAL:
+                    load("eax", quad.getOperand1());
+                    load("edx", quad.getOperand2());
+                    writer.println("cmp eax, edx");
+                    writer.println(convertOpToCommand(quad.getOp()) + " L" + quad.getOutput());
                     break;
                 default:
                     System.err.println("Internal error: wrong Quad OP " + quad.getOp() +
@@ -605,6 +619,18 @@ public class FinalCode {
                 return "sub";
             case MULT:
                 return "imul";
+            case EQUAL:
+                return "jz";
+            case NOT_EQUAL:
+                return "jnz";
+            case GREATER:
+                return "jg";
+            case LESS:
+                return "jl";
+            case GREATER_EQUAL:
+                return "jge";
+            case LESS_EQUAL:
+                return "jle";
             default:
                 System.err.println("Internal error: OP is not listed in convertOpToCommand");
                 System.exit(1);
