@@ -6,3 +6,5 @@ grades_part1.pdf
 *.s
 a.out
 *.zip
+wordcount.sh
+compile.sh

@@ -56,18 +56,10 @@ fun main() : nothing
     puti(arrayInt[8]);$$
 
     neti <- 'a';
-    $bar(arrayInt, neti);
-    $puti(arrayInt[4]);
-    $putc(neti);
+    bar(arrayInt, neti);
+    puti(arrayInt[4]);
+    putc(neti);
 
-
-    myVar <- geti();
-    myOtherVar <- geti();
-
-    puti(myVar + myOtherVar); putc('\n');
-    puti(myVar - myOtherVar); putc('\n');
-    puti(myVar div myOtherVar); putc('\n');
-    puti(myVar mod myOtherVar); putc('\n');
 
 
 

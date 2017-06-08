@@ -158,6 +158,28 @@ public class FinalCode {
                     /* Change type from ADDRESS to TEMPVAR for store */
                     store("eax", new QuadOperand(QuadOperandType.TEMPVAR, quad.getOutput().getTempVar()));
                     break;
+                case ADD:
+                case SUB:
+                case MULT:
+                    load("eax", quad.getOperand1());
+                    load("edx", quad.getOperand2());
+                    writer.println(convertOpToCommand(quad.getOp()) + " eax, edx");
+                    store("eax", quad.getOutput());
+                    break;
+                case DIV:
+                case MOD:
+                    String register = null;
+                    if (quad.getOp() == Quad.Op.DIV) {
+                        register = "eax";
+                    } else if (quad.getOp() == Quad.Op.MOD) {
+                        register = "edx";
+                    }
+                    load("eax", quad.getOperand1());
+                    writer.println("cdq");
+                    load("ebx", quad.getOperand2());
+                    writer.println("idiv ebx");
+                    store(register, quad.getOutput());
+                    break;
                 default:
                     System.err.println("Internal error: wrong Quad OP " + quad.getOp() +
                                        " in FinalCode");
@@ -573,6 +595,21 @@ public class FinalCode {
             pos++;
         }
         return pos;
+    }
+
+    private static String convertOpToCommand(Quad.Op op) {
+        switch (op) {
+            case ADD:
+                return "add";
+            case SUB:
+                return "sub";
+            case MULT:
+                return "imul";
+            default:
+                System.err.println("Internal error: OP is not listed in convertOpToCommand");
+                System.exit(1);
+        }
+        return "";
     }
 
     public static String makeUniqueFunctionName(String function, String scope) {
