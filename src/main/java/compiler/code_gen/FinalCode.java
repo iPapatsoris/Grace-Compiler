@@ -206,6 +206,7 @@ public class FinalCode {
                 long offset = getTempVarOffset(tempVar);
                 Type tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
                 if (tempVarType == Type.CHAR) {
+                    charInvolved = true;
                     register = "al";
                 }
                 writer.println("mov " + register + ", " + getTypeSizeName(tempVarType) +
@@ -224,13 +225,22 @@ public class FinalCode {
                                     " [ebp-" + (localVarInfo.getOffset() + wordSize) + "]");
                     break;
                 }
-                /*String originalName = uniqueToOriginal(curFunction);
+                String originalName = uniqueToOriginal(curFunction);
                 Function function = (Function)symbolTable.lookup(originalName);
-                index = indexOfArgument(function.getArguments(), identifier);
-                if (index >= 0) {
-                    offset = (getArgumentIndex(index, function.getArguments().size()) + 1) * wordSize;
-                    //writer.println("mov " + register + ", DWORD PTR [ebp+" + offset + "]");
-                }*/
+                SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
+                if (argumentInfo != null) {
+                    System.out.println(identifier + " is an argument");
+                    if (! argumentInfo.isReference()) {
+                        if (argumentInfo.getType() == Type.CHAR) {
+                            charInvolved = true;
+                            register = "al";
+                        }
+                        writer.println("mov " + register + ", " +
+                                        getTypeSizeName(argumentInfo.getType()) +
+                                        " [ebp+" + (argumentInfo.getOffset() + 2 * wordSize) + "]");
+                    }
+                    break;
+                }
                 break;
             case ADDRESS:
                 tempVar = quadOperand.getTempVar();
@@ -297,16 +307,25 @@ public class FinalCode {
                         register = "al";
                     }
                     writer.println("mov " + getTypeSizeName(localVarInfo.getType()) +
-                                   " [ebp-" + (localVarInfo.getOffset() + wordSize) + "], " + register);
+                                   " [ebp-" + (localVarInfo.getOffset() + wordSize) +
+                                   "], " + register);
                     break;
                 }
-                /*String originalName = uniqueToOriginal(curFunction);
+                String originalName = uniqueToOriginal(curFunction);
                 Function function = (Function)symbolTable.lookup(originalName);
-                index = indexOfArgument(function.getArguments(), identifier);
-                if (index >= 0) {
-                    offset = (getArgumentIndex(index, function.getArguments().size()) + 1) * wordSize;
-                    writer.println("mov DWORD PTR [bp+" + offset + "], " + register);
-                }*/
+                SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
+                if (argumentInfo != null) {
+                    System.out.println(identifier + " is an argument");
+                    if (! argumentInfo.isReference()) {
+                        if (argumentInfo.getType() == Type.CHAR) {
+                            register = "al";
+                        }
+                        writer.println("mov " + getTypeSizeName(argumentInfo.getType()) +
+                                       " [ebp+" + (argumentInfo.getOffset() + 2 * wordSize) +
+                                       "], " + register);
+                    }
+                    break;
+                }
                 break;
             case ADDRESS:
                 tempVar = quadOperand.getTempVar();
@@ -370,14 +389,23 @@ public class FinalCode {
      * arguments or temp vars:
      *  - its byte position in that list, taking into account the size of the other symbols
      *  - its type
+     *  - its pass method, if an argument
      */
     private class SymbolInfo {
         private long offset;
         private Type type;
+        private boolean isReference;
 
         public SymbolInfo(long offset, Type type) {
             this.offset = offset;
             this.type = type;
+            this.isReference = false;
+        }
+
+        public SymbolInfo(long offset, Type type, boolean isReference) {
+            this.offset = offset;
+            this.type = type;
+            this.isReference = isReference;
         }
 
         public long getOffset() {
@@ -386,6 +414,10 @@ public class FinalCode {
 
         public Type getType() {
             return type;
+        }
+
+        public boolean isReference() {
+            return isReference;
         }
     }
 
@@ -429,6 +461,18 @@ public class FinalCode {
         System.err.println("Internal error: tempVar " + tempVar + " does not exist in " +
                            "tempVars in getTempVarInfo");
         System.exit(1);
+        return null;
+    }
+
+    private SymbolInfo getArgumentInfo(ArrayDeque<Argument> arguments, String identifier) {
+        long offset = 0;
+        for (Iterator<Argument> it = arguments.iterator() ; it.hasNext() ; ) {
+            Argument argument = it.next();
+            if (argument.getToken().getText().equals(identifier)) {
+                return new SymbolInfo(offset, argument.getType(), argument.isReference());
+            }
+            offset += wordSize;
+        }
         return null;
     }
 
@@ -484,10 +528,6 @@ public class FinalCode {
 
     public int getCurQuad() {
         return curQuad;
-    }
-
-    private static int getArgumentIndex(int argumentPos, int totalArguments) {
-        return (totalArguments - argumentPos) + 4;
     }
 
     private static long nextWordAlignedByte(long pos, int wordSize) {

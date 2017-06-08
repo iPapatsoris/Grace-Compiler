@@ -9,12 +9,37 @@ fun main() : nothing
     var multi: int[3][5];
     var multiChar: char[10][11][12][13];
     var k: int;
-    fun foo(i: int) : int
+    fun foo(ref i: int; ref j: int) : int
     {
-        return 10;
-        puts("str");
+        puti(i);
+        i <- 57;
+        puti(i);
+        puti(j);
+        return i;
+    }
+    fun bar(ref i: int[]; neti: char) : nothing {
+        puti(i[4]); return;
+        putc(neti);
+        i[4] <- 57;
+        putc(neti);
+        puti(i[4]);
+        neti <- 'z';
+        putc(neti);
     }
 {
+    arrayInt[4] <- 6;
+    arrayInt[8] <- 7;
+    puti(foo(arrayInt[4], arrayInt[8]));
+    puti(arrayInt[4]);
+    puti(arrayInt[8]);
+
+    $$neti <- 'a';
+    bar(arrayInt, neti);
+    putc(neti);$$
+
+
+
+
     $$myVar <- 1;
     strcpy(array, "abc");
     puts(array);
@@ -23,7 +48,7 @@ fun main() : nothing
     k <- strlen(array);
     puti(k);
     putc('\n');
-$$
+
     k <- 5;
     arrayInt[k] <- 10;
     puti(arrayInt[k]);
@@ -43,7 +68,7 @@ $$
     putc(array[2]);
     $putc(array[3]);
 
-    $$ne <- 'd';
+    ne <- 'd';
     neti <- ne;
     putc(getc());
     ti <- geti();
@@ -54,10 +79,10 @@ $$
     putc(chr(ti));
     puti(ord(chr(ti)));
 
-    puti(foo(9));$$
+    puti(foo(9));
 
     multi[2][3] <- 13;
     multiChar[2][3][4][5] <- 'r';
     puti(multi[2][3]);
-    putc(multiChar[2][3][4][5]); 
+    putc(multiChar[2][3][4][5]);  $$
 }
