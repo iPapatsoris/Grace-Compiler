@@ -17,25 +17,48 @@ fun main() : nothing
         puti(j);
         return i;
     }
-    fun bar(ref i: int[]; neti: char) : nothing {
-        puti(i[4]); return;
+    fun bar(ref i: int[]; neti: char) : nothing
+        fun nestedBar(ref i : int[]; ref neti: char; ref charArray: char[]) : nothing
+        {
+            puti(i[4]);
+            i[4] <- 23;
+            puti(i[4]);
+            putc(neti);
+            neti <- 'b';
+            putc(neti);
+            putc(charArray[6]);
+            charArray[6] <- 'u';
+
+        }
+        var charArray: char[7];
+    {
+        puti(i[4]);
         putc(neti);
         i[4] <- 57;
         putc(neti);
         puti(i[4]);
         neti <- 'z';
         putc(neti);
+        putc('\n');
+
+        charArray[6] <- 'y';
+        nestedBar(i, neti, charArray);
+        puti(i[4]);
+        putc(neti);
+        putc(charArray[6]);
+
     }
 {
     arrayInt[4] <- 6;
-    arrayInt[8] <- 7;
-    puti(foo(arrayInt[4], arrayInt[8]));
+    $$arrayInt[8] <- 7;
+    foo(arrayInt[4], arrayInt[8]);
     puti(arrayInt[4]);
-    puti(arrayInt[8]);
+    puti(arrayInt[8]);$$
 
-    $$neti <- 'a';
+    neti <- 'a';
     bar(arrayInt, neti);
-    putc(neti);$$
+    puti(arrayInt[4]);
+    putc(neti);
 
 
 

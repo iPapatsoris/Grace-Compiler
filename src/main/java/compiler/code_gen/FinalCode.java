@@ -20,6 +20,7 @@ public class FinalCode {
     private final int wordSize;
 
     private String curFunction;
+    private ArrayDeque<Argument> arguments;
     private ArrayDeque<Variable> localVars;
     private int numLocalVars;
     private int numTempVars;
@@ -38,6 +39,7 @@ public class FinalCode {
         this.curTempVar = 0;
         this.wordSize = 4;
         this.curFunction = null;
+        this.arguments = null;
         this.localVars = null;
         this.numLocalVars = 0;
         this.numTempVars = 0;
@@ -111,6 +113,7 @@ public class FinalCode {
                 case UNIT:
                     curFunction = quad.getOperand1().getIdentifier();
                     originalName = uniqueToOriginal(curFunction);
+                    arguments = ((Function)symbolTable.lookup(originalName)).getArguments();
                     localVars = symbolTable.getLocalVars();
                     numLocalVars = localVars.size();
                     numTempVars = tempVars.size() - curTempVar;
@@ -138,13 +141,15 @@ public class FinalCode {
                     break;
                 case ARRAY:
                     load("eax", quad.getOperand2());
-                    Symbol symbol = symbolTable.lookup(quad.getOperand1().getIdentifier());
+                    String identifier = quad.getOperand1().getIdentifier();
+                    SymbolInfo symbolInfo = getLocalVarInfo(localVars, identifier);
                     Type type = null;
-                    if (symbol instanceof Variable) {
-                        type = symbol.getType();
-                    } else if (symbol instanceof Argument) {
-                        System.err.println("Internal error: haven't handled argument array yet");
+                    if (symbolInfo != null) {
+                        type = symbolInfo.getType();
+                    } else {
+                        type = getArgumentInfo(arguments, identifier).getType();
                     }
+
                     writer.println("mov ecx, " + getTypeSize(type) + "\n" +
                                    "imul ecx");
                     loadAddr("ecx", quad.getOperand1());
@@ -216,6 +221,8 @@ public class FinalCode {
                 String identifier = quadOperand.getIdentifier();
                 SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
                 if (localVarInfo != null) {
+                    System.out.println("it's a local " + identifier);
+
                     if (localVarInfo.getType() == Type.CHAR) {
                         charInvolved = true;
                         register = "al";
@@ -228,16 +235,22 @@ public class FinalCode {
                 String originalName = uniqueToOriginal(curFunction);
                 Function function = (Function)symbolTable.lookup(originalName);
                 SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
+                System.out.println("Searching for " + identifier);
                 if (argumentInfo != null) {
                     System.out.println(identifier + " is an argument");
+                    if (argumentInfo.getType() == Type.CHAR) {
+                        charInvolved = true;
+                        register = "al";
+                    }
                     if (! argumentInfo.isReference()) {
-                        if (argumentInfo.getType() == Type.CHAR) {
-                            charInvolved = true;
-                            register = "al";
-                        }
                         writer.println("mov " + register + ", " +
                                         getTypeSizeName(argumentInfo.getType()) +
                                         " [ebp+" + (argumentInfo.getOffset() + 2 * wordSize) + "]");
+                    } else {
+                        writer.println("mov edi, DWORD PTR [ebp+" +
+                                       (argumentInfo.getOffset() + 2 * wordSize) + "]");
+                        writer.println("mov " + register + ", " + getTypeSizeName(argumentInfo.getType()) +
+                                       " [edi]");
                     }
                     break;
                 }
@@ -277,6 +290,23 @@ public class FinalCode {
                                    (localVarInfo.getOffset() + wordSize) + "]");
                     break;
                 }
+                String originalName = uniqueToOriginal(curFunction);
+                Function function = (Function)symbolTable.lookup(originalName);
+                SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
+                if (argumentInfo != null) {
+                    if (! argumentInfo.isReference()) {
+                        writer.println("lea " + register + ", " +
+                                        getTypeSizeName(argumentInfo.getType()) +
+                                        " [ebp+" + (argumentInfo.getOffset() + 2 * wordSize) + "]");
+                    } else {
+                        writer.println("mov " + register + ", DWORD PTR [ebp+" +
+                                       (argumentInfo.getOffset() + 2 * wordSize) + "]");
+                    }
+                    break;
+                }
+                break;
+            case ADDRESS:
+                load(register, new QuadOperand(QuadOperandType.TEMPVAR, quadOperand.getTempVar()));
                 break;
             default:
                 System.err.println("Internal error: wrong quadOperand Type " +
@@ -316,13 +346,18 @@ public class FinalCode {
                 SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
                 if (argumentInfo != null) {
                     System.out.println(identifier + " is an argument");
+                    if (argumentInfo.getType() == Type.CHAR) {
+                        register = "al";
+                    }
                     if (! argumentInfo.isReference()) {
-                        if (argumentInfo.getType() == Type.CHAR) {
-                            register = "al";
-                        }
                         writer.println("mov " + getTypeSizeName(argumentInfo.getType()) +
                                        " [ebp+" + (argumentInfo.getOffset() + 2 * wordSize) +
                                        "], " + register);
+                    } else {
+                        writer.println("mov edi, DWORD PTR [ebp+" +
+                                       (argumentInfo.getOffset() + 2 * wordSize) + "]");
+                        writer.println("mov " + getTypeSizeName(argumentInfo.getType()) +
+                                       " [edi], " + register);
                     }
                     break;
                 }
