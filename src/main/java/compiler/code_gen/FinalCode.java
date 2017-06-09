@@ -22,7 +22,6 @@ public class FinalCode {
     private String curFunction;
     private ArrayDeque<Argument> arguments;
     private ArrayDeque<Variable> localVars;
-    private int numLocalVars;
     private int numTempVars;
     private QuadOperand curReturnTempVar;
     private ArrayList<String> stringLiterals;
@@ -41,7 +40,6 @@ public class FinalCode {
         this.curFunction = null;
         this.arguments = null;
         this.localVars = null;
-        this.numLocalVars = 0;
         this.numTempVars = 0;
         this.curReturnTempVar = null;
         this.stringLiterals = new ArrayList<String>();
@@ -115,11 +113,10 @@ public class FinalCode {
                     originalName = uniqueToOriginal(curFunction);
                     arguments = ((Function)symbolTable.lookup(originalName)).getArguments();
                     localVars = symbolTable.getLocalVars();
-                    numLocalVars = localVars.size();
                     numTempVars = tempVars.size() - curTempVar;
                     //System.out.println("unique is " + curFunction + " original is " + originalName);
                     //System.out.println("Local vars are " + localVars);
-                    totalSize = getTotalLocalVarsSize() + numTempVars * wordSize;
+                    totalSize = getTotalSize();
                     writer.println(curFunction + ":\n" +
                                    "push ebp\n" +
                                    "mov ebp, esp\n" +
@@ -147,7 +144,7 @@ public class FinalCode {
                     if (symbolInfo != null) {
                         type = symbolInfo.getType();
                     } else {
-                        type = getArgumentInfo(arguments, identifier).getType();
+                        type = getArgumentInfo(arguments, identifier).getType(); // caution AR
                     }
 
                     writer.println("mov ecx, " + getTypeSize(type) + "\n" +
@@ -244,8 +241,9 @@ public class FinalCode {
                 break;
             case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
-                long offset = getTempVarOffset(tempVar);
-                Type tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                SymbolInfo symbolInfo = getTempVarStackInfo(tempVar);
+                long offset = symbolInfo.getOffset();
+                Type tempVarType = symbolInfo.getType();
                 if (tempVarType == Type.CHAR) {
                     charInvolved = true;
                     register = "al";
@@ -265,7 +263,7 @@ public class FinalCode {
                     }
                     writer.println("mov " + register + ", " +
                                     getTypeSizeName(localVarInfo.getType()) +
-                                    " [ebp-" + (localVarInfo.getOffset() + wordSize) + "]");
+                                    " [ebp-" + localVarInfo.getOffset() + "]");
                     break;
                 }
                 String originalName = uniqueToOriginal(curFunction);
@@ -293,7 +291,18 @@ public class FinalCode {
                 break;
             case ADDRESS:
                 tempVar = quadOperand.getTempVar();
-                tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                ArrayInfo arrayInfo = ir.getArrayInfo().get(tempVar);
+                if (arrayInfo == null) {
+                    System.err.println("Internal error: tempVar " + tempVar +
+                                       " not found in arrayInfo map");
+                    System.exit(1);
+                }
+                tempVarType = (arrayInfo.getDimensionsLeft() > 0 ? Type.INT :
+                               arrayInfo.getArrayType());
+                if (tempVarType == Type.CHAR) {
+                    charInvolved = true;
+                    register = "al";
+                }
                 load("edi", new QuadOperand(QuadOperandType.TEMPVAR, tempVar));
                 writer.println("mov " + register + ", " + getTypeSizeName(tempVarType) +
                                " [edi]");
@@ -315,7 +324,7 @@ public class FinalCode {
                 break;
             case TEMPVAR: // char treatment?
                 int tempVar = quadOperand.getTempVar();
-                long offset = getTempVarOffset(tempVar);
+                long offset = getTempVarStackInfo(tempVar).getOffset();
                 writer.println("lea " + register + ", DWORD PTR [ebp-" + offset + "]");
                 break;
             case IDENTIFIER:
@@ -323,7 +332,7 @@ public class FinalCode {
                 SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
                 if (localVarInfo != null) {
                     writer.println("lea " + register + ", DWORD PTR [ebp-" +
-                                   (localVarInfo.getOffset() + wordSize) + "]");
+                                   localVarInfo.getOffset() + "]");
                     break;
                 }
                 String originalName = uniqueToOriginal(curFunction);
@@ -357,8 +366,9 @@ public class FinalCode {
         switch (quadOperand.getType()) {
             case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
-                long offset = getTempVarOffset(tempVar);
-                Type tempVarType = getTempVarInfo(ir.getTempVars(), tempVar).getType();
+                SymbolInfo symbolInfo = getTempVarStackInfo(tempVar);
+                long offset = symbolInfo.getOffset();
+                Type tempVarType = symbolInfo.getType();
                 if (tempVarType == Type.CHAR) {
                     register = "al";
                 }
@@ -373,7 +383,7 @@ public class FinalCode {
                         register = "al";
                     }
                     writer.println("mov " + getTypeSizeName(localVarInfo.getType()) +
-                                   " [ebp-" + (localVarInfo.getOffset() + wordSize) +
+                                   " [ebp-" + localVarInfo.getOffset() +
                                    "], " + register);
                     break;
                 }
@@ -447,15 +457,6 @@ public class FinalCode {
         return -1;
     }
 
-    /* Temp var offset in current stack frame */
-    private long getTempVarOffset(int tempVar) {
-        ArrayList<Type> tempVars = ir.getTempVars();
-        System.out.println("it's " + getTotalLocalVarsSize() + " " + getTempVarInfo(tempVars, tempVar).getOffset() + " " +
-                                                + wordSize);
-        return getTotalLocalVarsSize() + getTempVarInfo(tempVars, tempVar).getOffset()
-                                                + wordSize;
-    }
-
     /* Used to get info about a particular symbol within a list of local vars,
      * arguments or temp vars:
      *  - its byte position in that list, taking into account the size of the other symbols
@@ -492,6 +493,16 @@ public class FinalCode {
         }
     }
 
+    /* Temp var offset in current stack frame */
+    private SymbolInfo getTempVarStackInfo(int tempVar) {
+        ArrayList<Type> tempVars = ir.getTempVars();
+        //System.out.println("it's " + getTotalLocalVarsSize() + " " + getTempVarInfo(tempVars, tempVar).getOffset() + " " +
+                        //                        + wordSize);
+        long offset = getTotalLocalVarsOffset();
+        SymbolInfo symbolInfo = getTempVarInfo(tempVars, tempVar, offset);
+        return new SymbolInfo(symbolInfo.getOffset(), symbolInfo.getType());
+    }
+
     private SymbolInfo getLocalVarInfo(ArrayDeque<Variable> variables, String identifier) {
         long offset = 0;
         for (Iterator<Variable> it = variables.iterator() ; it.hasNext() ; ) {
@@ -499,21 +510,16 @@ public class FinalCode {
             if (variable.getType() == Type.INT && (offset > 0 && offset % wordSize != 0)) {
                 offset = nextWordAlignedByte(offset, wordSize);
             }
+            offset += getLocalVarSize(variable);
             if (variable.getToken().getText().equals(identifier)) {
-                long dimensions = variable.getDimensions().size();
-                if (dimensions > 0) {
-                    System.out.println(variable + " total cells: " + variable.getTotalCells());
-                    offset += ((variable.getTotalCells() - 1) * getTypeSize(variable.getType()));
-                }
                 return new SymbolInfo(offset, variable.getType());
             }
-            offset += getLocalVarSize(variable);
         }
         return null;
     }
 
-    private SymbolInfo getTempVarInfo(ArrayList<Type> tempVars, int tempVar) {
-        long offset = 0;
+    /* Start from a given offset, representing the local variables size on stack frame */
+    private SymbolInfo getTempVarInfo(ArrayList<Type> tempVars, int tempVar, long offset) {
         if (tempVar < curTempVar) {
             System.err.println("Internal error: tempVar " + tempVar +
                                " is less than curTempVar " + curTempVar + " in getTempVarInfo");
@@ -522,12 +528,12 @@ public class FinalCode {
         for (ListIterator<Type> i = tempVars.listIterator(curTempVar) ; i.hasNext() ; ) {
             Type tempVarType = i.next();
             if (tempVarType == Type.INT && (offset > 0 && offset % wordSize != 0)) {
-                offset = nextWordAlignedByte(offset, wordSize);
+                offset = nextWordAlignedByte(offset, wordSize) + wordSize;
             }
+            offset += getTypeSize(tempVarType);
             if (i.previousIndex() == tempVar) {
                 return new SymbolInfo(offset, tempVarType);
             }
-            offset += getTypeSize(tempVarType);
         }
         System.err.println("Internal error: tempVar " + tempVar + " does not exist in " +
                            "tempVars in getTempVarInfo");
@@ -547,7 +553,14 @@ public class FinalCode {
         return null;
     }
 
-    private long getTotalLocalVarsSize() {
+    /* Total size occupied by local and temp bars, taking into account allignment */
+    private long getTotalSize() {
+        ArrayList<Type> tempVars = ir.getTempVars();
+        long offset = getTotalLocalVarsOffset();
+        return getTotalTempVarsOffset(tempVars, offset);
+    }
+
+    private long getTotalLocalVarsOffset() {
         long index = 0;
         for (Variable variable: localVars) {
             if (variable.getType() == Type.INT && (index > 0 && index % wordSize != 0)) {
@@ -556,6 +569,18 @@ public class FinalCode {
             index += getLocalVarSize(variable);
         }
         return index;
+    }
+
+    /* Start from a given offset, representing the local variables size on stack frame */
+    private long getTotalTempVarsOffset(ArrayList<Type> tempVars, long offset) {
+        for (ListIterator<Type> i = tempVars.listIterator(curTempVar) ; i.hasNext() ; ) {
+            Type tempVarType = i.next();
+            if (tempVarType == Type.INT && (offset > 0 && offset % wordSize != 0)) {
+                offset = nextWordAlignedByte(offset, wordSize) + wordSize;
+            }
+            offset += getTypeSize(tempVarType);
+        }
+        return offset;
     }
 
     private static long getLocalVarSize(Variable variable) {
