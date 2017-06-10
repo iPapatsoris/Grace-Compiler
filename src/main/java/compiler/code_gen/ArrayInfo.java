@@ -4,8 +4,8 @@ import compiler.symbol_table.Type;
 import java.util.HashMap;
 
 public class ArrayInfo {
-    private Type arrayType;
-    private int dimensionsLeft;
+    private final Type arrayType;
+    private final int dimensionsLeft;
 
     public ArrayInfo(Type arrayType, int dimensionsLeft) {
         this.arrayType = arrayType;

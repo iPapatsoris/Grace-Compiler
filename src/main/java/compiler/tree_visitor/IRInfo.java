@@ -8,9 +8,9 @@ public class IRInfo {
         TEMPVAR, ADDRESS, IDENTIFIER, STRING, CHAR, INT
     }
 
-    IRInfo.Type type;
+    private IRInfo.Type type;
     private int tempVar;
-    private String identifier;
+    private final String identifier;
 
     public IRInfo(IRInfo.Type type, int tempVar) {
         this.type = type;

@@ -12,19 +12,18 @@ import java.io.IOException;
 
 
 public class FinalCode {
-    private IntermediateRepresentation ir;
-    private SymbolTable symbolTable;
-    private PrintWriter writer;
+    private final IntermediateRepresentation ir;
+    private final SymbolTable symbolTable;
+    private final PrintWriter writer;
     private int curQuad;
     private int curTempVar;
     private final int wordSize;
 
     private String curFunction;
-    private ArrayDeque<Argument> arguments;
     private int numTempVars;
     private QuadOperand curReturnTempVar;
-    private ArrayList<String> stringLiterals;
-    private ArrayDeque<Quad> passParameters;
+    private final ArrayList<String> stringLiterals;
+    private final ArrayDeque<Quad> passParameters;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
                      String output) throws IOException {
@@ -37,7 +36,6 @@ public class FinalCode {
         this.curTempVar = 0;
         this.wordSize = 4;
         this.curFunction = null;
-        this.arguments = null;
         this.numTempVars = 0;
         this.curReturnTempVar = null;
         this.stringLiterals = new ArrayList<String>();
@@ -114,13 +112,12 @@ public class FinalCode {
                 case UNIT:
                     curFunction = quad.getOperand1().getIdentifier();
                     originalName = uniqueToOriginal(curFunction);
-                    arguments = ((Function)symbolTable.lookup(originalName)).getArguments();
                     numTempVars = tempVars.size() - curTempVar;
                     totalSize = getTotalSize();
                     writer.println(curFunction + ":\n" +
                                    "push ebp\n" +
                                    "mov ebp, esp\n" +
-                            /* */  "sub esp, " + totalSize);
+                                   "sub esp, " + totalSize);
                     break;
                 case ENDU:
                     curTempVar += numTempVars;
@@ -201,7 +198,7 @@ public class FinalCode {
                     break;
                 case R:
                     loadAddr("esi", quad.getOperand1());
-                    writer.println("push esi"); // needs special char treatment?
+                    writer.println("push esi");
                     break;
                 default:
                     System.err.println("Internal error: wrong QuadOperand type " +
@@ -704,6 +701,10 @@ public class FinalCode {
     }
 
     private static String handleSpecialCharacter(String character) {
+        if (character.length() == 6 && character.substring(0, 3).equals("'\\x")
+                                    && character.charAt(5) == '\'') {
+            return "0x" + character.substring(3,5);
+        }
         switch (character) {
             case "'\\0'":
                 return "0";

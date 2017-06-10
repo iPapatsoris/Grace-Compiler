@@ -5,7 +5,7 @@ import java.lang.String;
 import java.util.ArrayList;
 
 public class Variable extends Symbol {
-    protected ArrayList<Integer> dimensions;
+    protected final ArrayList<Integer> dimensions;
 
     public Variable(Token token, Type type, ArrayList<Integer> dimensions) {
         super(token, type);

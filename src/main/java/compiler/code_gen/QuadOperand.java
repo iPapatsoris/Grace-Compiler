@@ -11,9 +11,9 @@ public class QuadOperand {
         STRING, CHAR, INT
     }
 
-    private QuadOperand.Type type;
-    private int tempVar;
-    private String identifier;
+    private final QuadOperand.Type type;
+    private final int tempVar;
+    private final String identifier;
 
     public QuadOperand(IRInfo irInfo) {
         switch (irInfo.getType()) {
@@ -48,6 +48,9 @@ public class QuadOperand {
                 this.identifier = irInfo.getIdentifier();
                 break;
             default:
+                this.type = null;
+                this.tempVar = -1;
+                this.identifier = null;
                 System.err.println("Internal error: unexpected enum type in QuadOperand");
                 System.exit(1);
         }
@@ -106,7 +109,6 @@ public class QuadOperand {
                 return identifier;
             case CHAR:
                 return identifier;
-
             default:
                 return type.toString();
         }

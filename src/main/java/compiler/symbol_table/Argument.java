@@ -5,8 +5,8 @@ import java.lang.String;
 import java.util.ArrayList;
 
 public class Argument extends Variable {
-    private boolean reference;
-    private boolean noFirstDimension;
+    private final boolean reference;
+    private final boolean noFirstDimension;
 
     public Argument(Token token, Type type, ArrayList<Integer> dimensions, boolean reference, boolean noFirstDimension) {
         super(token, type, dimensions);

@@ -11,9 +11,9 @@ public class Quad {
         GREATER_EQUAL, LESS_EQUAL
     }
 
-    private Op op;
-    private QuadOperand operand1;
-    private QuadOperand operand2;
+    private final Op op;
+    private final QuadOperand operand1;
+    private final QuadOperand operand2;
     private QuadOperand output;
 
     public Quad(Op op, QuadOperand operand1, QuadOperand operand2, QuadOperand output) {

@@ -9,9 +9,9 @@ import java.util.ListIterator;
 import java.lang.String;
 
 public class IntermediateRepresentation {
-    private ArrayList<Quad> quads;
-    private ArrayList<Type> tempVars;
-    private HashMap<Integer, ArrayInfo> arrayInfo;
+    private final ArrayList<Quad> quads;
+    private final ArrayList<Type> tempVars;
+    private final HashMap<Integer, ArrayInfo> arrayInfo;
 
     public IntermediateRepresentation() {
         quads = new ArrayList<Quad>();
@@ -39,7 +39,7 @@ public class IntermediateRepresentation {
     }
 
     public void print(int quadIndex, int tempVarIndex) {
-        for (ListIterator it = tempVars.listIterator(tempVarIndex) ; it.hasNext() ; ) {
+        /* for (ListIterator it = tempVars.listIterator(tempVarIndex) ; it.hasNext() ; ) {
             System.out.println("$" + it.nextIndex() + " " + it.next());
             ArrayInfo arrayVar = arrayInfo.get(it.previousIndex());
             if (arrayVar != null) {
@@ -48,9 +48,13 @@ public class IntermediateRepresentation {
                                    arrayVar.getArrayType());
             }
         }
-        System.out.println("");
-        for (ListIterator it = quads.listIterator(quadIndex) ; it.hasNext() ; ) {
-            System.out.println(it.nextIndex() + ": " + it.next());
+        System.out.println(""); */
+        for (ListIterator<Quad> it = quads.listIterator(quadIndex) ; it.hasNext() ; ) {
+            Quad quad = it.next();
+            if (quad.getOp() == Quad.Op.UNIT) {
+                System.out.println("");
+            }
+            System.out.println(it.previousIndex() + ": " + quad);
         }
     }
 

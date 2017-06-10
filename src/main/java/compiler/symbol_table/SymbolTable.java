@@ -398,9 +398,9 @@ public class SymbolTable {
     }
 
     public class SymbolEntry {
-        private Symbol symbol;
-        private long scope;
-        private SymbolEntry shadowedSymbolEntry;
+        final private Symbol symbol;
+        final private long scope;
+        final private SymbolEntry shadowedSymbolEntry;
 
         public SymbolEntry(Symbol symbol, long scope, SymbolEntry shadowedSymbolEntry) {
             this.symbol = symbol;

@@ -1,12 +1,3 @@
-/* This source is used to easily generate assembly for
-   the Grace Standard Library. The names putc, puts and getc
-   are already defined inside headers, so putcc, putss and getcc
-   are used instead. The actual assembly files contain the
-   correct names (putc, puts, getc). You should use those
-   pre-compiled files. If you recompile from here instead,
-   you should manually change every name instance inside the
-   generated assembly code */
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>

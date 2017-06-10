@@ -10,6 +10,6 @@ fun main() : nothing
     putc('\n');
     putc('\"');
 
-    puts("\x7a <- string ");
+    puts("\x6b <- string ");
     putc('\x6b');
 }

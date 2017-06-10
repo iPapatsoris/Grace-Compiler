@@ -10,20 +10,11 @@ import java.util.ArrayList;
 import java.util.ArrayDeque;
 
 abstract class ReturnInfo {
-    protected IRInfo irInfo; // For intermediate representation
-                             // reduce to subclasses later if found possible
-    public ReturnInfo() {
-        irInfo = null;
-    }
-
-    public IRInfo getIRInfo() {
-        return irInfo;
-    }
 }
 
 class VariableInfo extends ReturnInfo {
-    private Type type;
-    private ArrayList<Integer> dimensions;
+    private final Type type;
+    private final ArrayList<Integer> dimensions;
 
     VariableInfo(Type type, ArrayList<Integer> dimensions) {
         super();
@@ -42,10 +33,10 @@ class VariableInfo extends ReturnInfo {
 
 class ArgumentInfo extends ReturnInfo {
     private ArrayDeque<Token> identifiers;
-    private Type type;
+    private final Type type;
     private boolean reference;
-    private ArrayList<Integer> dimensions;
-    private boolean noFirstDimension;
+    private final ArrayList<Integer> dimensions;
+    private final boolean noFirstDimension;
 
     public ArgumentInfo(Type type, ArrayList<Integer> dimensions, boolean noFirstDimension) {
         super();
@@ -84,9 +75,9 @@ class ArgumentInfo extends ReturnInfo {
 }
 
 class FunctionInfo extends ReturnInfo {
-    private Token token;
+    private final Token token;
     private ArrayDeque<ArgumentInfo> arguments;
-    private Type type;
+    private final Type type;
     private boolean foundReturn;
 
     public FunctionInfo(Token token, ArrayDeque<ArgumentInfo> arguments, Type type) {
@@ -124,34 +115,42 @@ class FunctionInfo extends ReturnInfo {
 }
 
 class ExprInfo extends ReturnInfo {
-    private Type type;
+    private final IRInfo irInfo;
+    private final Type type;
     private boolean negative;
-    private boolean lvalue;
-    private ArrayList<Integer> dimensions;
-    private Token token; // For error printing
+    private final boolean lvalue;
+    private final ArrayList<Integer> dimensions;
+    private final Token token; // For error printing
 
     ExprInfo(Type type, Token token) {
-        super();
         this.token = token;
         this.type = type;
         this.negative = false;
         this.lvalue = false;
         this.dimensions = new ArrayList<Integer>();
+        this.irInfo = null;
     }
 
     ExprInfo(Type type, Token token, IRInfo irInfo) {
-        this(type, token);
+        this.token = token;
+        this.type = type;
+        this.negative = false;
+        this.lvalue = false;
+        this.dimensions = new ArrayList<Integer>();
         this.irInfo = irInfo;
     }
 
     ExprInfo(Type type, ArrayList<Integer> dimensions, Token token, IRInfo irInfo) {
-        super();
         this.token = token;
         this.type = type;
         this.negative = false;
         this.lvalue = true;
         this.dimensions = dimensions;
         this.irInfo = irInfo;
+    }
+
+    public IRInfo getIRInfo() {
+        return irInfo;
     }
 
     public Token getToken() {
@@ -182,7 +181,7 @@ class ExprInfo extends ReturnInfo {
 class BackpatchInfo extends ReturnInfo {
     private ArrayList<Integer> falseList;
     private ArrayList<Integer> trueList;
-    private ArrayList<Integer> nextList;
+    private final ArrayList<Integer> nextList;
 
     BackpatchInfo(ArrayList<Integer> falseList, ArrayList<Integer> trueList) {
         this.falseList = falseList;

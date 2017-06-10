@@ -33,14 +33,15 @@ public class Main {
             }
             System.exit(1);
         }
-        TreeVisitor treeVisitor = new TreeVisitor(options.getOutputCode(), options.getPrintAST());
+        TreeVisitor treeVisitor = new TreeVisitor(options.getOutputCode(),
+                                                  options.getPrintAST());
         tree.apply(treeVisitor);
-        //treeVisitor.printIR();
+        if (options.getPrintIR()) {
+            treeVisitor.getIR().print();
+        }
+
         /* Not secure */
-        try { System.out.println("gcc -m32 " + options.getOutputCode() +
-                              " src/main/standard-library/sl.s" +
-                              (options.getOutputProgram() != null ?
-                               " -o " + options.getOutputProgram() : ""));
+        try {
             Runtime.getRuntime().exec("gcc -m32 " + options.getOutputCode() +
                                   " src/main/standard-library/sl.s" +
                                   (options.getOutputProgram() != null ?
@@ -57,15 +58,20 @@ public class Main {
         String outputCode;
         String outputProgram;
         boolean printAST;
+        boolean printIR;
 
         public Options(String args[]) {
             input = null;
             outputProgram = null;
             printAST = false;
+            printIR = false;
             for (int i = 0 ; i < args.length ; i++) {
                 switch (args[i]) {
                     case "-ast":
                         printAST = true;
+                        break;
+                    case "-ir":
+                        printIR = true;
                         break;
                     case "-o":
                         if (++i >= args.length) {
@@ -101,6 +107,10 @@ public class Main {
 
         public boolean getPrintAST() {
             return printAST;
+        }
+
+        public boolean getPrintIR() {
+            return printIR;
         }
     }
 }

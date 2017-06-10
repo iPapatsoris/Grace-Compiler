@@ -6,8 +6,8 @@ import java.util.ArrayDeque;
 import java.util.Iterator;
 
 public class Function extends Symbol {
-    private ArrayDeque<Argument> arguments;
-    private boolean defined;
+    private final ArrayDeque<Argument> arguments;
+    private final boolean defined;
 
     public Function(Token token, ArrayDeque<Argument> arguments, Type type, boolean defined) {
         super(token, type);

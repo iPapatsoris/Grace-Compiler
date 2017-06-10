@@ -16,16 +16,16 @@ import java.io.IOException;
 
 
 public class TreeVisitor extends DepthFirstAdapter {
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_BLUE = "\u001B[34m";
+    private static final String ANSI_RESET = "\u001B[0m";
+    private static final String ANSI_RED = "\u001B[31m";
+    private static final String ANSI_BLUE = "\u001B[34m";
 
-    private SymbolTable symbolTable;
-    private ArrayDeque<ReturnInfo> returnInfo;
-    private IntermediateRepresentation ir;
+    private final SymbolTable symbolTable;
+    private final ArrayDeque<ReturnInfo> returnInfo;
+    private final IntermediateRepresentation ir;
     private FinalCode finalCode;
-    private int indentation;
     private final boolean printAST;
+    private int indentation;
 
     public TreeVisitor(String output, boolean printAST) {
         this.symbolTable = new SymbolTable();
@@ -36,8 +36,8 @@ public class TreeVisitor extends DepthFirstAdapter {
         } catch (IOException e) {
             System.err.println("I/O error regarding output file: " + e.getMessage());
         }
-        this.indentation = 0;
         this.printAST = printAST;
+        this.indentation = 0;
     }
 
     private void addIndentationLevel() {
@@ -54,10 +54,6 @@ public class TreeVisitor extends DepthFirstAdapter {
 
     private void printIndentation() {
         System.out.print(String.join("", Collections.nCopies(indentation, " ")));
-    }
-
-    public void printIR() {
-        ir.print();
     }
 
     public IntermediateRepresentation getIR() {
@@ -237,8 +233,8 @@ public class TreeVisitor extends DepthFirstAdapter {
                              new QuadOperand(QuadOperand.Type.IDENTIFIER, uniqueFunctionName),
                              null, null);
         ir.insertQuad(quad);
-        ir.print(finalCode.getCurQuad(), finalCode.getCurTempVar());
-        System.out.println("");
+        //ir.print(finalCode.getCurQuad(), finalCode.getCurTempVar());
+        //System.out.println("");
         finalCode.generate();
         symbolTable.exit();
         if (symbolTable.onFirstScope()) {

@@ -5,8 +5,8 @@ import compiler.node.*;
 import java.lang.String;
 
 public abstract class Symbol {
-    protected Token token;
-    protected Type type;
+    protected final Token token;
+    protected final Type type;
 
     public Symbol(Token token, Type type) {
         this.token = token;
