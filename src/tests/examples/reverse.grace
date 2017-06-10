@@ -1,7 +1,7 @@
 fun main () : nothing
   var r : char[32];
 
-  fun reverse (ref s,r : char[]) : nothing
+  fun reverse (ref s: char[]) : nothing
     var i, l : int;
   {
     l <- strlen(s);
@@ -14,6 +14,6 @@ fun main () : nothing
   }
 
 {
-  reverse("\n!dlrow olleH", r);
+  reverse("\n!dlrow olleH");
   puts(r);
 }

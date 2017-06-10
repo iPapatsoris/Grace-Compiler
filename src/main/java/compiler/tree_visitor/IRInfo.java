@@ -3,23 +3,28 @@ package compiler.tree_visitor;
 import java.lang.String;
 
 public class IRInfo {
-    IRInfoType type;
+
+    public enum Type {
+        TEMPVAR, ADDRESS, IDENTIFIER, STRING, CHAR, INT
+    }
+
+    IRInfo.Type type;
     private int tempVar;
     private String identifier;
 
-    public IRInfo(IRInfoType type, int tempVar) {
+    public IRInfo(IRInfo.Type type, int tempVar) {
         this.type = type;
         this.tempVar = tempVar;
         this.identifier = "";
     }
 
-    public IRInfo(IRInfoType type, String identifier) {
+    public IRInfo(IRInfo.Type type, String identifier) {
         this.type = type;
         this.tempVar = -1;
         this.identifier = identifier;
     }
 
-    public IRInfoType getType() {
+    public IRInfo.Type getType() {
         return type;
     }
 
@@ -31,7 +36,7 @@ public class IRInfo {
         return identifier;
     }
 
-    public void setType(IRInfoType type) {
+    public void setType(IRInfo.Type type) {
         this.type = type;
     }
 

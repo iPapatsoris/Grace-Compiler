@@ -34,7 +34,7 @@ public class IntermediateRepresentation {
 
     public void backpatch(ArrayList<Integer> toBackpatch, int destinationQuad) {
         for (Integer quad : toBackpatch) {
-            quads.get(quad).setOutput(new QuadOperand(QuadOperandType.LABEL, destinationQuad));
+            quads.get(quad).setOutput(new QuadOperand(QuadOperand.Type.LABEL, destinationQuad));
         }
     }
 

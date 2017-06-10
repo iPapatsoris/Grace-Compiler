@@ -1,43 +1,49 @@
 package compiler.code_gen;
 
 import compiler.tree_visitor.IRInfo;
-import compiler.tree_visitor.IRInfoType;
+import compiler.tree_visitor.IRInfo.Type;
 import java.lang.String;
 
 public class QuadOperand {
-    private QuadOperandType type;
+
+    public enum Type {
+        TEMPVAR, IDENTIFIER, ADDRESS, RETCALLED, RETCALLER, BACKPATCH, LABEL, V, R,
+        STRING, CHAR, INT
+    }
+
+    private QuadOperand.Type type;
     private int tempVar;
     private String identifier;
 
     public QuadOperand(IRInfo irInfo) {
         switch (irInfo.getType()) {
             case TEMPVAR:
-                this.type = QuadOperandType.TEMPVAR;
+                this.type = QuadOperand.Type.TEMPVAR;
                 this.tempVar = irInfo.getTempVar();
                 this.identifier = null;
                 break;
             case ADDRESS:
-                this.type = QuadOperandType.ADDRESS;
+                this.type = QuadOperand.Type.ADDRESS;
                 this.tempVar = irInfo.getTempVar();
                 this.identifier = null;
                 break;
             case IDENTIFIER:
-                this.type = QuadOperandType.IDENTIFIER;
+                this.type = QuadOperand.Type.IDENTIFIER;
                 this.tempVar = -1;
                 this.identifier = irInfo.getIdentifier();
                 break;
             case INT:
-                this.type = QuadOperandType.INT;
+                this.type = QuadOperand.Type.INT;
                 this.tempVar = -1;
                 this.identifier = irInfo.getIdentifier();
                 break;
             case CHAR:
-                this.type = QuadOperandType.CHAR;
+                this.type = QuadOperand.Type.CHAR;
                 this.tempVar = -1;
                 this.identifier = irInfo.getIdentifier();
                 break;
             case STRING:
-                this.type = QuadOperandType.STRING;
+                this.type = QuadOperand.Type.STRING;
                 this.tempVar = -1;
                 this.identifier = irInfo.getIdentifier();
                 break;
@@ -47,25 +53,25 @@ public class QuadOperand {
         }
     }
 
-    public QuadOperand(QuadOperandType type, int tempVar) {
+    public QuadOperand(QuadOperand.Type type, int tempVar) {
         this.type = type;
         this.tempVar = tempVar;
         this.identifier = null;
     }
 
-    public QuadOperand(QuadOperandType type, String identifier) {
+    public QuadOperand(QuadOperand.Type type, String identifier) {
         this.type = type;
         this.tempVar = -1;
         this.identifier = identifier;
     }
 
-    public QuadOperand(QuadOperandType type) {
+    public QuadOperand(QuadOperand.Type type) {
         this.type = type;
         this.tempVar = -1;
         this.identifier = null;
     }
 
-    public QuadOperandType getType() {
+    public QuadOperand.Type getType() {
         return type;
     }
 

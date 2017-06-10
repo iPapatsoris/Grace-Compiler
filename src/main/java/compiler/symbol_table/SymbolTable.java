@@ -55,18 +55,15 @@ public class SymbolTable {
                 }
             }
 
-
             /* Remove symbol */
             if (symbolEntry.getShadowedSymbolEntry() != null) {
                 lookupTable.put(symbol.getToken().getText(), symbolEntry.getShadowedSymbolEntry());
             } else {
                 lookupTable.remove(symbol.getToken().getText());
             }
-            //System.out.println(TreeVisitor.ANSI_BLUE + "Removing " + symbolEntry + TreeVisitor.ANSI_RESET);
             it.remove();
         }
         curScope--;
-        //System.out.println(TreeVisitor.ANSI_BLUE + "After exit: " + this + TreeVisitor.ANSI_RESET);
     }
 
     public ArrayDeque<Variable> getLocalVars(long scope) {
@@ -122,7 +119,6 @@ public class SymbolTable {
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
         symbolList.push(newSymbolEntry);
         lookupTable.put(identifier, newSymbolEntry);
-        //System.out.println(TreeVisitor.ANSI_BLUE + "Inserting " + newSymbolEntry + TreeVisitor.ANSI_RESET);
     }
 
     public Symbol lookup(String symbol) {
