@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.IllegalArgumentException;
+import java.lang.Runtime;
 
 public class Main {
 
@@ -32,24 +33,45 @@ public class Main {
             }
             System.exit(1);
         }
-        TreeVisitor treeVisitor = new TreeVisitor(options.getOutput(), options.getPrintAST());
+        TreeVisitor treeVisitor = new TreeVisitor(options.getOutputCode(), options.getPrintAST());
         tree.apply(treeVisitor);
         //treeVisitor.printIR();
+        /* Not secure */
+        try { System.out.println("gcc -m32 " + options.getOutputCode() +
+                              " src/main/standard-library/sl.s" +
+                              (options.getOutputProgram() != null ?
+                               " -o " + options.getOutputProgram() : ""));
+            Runtime.getRuntime().exec("gcc -m32 " + options.getOutputCode() +
+                                  " src/main/standard-library/sl.s" +
+                                  (options.getOutputProgram() != null ?
+                                   " -o " + options.getOutputProgram() : ""));
+        } catch (IOException e) {
+            System.err.println("I/O error in producing binary from final code: " +
+                                e.getMessage());
+        }
         System.exit(0);
     }
 
     public static class Options {
         String input;
-        String output;
+        String outputCode;
+        String outputProgram;
         boolean printAST;
 
         public Options(String args[]) {
             input = null;
+            outputProgram = null;
             printAST = false;
             for (int i = 0 ; i < args.length ; i++) {
                 switch (args[i]) {
                     case "-ast":
                         printAST = true;
+                        break;
+                    case "-o":
+                        if (++i >= args.length) {
+                            throw new IllegalArgumentException("No output program file");
+                        }
+                        outputProgram = args[i];
                         break;
                     default:
                         input = args[i];
@@ -62,15 +84,19 @@ public class Main {
             if (suffixIndex < 0) {
                 suffixIndex = input.length();
             }
-            output = input.substring(0, suffixIndex) + ".s";
+            outputCode = input.substring(0, suffixIndex) + ".s";
         }
 
         public String getInput() {
             return input;
         }
 
-        public String getOutput() {
-            return output;
+        public String getOutputCode() {
+            return outputCode;
+        }
+
+        public String getOutputProgram() {
+            return outputProgram;
         }
 
         public boolean getPrintAST() {

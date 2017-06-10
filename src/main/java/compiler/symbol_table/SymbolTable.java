@@ -69,19 +69,40 @@ public class SymbolTable {
         //System.out.println(TreeVisitor.ANSI_BLUE + "After exit: " + this + TreeVisitor.ANSI_RESET);
     }
 
-    public ArrayDeque<Variable> getLocalVars() {
-        ArrayDeque<Variable> localVars = new ArrayDeque<Variable>();
+    public ArrayDeque<Variable> getLocalVars(long scope) {
+        ArrayDeque<Variable> symbols = new ArrayDeque<Variable>();
         for (Iterator<SymbolEntry> it = symbolList.iterator(); it.hasNext(); ) {
             SymbolEntry symbolEntry = it.next();
+            if (symbolEntry.getScope() > scope) {
+                continue;
+            }
             Symbol symbol = symbolEntry.getSymbol();
-            if (symbolEntry.getScope() != curScope || symbol instanceof Argument) {
+            if (symbolEntry.getScope() != scope || symbol instanceof Argument) {
                 break;
             }
             if (symbol instanceof Variable) {
-                localVars.push((Variable)symbol);
+                symbols.push((Variable)symbol);
             }
         }
-        return localVars;
+        return symbols;
+    }
+
+    public ArrayDeque<Argument> getArguments(long scope) {
+        ArrayDeque<Argument> symbols = new ArrayDeque<Argument>();
+        for (Iterator<SymbolEntry> it = symbolList.iterator(); it.hasNext(); ) {
+            SymbolEntry symbolEntry = it.next();
+            if (symbolEntry.getScope() > scope) {
+                continue;
+            }
+            Symbol symbol = symbolEntry.getSymbol();
+            if (symbolEntry.getScope() != scope) {
+                break;
+            }
+            if (symbol instanceof Argument) {
+                symbols.push((Argument)symbol);
+            }
+        }
+        return symbols;
     }
 
     public void insert(Symbol symbol) {
