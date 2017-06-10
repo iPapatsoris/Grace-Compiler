@@ -21,7 +21,6 @@ public class FinalCode {
 
     private String curFunction;
     private ArrayDeque<Argument> arguments;
-    private ArrayDeque<Variable> localVars;
     private int numTempVars;
     private QuadOperand curReturnTempVar;
     private ArrayList<String> stringLiterals;
@@ -39,7 +38,6 @@ public class FinalCode {
         this.wordSize = 4;
         this.curFunction = null;
         this.arguments = null;
-        this.localVars = null;
         this.numTempVars = 0;
         this.curReturnTempVar = null;
         this.stringLiterals = new ArrayList<String>();
@@ -118,7 +116,6 @@ public class FinalCode {
                     curFunction = quad.getOperand1().getIdentifier();
                     originalName = uniqueToOriginal(curFunction);
                     arguments = ((Function)symbolTable.lookup(originalName)).getArguments();
-                    localVars = symbolTable.getLocalVars(symbolTable.getCurScope());
                     numTempVars = tempVars.size() - curTempVar;
                     //System.out.println("unique is " + curFunction + " original is " + originalName);
                     //System.out.println("Local vars are " + localVars);
@@ -145,14 +142,7 @@ public class FinalCode {
                 case ARRAY:
                     load("eax", quad.getOperand2());
                     String identifier = quad.getOperand1().getIdentifier();
-                    SymbolInfo symbolInfo = getLocalVarInfo(localVars, identifier);
-                    Type type = null;
-                    if (symbolInfo != null) {
-                        type = symbolInfo.getType();
-                    } else {
-                        type = getArgumentInfo(arguments, identifier).getType(); // caution AR
-                    }
-
+                    Type type = symbolTable.lookup(identifier).getType();
                     writer.println("mov ecx, " + getTypeSize(type) + "\n" +
                                    "imul ecx");
                     loadAddr("ecx", quad.getOperand1());
@@ -284,24 +274,42 @@ public class FinalCode {
                 break;
             case IDENTIFIER:
                 String identifier = quadOperand.getIdentifier();
-                SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
-                if (localVarInfo != null) {
+                SymbolTable.SymbolEntry symbolEntry = symbolTable.lookupEntry(identifier);
+                String basePointer = "ebp";
+                ArrayDeque<Variable> variableList = null;
+                ArrayDeque<Argument> argumentList = null;
+                long curScope = symbolTable.getCurScope();
+                long symbolScope = symbolEntry.getScope();
+                if (curScope != symbolScope) {
+                    getAR(curScope, symbolScope);
+                    basePointer = "si";
+                }
+                Symbol symbol = symbolEntry.getSymbol();
+                if (symbol instanceof Variable && !(symbol instanceof Argument)) {
+                    variableList = symbolTable.getLocalVars(symbolScope);
+                    SymbolInfo localVarInfo = getLocalVarInfo(variableList, identifier);
+                    if (localVarInfo == null) {
+                        System.err.println("Internal error: couldn't find local variable " + identifier +
+                                           "in given list");
+                        System.exit(1);
+                    }
                     System.out.println("it's a local " + identifier);
-
                     if (localVarInfo.getType() == Type.CHAR) {
                         charInvolved = true;
                         register = "al";
                     }
                     writer.println("mov " + register + ", " +
                                     getTypeSizeName(localVarInfo.getType()) +
-                                    " [ebp-" + localVarInfo.getOffset() + "]");
-                    break;
-                }
-                String originalName = uniqueToOriginal(curFunction);
-                Function function = (Function)symbolTable.lookup(originalName);
-                SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
-                System.out.println("Searching for " + identifier);
-                if (argumentInfo != null) {
+                                    " [" + basePointer + "-" + localVarInfo.getOffset() + "]");
+                } else if (symbol instanceof Argument) {
+                    argumentList = symbolTable.getArguments(symbolScope);
+                    SymbolInfo argumentInfo = getArgumentInfo(argumentList, identifier);
+                    if (argumentInfo == null) {
+                        System.err.println("Internal error: couldn't find argument " +
+                                           "in given list");
+                        System.exit(1);
+                    }
+                    System.out.println("Searching for " + identifier);
                     System.out.println(identifier + " is an argument");
                     if (argumentInfo.getType() == Type.CHAR) {
                         charInvolved = true;
@@ -310,16 +318,14 @@ public class FinalCode {
                     if (! argumentInfo.isReference()) {
                         writer.println("mov " + register + ", " +
                                         getTypeSizeName(argumentInfo.getType()) +
-                                        " [ebp+" + (argumentInfo.getOffset() + 3 * wordSize) + "]");
+                                        " [" + basePointer + "+" + (argumentInfo.getOffset() + 3 * wordSize) + "]");
                     } else {
-                        writer.println("mov edi, DWORD PTR [ebp+" +
+                        writer.println("mov edi, DWORD PTR [" + basePointer + "+" +
                                        (argumentInfo.getOffset() + 3 * wordSize) + "]");
                         writer.println("mov " + register + ", " + getTypeSizeName(argumentInfo.getType()) +
                                        " [edi]");
                     }
-                    break;
                 }
-
                 break;
             case ADDRESS:
                 tempVar = quadOperand.getTempVar();
@@ -342,7 +348,7 @@ public class FinalCode {
             default:
                 System.err.println("Internal error: wrong quadOperand Type " +
                                    quadOperand.getType() + " in FinalCode load");
-                //System.exit(1);
+                System.exit(1);
         }
         return charInvolved;
     }
@@ -361,25 +367,43 @@ public class FinalCode {
                 break;
             case IDENTIFIER:
                 String identifier = quadOperand.getIdentifier();
-                SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
-                if (localVarInfo != null) {
-                    writer.println("lea " + register + ", DWORD PTR [ebp-" +
-                                   localVarInfo.getOffset() + "]");
-                    break;
+                SymbolTable.SymbolEntry symbolEntry = symbolTable.lookupEntry(identifier);
+                String basePointer = "ebp";
+                ArrayDeque<Variable> variableList = null;
+                ArrayDeque<Argument> argumentList = null;
+                long curScope = symbolTable.getCurScope();
+                long symbolScope = symbolEntry.getScope();
+                if (curScope != symbolScope) {
+                    getAR(curScope, symbolScope);
+                    basePointer = "si";
                 }
-                String originalName = uniqueToOriginal(curFunction);
-                Function function = (Function)symbolTable.lookup(originalName);
-                SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
-                if (argumentInfo != null) {
+                Symbol symbol = symbolEntry.getSymbol();
+                if (symbol instanceof Variable && !(symbol instanceof Argument)) {
+                    variableList = symbolTable.getLocalVars(symbolScope);
+                    SymbolInfo localVarInfo = getLocalVarInfo(variableList, identifier);
+                    if (localVarInfo == null) {
+                        System.err.println("Internal error: couldn't find local variable " + identifier +
+                                           "in given list");
+                        System.exit(1);
+                    }
+                    writer.println("lea " + register + ", DWORD PTR [" + basePointer +
+                                   "-" + localVarInfo.getOffset() + "]");
+                } else if (symbolEntry.getSymbol() instanceof Argument) {
+                    argumentList = symbolTable.getArguments(symbolScope);
+                    SymbolInfo argumentInfo = getArgumentInfo(argumentList, identifier);
+                    if (argumentInfo == null) {
+                        System.err.println("Internal error: couldn't find argument " +
+                                           "in given list");
+                        System.exit(1);
+                    }
                     if (! argumentInfo.isReference()) {
                         writer.println("lea " + register + ", " +
                                         getTypeSizeName(argumentInfo.getType()) +
-                                        " [ebp+" + (argumentInfo.getOffset() + 3 * wordSize) + "]");
+                                        " [" + basePointer + "+" + (argumentInfo.getOffset() + 3 * wordSize) + "]");
                     } else {
-                        writer.println("mov " + register + ", DWORD PTR [ebp+" +
-                                       (argumentInfo.getOffset() + 3 * wordSize) + "]");
+                        writer.println("mov " + register + ", DWORD PTR [" + basePointer +
+                                       "+" + (argumentInfo.getOffset() + 3 * wordSize) + "]");
                     }
-                    break;
                 }
                 break;
             case ADDRESS:
@@ -409,35 +433,53 @@ public class FinalCode {
                 break;
             case IDENTIFIER:
                 String identifier = quadOperand.getIdentifier();
-                SymbolInfo localVarInfo = getLocalVarInfo(localVars, identifier);
-                if (localVarInfo != null) {
+                SymbolTable.SymbolEntry symbolEntry = symbolTable.lookupEntry(identifier);
+                String basePointer = "ebp";
+                ArrayDeque<Variable> variableList = null;
+                ArrayDeque<Argument> argumentList = null;
+                long curScope = symbolTable.getCurScope();
+                long symbolScope = symbolEntry.getScope();
+                if (curScope != symbolScope) {
+                    getAR(curScope, symbolScope);
+                    basePointer = "si";
+                }
+                Symbol symbol = symbolEntry.getSymbol();
+                if (symbol instanceof Variable && !(symbol instanceof Argument)) {
+                    variableList = symbolTable.getLocalVars(symbolScope);
+                    SymbolInfo localVarInfo = getLocalVarInfo(variableList, identifier);
+                    if (localVarInfo == null) {
+                        System.err.println("Internal error: couldn't find local variable " + identifier +
+                                           "in given list");
+                        System.exit(1);
+                    }
                     if (localVarInfo.getType() == Type.CHAR) {
                         register = "al";
                     }
                     writer.println("mov " + getTypeSizeName(localVarInfo.getType()) +
-                                   " [ebp-" + localVarInfo.getOffset() +
+                                   " [" + basePointer + "-" + localVarInfo.getOffset() +
                                    "], " + register);
-                    break;
-                }
-                String originalName = uniqueToOriginal(curFunction);
-                Function function = (Function)symbolTable.lookup(originalName);
-                SymbolInfo argumentInfo = getArgumentInfo(function.getArguments(), identifier);
-                if (argumentInfo != null) {
+                } else if (symbolEntry.getSymbol() instanceof Argument) {
+                    argumentList = symbolTable.getArguments(symbolScope);
+                    SymbolInfo argumentInfo = getArgumentInfo(argumentList, identifier);
+                    if (argumentInfo == null) {
+                        System.err.println("Internal error: couldn't find argument " +
+                                           "in given list");
+                        System.exit(1);
+                    }
                     System.out.println(identifier + " is an argument");
                     if (argumentInfo.getType() == Type.CHAR) {
                         register = "al";
                     }
                     if (! argumentInfo.isReference()) {
                         writer.println("mov " + getTypeSizeName(argumentInfo.getType()) +
-                                       " [ebp+" + (argumentInfo.getOffset() + 3 * wordSize) +
+                                       " [" + basePointer + "+" + (argumentInfo.getOffset() + 3 * wordSize) +
                                        "], " + register);
                     } else {
-                        writer.println("mov edi, DWORD PTR [ebp+" +
+                        writer.println("mov edi, DWORD PTR [" + basePointer + "+" +
                                        (argumentInfo.getOffset() + 3 * wordSize) + "]");
                         writer.println("mov " + getTypeSizeName(argumentInfo.getType()) +
                                        " [edi], " + register);
                     }
-                    break;
                 }
                 break;
             case ADDRESS:
@@ -583,6 +625,7 @@ public class FinalCode {
     }
 
     private long getTotalLocalVarsOffset() {
+        ArrayDeque<Variable> localVars = symbolTable.getLocalVars(symbolTable.getCurScope());
         long index = 0;
         for (Variable variable: localVars) {
             if (variable.getType() == Type.INT && (index > 0 && index % wordSize != 0)) {
