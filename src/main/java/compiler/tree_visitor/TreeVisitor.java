@@ -101,6 +101,10 @@ public class TreeVisitor extends DepthFirstAdapter {
         }
     }
 
+    private static boolean hasNoFirstDimension(Symbol symbol) {
+        return symbol instanceof Argument && ((Argument)symbol).hasNoFirstDimension();
+    }
+
     /* ******** Out & Case  ******** */
 
     @Override
@@ -806,10 +810,7 @@ public class TreeVisitor extends DepthFirstAdapter {
             dimensionsNum++;
         }
 
-
         Variable variable = (Variable)symbol;
-        symbol = null;
-
         if (node.getExpr().size() > dimensionsNum) {
             System.err.println("Semantic error: lvalue '" + node.getIdentifier().getText() +
                                "' at " + Symbol.getLocation(node.getIdentifier()) +
@@ -848,7 +849,7 @@ public class TreeVisitor extends DepthFirstAdapter {
             } break;
             default: {
                 ExprInfo expr = exprs.get(0);
-                int columns = variable.getDimensions().get(1);
+                int columns = variable.getDimensions().get((hasNoFirstDimension(symbol) ? 0 : 1));
                 int multVar = ir.newTempVar(Type.INT);
                 Quad quad = new Quad(Quad.Op.MULT, new QuadOperand(expr.getIRInfo()),
                                      new QuadOperand(QuadOperand.Type.INT, String.valueOf(columns)),
@@ -863,7 +864,7 @@ public class TreeVisitor extends DepthFirstAdapter {
                 ir.insertQuad(quad);
 
                 for (int i = 2 ; i < exprs.size() ; i++) {
-                    int dimensionRange = variable.getDimensions().get(i);
+                    int dimensionRange = variable.getDimensions().get((hasNoFirstDimension(symbol) ? i-1 : i));
                     multVar = ir.newTempVar(Type.INT);
                     quad = new Quad(Quad.Op.MULT, new QuadOperand(QuadOperand.Type.TEMPVAR, addVar),
                                     new QuadOperand(QuadOperand.Type.INT, String.valueOf(dimensionRange)),
@@ -917,7 +918,9 @@ public class TreeVisitor extends DepthFirstAdapter {
         if (node.getExpr().size() == 1) {
             ExprInfo expr = (ExprInfo)returnInfo.pop();
             checkNumericExpession(expr);
-            tempVar = ir.newTempVar(Type.CHAR);
+            tempVar = ir.newTempVar(Type.INT);
+            ArrayInfo arrayInfo = new ArrayInfo(Type.CHAR, 0);
+            ir.getArrayInfo().put(tempVar, arrayInfo);
             Quad quad = new Quad(Quad.Op.ARRAY, new QuadOperand(QuadOperand.Type.STRING, node.getString().getText()),
                                  new QuadOperand(expr.getIRInfo()),
                                  new QuadOperand(QuadOperand.Type.ADDRESS, tempVar));

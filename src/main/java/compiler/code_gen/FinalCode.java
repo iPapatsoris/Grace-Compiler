@@ -136,7 +136,12 @@ public class FinalCode {
                 case ARRAY:
                     load("eax", quad.getOperand2());
                     String identifier = quad.getOperand1().getIdentifier();
-                    Type type = symbolTable.lookup(identifier).getType();
+                    Type type = null;
+                    if (quad.getOperand1().getType() == QuadOperand.Type.STRING) {
+                        type = Type.CHAR;
+                    } else {
+                        type = symbolTable.lookup(identifier).getType();
+                    }
                     writer.println("mov ecx, " + getTypeSize(type) + "\n" +
                                    "imul ecx");
                     loadAddr("ecx", quad.getOperand1());
@@ -302,7 +307,7 @@ public class FinalCode {
                                stringLiterals.size());
                 stringLiterals.add(quadOperand.getIdentifier());
                 break;
-            case TEMPVAR: // char treatment?
+            case TEMPVAR:
                 int tempVar = quadOperand.getTempVar();
                 long offset = getTempVarStackInfo(tempVar).getOffset();
                 writer.println("lea " + register + ", DWORD PTR [ebp-" + offset + "]");

@@ -1,15 +1,8 @@
-fun main() : nothing
-{
-    puts("sting: tab\ttab\ncarriage return\rbackslash\\\nquote\'\ndouble quote\"\n\nchars:");
-    putc('t'); putc('\t'); putc('t');
-    putc('\n');
-    putc('\r');
-    putc('\\');
-    putc('\n');
-    putc('\'');
-    putc('\n');
-    putc('\"');
 
-    puts("\x7a <- string ");
-    putc('\x6b');
+fun main() : nothing
+    var x: int[15][15];
+    fun foo(ref y: int[]) : nothing
+    {}
+{
+    foo(x[3]);
 }

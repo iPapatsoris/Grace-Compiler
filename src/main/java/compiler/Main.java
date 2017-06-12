@@ -41,7 +41,7 @@ public class Main {
         }
 
         /* Not secure */
-        try {
+        /*try {
             Runtime.getRuntime().exec("gcc -m32 " + options.getOutputCode() +
                                   " src/main/standard-library/sl.s" +
                                   (options.getOutputProgram() != null ?
@@ -49,20 +49,20 @@ public class Main {
         } catch (IOException e) {
             System.err.println("I/O error in producing binary from final code: " +
                                 e.getMessage());
-        }
+        }*/
         System.exit(0);
     }
 
     public static class Options {
-        String input;
-        String outputCode;
-        String outputProgram;
-        boolean printAST;
-        boolean printIR;
+        private String input;
+        private String outputCode;
+        //private String outputProgram;
+        private boolean printAST;
+        private boolean printIR;
 
         public Options(String args[]) {
             input = null;
-            outputProgram = null;
+            //outputProgram = null;
             printAST = false;
             printIR = false;
             for (int i = 0 ; i < args.length ; i++) {
@@ -73,12 +73,12 @@ public class Main {
                     case "-ir":
                         printIR = true;
                         break;
-                    case "-o":
+                    /*case "-o":
                         if (++i >= args.length) {
                             throw new IllegalArgumentException("No output program file");
                         }
                         outputProgram = args[i];
-                        break;
+                        break;*/
                     default:
                         input = args[i];
                 }
@@ -101,9 +101,9 @@ public class Main {
             return outputCode;
         }
 
-        public String getOutputProgram() {
+        /*public String getOutputProgram() {
             return outputProgram;
-        }
+        }*/
 
         public boolean getPrintAST() {
             return printAST;
