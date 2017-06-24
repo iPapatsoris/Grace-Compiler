@@ -1,9 +1,7 @@
 fun main() : nothing
-    var s : char[32][33];
-    fun foo(ref s: char[]) : nothing {
-        puts(s); return;
-    }
+    var s: char[5];
 {
-    strcpy(s[32], "hello");
-    foo(s[32]);
+    strcpy(s, "neti");
+    putc(s[1]);
+    putc("neti"[1]);
 }
