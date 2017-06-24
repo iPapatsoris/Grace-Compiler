@@ -276,14 +276,7 @@ public class FinalCode {
                 break;
             case ADDRESS:
                 tempVar = quadOperand.getTempVar();
-                ArrayInfo arrayInfo = ir.getArrayInfo().get(tempVar);
-                if (arrayInfo == null) {
-                    System.err.println("Internal error: tempVar " + tempVar +
-                                       " not found in arrayInfo map");
-                    System.exit(1);
-                }
-                tempVarType = (arrayInfo.getDimensionsLeft() > 0 ? Type.INT :
-                               arrayInfo.getArrayType());
+                tempVarType = ir.getTempVars().get(tempVar);
                 if (tempVarType == Type.CHAR) {
                     charInvolved = true;
                     register = "al";
@@ -344,14 +337,7 @@ public class FinalCode {
                 break;
             case ADDRESS:
                 tempVar = quadOperand.getTempVar();
-                ArrayInfo arrayInfo = ir.getArrayInfo().get(tempVar);
-                if (arrayInfo == null) {
-                    System.err.println("Internal error: tempVar " + tempVar +
-                                       " not found in arrayInfo map");
-                    System.exit(1);
-                }
-                tempVarType = (arrayInfo.getDimensionsLeft() > 0 ? Type.INT :
-                               arrayInfo.getArrayType());
+                tempVarType = ir.getTempVars().get(tempVar);
                 if (tempVarType == Type.CHAR) {
                     register = "al";
                 }

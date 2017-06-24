@@ -11,12 +11,10 @@ import java.lang.String;
 public class IntermediateRepresentation {
     private final ArrayList<Quad> quads;
     private final ArrayList<Type> tempVars;
-    private final HashMap<Integer, ArrayInfo> arrayInfo;
 
     public IntermediateRepresentation() {
         quads = new ArrayList<Quad>();
         tempVars = new ArrayList<Type>();
-        arrayInfo = new HashMap<Integer, ArrayInfo>();
     }
 
     public int getNextQuadIndex() {
@@ -68,9 +66,5 @@ public class IntermediateRepresentation {
 
     public ArrayList<Type> getTempVars() {
         return tempVars;
-    }
-
-    public HashMap<Integer, ArrayInfo> getArrayInfo() {
-        return arrayInfo;
     }
 }

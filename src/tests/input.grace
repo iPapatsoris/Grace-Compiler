@@ -1,8 +1,9 @@
-
 fun main() : nothing
-    var x: int[15][15];
-    fun foo(ref y: int[]) : nothing
-    {}
+    var s : char[32][33];
+    fun foo(ref s: char[]) : nothing {
+        puts(s); return;
+    }
 {
-    foo(x[3]);
+    strcpy(s[32], "hello");
+    foo(s[32]);
 }

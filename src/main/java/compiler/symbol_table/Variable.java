@@ -18,14 +18,18 @@ public class Variable extends Symbol {
     }
 
     public long getTotalCells() {
+        return getTotalCells(0);
+    }
+
+    public long getTotalCells(int start) {
         if (dimensions.size() == 0) {
             return 0;
         }
-        long cells = dimensions.get(0);
-        if (dimensions.size() == 1) {
+        long cells = dimensions.get(start);
+        if (dimensions.size() == start + 1) {
             return cells;
         }
-        for (ListIterator<Integer> it = dimensions.listIterator(1) ; it.hasNext() ;) {
+        for (ListIterator<Integer> it = dimensions.listIterator(start + 1) ; it.hasNext() ;) {
             cells *= it.next();
         }
         return cells;

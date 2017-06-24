@@ -1,8 +1,8 @@
 
 fun main() : nothing
-    var x: int[15][15];
+    var x: int[70][150][26];
     var i,j,c: int;
-    fun printArray(ref x: int[][15]; ref y: int[]) : nothing
+    fun printArray(ref x: int[150][26]; ref y: int[26]) : nothing
     {
         i <- 0;
         while (i < 15) do {
@@ -27,12 +27,12 @@ fun main() : nothing
     while (i < 15) do {
         j <- 0;
         while (j < 15) do {
-            x[i][j] <- c;
+            x[69][i][j] <- c;
             c <- c+1;
             j <- j+1;
         }
         i <- i+1;
     }
-    printArray(x, x[3]);
+    printArray(x[69], x[69][5]);
     putc('\n');
 }
