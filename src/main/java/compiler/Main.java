@@ -37,7 +37,10 @@ public class Main {
                                                   options.getPrintAST(),
                                                   options.getOptimize());
         tree.apply(treeVisitor);
-        if (options.getPrintIR()) {
+        if (options.getOptimize()) {
+            treeVisitor.getOptimizer().print();
+        }
+        else if (options.getPrintIR()) {
             treeVisitor.getIR().print();
         }
         System.exit(0);

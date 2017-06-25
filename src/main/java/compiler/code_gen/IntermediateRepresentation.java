@@ -56,7 +56,8 @@ public class IntermediateRepresentation {
         return op == Quad.Op.JUMP ||  op == Quad.Op.CALL || op == Quad.Op.RET ||
                op == Quad.Op.EQUAL || op == Quad.Op.NOT_EQUAL ||
                op == Quad.Op.GREATER || op == Quad.Op.LESS ||
-               op == Quad.Op.GREATER_EQUAL || op == Quad.Op.LESS_EQUAL;
+               op == Quad.Op.GREATER_EQUAL || op == Quad.Op.LESS_EQUAL ||
+               op == Quad.Op.ENDU;
         }
 
     public void print(int quadIndex, int tempVarIndex) {
@@ -70,7 +71,6 @@ public class IntermediateRepresentation {
             }
         }
         System.out.println(""); */
-        System.out.println(labels);
         for (ListIterator<Quad> it = quads.listIterator(quadIndex) ; it.hasNext() ; ) {
             Quad quad = it.next();
             if (quad.getOp() == Quad.Op.UNIT) {

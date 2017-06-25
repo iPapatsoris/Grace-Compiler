@@ -65,6 +65,10 @@ public class TreeVisitor extends DepthFirstAdapter {
         return ir;
     }
 
+    public Optimizer getOptimizer() {
+        return optimizer;
+    }
+
     private static String getClassName(Node node) {
         String nodeClass = node.getClass().toString();
         int suffixIndex = nodeClass.lastIndexOf('.');
@@ -267,7 +271,6 @@ public class TreeVisitor extends DepthFirstAdapter {
         //System.out.println("");
         if (optimize) {
             optimizer.run();
-            optimizer.print();
         }
         finalCode.generate();
         try {
