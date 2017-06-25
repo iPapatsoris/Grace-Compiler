@@ -1,6 +1,7 @@
 package compiler.symbol_table;
 
 import compiler.node.*;
+import compiler.tree_visitor.SemanticException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class SymbolTable {
         curScope++;
     }
 
-    public void exit() {
+    public void exit() throws SemanticException {
         HashMap<String, Function> definedFunctions = new HashMap<String, Function>();
         for (Iterator<SymbolEntry> it = symbolList.iterator(); it.hasNext(); ) {
             SymbolEntry symbolEntry = it.next();
@@ -43,13 +44,13 @@ public class SymbolTable {
                         System.err.println("Semantic error: function " + function.getToken().getText() +
                                                 " is declared at " + Symbol.getLocation(function.getToken()) +
                                                 " but not defined at the same scope");
-                        System.exit(1);
+                        throw new SemanticException();
                     } else {
                         if (!function.sameHeader(definedFunction)) {
                             System.err.println("Semantic error: different headers between declared function " +
                                                         function.getToken().getText() + " at " + Symbol.getLocation(function.getToken()) +
                                                         " and defined one at " + Symbol.getLocation(definedFunction.getToken()));
-                            System.exit(1);
+                            throw new SemanticException();
                         }
                     }
                 }
@@ -102,7 +103,7 @@ public class SymbolTable {
         return symbols;
     }
 
-    public void insert(Symbol symbol) {
+    public void insert(Symbol symbol) throws SemanticException {
         String identifier = symbol.getToken().getText();
         SymbolEntry oldSymbolEntry = lookupTable.get(identifier);
         if (oldSymbolEntry != null) {
@@ -113,7 +114,7 @@ public class SymbolTable {
                 System.err.println("Semantic error: symbol \'" + identifier +"\' at " + Symbol.getLocation(symbol.getToken()) +
                                             " is already defined at " + Symbol.getLocation(oldSymbolEntry.getSymbol().getToken()) +
                                             " at current scope");
-                System.exit(1);
+                throw new SemanticException();
             }
         }
         SymbolEntry newSymbolEntry = new SymbolEntry(symbol, curScope, oldSymbolEntry);
@@ -138,7 +139,7 @@ public class SymbolTable {
         return curScope == -1;
     }
 
-    public void loadStandardLibrary() {
+    public void loadStandardLibrary() throws SemanticException {
 
         /* puti */
         TIdentifier token = new TIdentifier("n", -1, -1);

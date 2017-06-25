@@ -9,12 +9,14 @@ import java.util.ListIterator;
 import java.lang.String;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.io.File;
 
 
 public class FinalCode {
     private final IntermediateRepresentation ir;
     private final SymbolTable symbolTable;
     private final PrintWriter writer;
+    private final String outputFile;
     private int curQuad;
     private int curTempVar;
     private final int wordSize;
@@ -26,12 +28,13 @@ public class FinalCode {
     private final ArrayDeque<Quad> passParameters;
 
     public FinalCode(IntermediateRepresentation ir, SymbolTable symbolTable,
-                     String output) throws IOException {
+                     String outputFile) throws IOException {
         this.ir = ir;
         this.symbolTable = symbolTable;
-        this.writer = new PrintWriter(output, "UTF-8");
+        this.writer = new PrintWriter(outputFile, "UTF-8");
         this.writer.println(".intel_syntax noprefix\n" +
                             ".text");
+        this.outputFile = outputFile;
         this.curQuad = 0;
         this.curTempVar = 0;
         this.wordSize = 4;
@@ -482,6 +485,12 @@ public class FinalCode {
                            stringLiteral);
         }
         writer.close();
+    }
+
+    public void deleteWriter() {
+        closeWriter();
+        File file = new File(outputFile);
+        file.delete();
     }
 
     /* Used to get info about a particular symbol within a list of local vars,

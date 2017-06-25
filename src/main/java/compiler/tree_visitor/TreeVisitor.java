@@ -35,6 +35,7 @@ public class TreeVisitor extends DepthFirstAdapter {
             this.finalCode = new FinalCode(ir, symbolTable, output);
         } catch (IOException e) {
             System.err.println("I/O error regarding output file: " + e.getMessage());
+            exit();
         }
         this.printAST = printAST;
         this.indentation = 0;
@@ -105,6 +106,11 @@ public class TreeVisitor extends DepthFirstAdapter {
         return symbol instanceof Argument && ((Argument)symbol).hasNoFirstDimension();
     }
 
+    void exit() {
+        finalCode.deleteWriter();
+        System.exit(1);
+    }
+
     /* ******** Out & Case  ******** */
 
     @Override
@@ -128,7 +134,11 @@ public class TreeVisitor extends DepthFirstAdapter {
             }
         }
         Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getType(), false);
-        symbolTable.insert(function);
+        try {
+            symbolTable.insert(function);
+        } catch (SemanticException e) {
+            exit();
+        }
     }
 
     @Override
@@ -158,11 +168,15 @@ public class TreeVisitor extends DepthFirstAdapter {
             /* Function symbol on current scope and arguments on new, unless it's main function */
             boolean mainFunction = symbolTable.onFirstScope();
             if (mainFunction) {
-                symbolTable.loadStandardLibrary();
+                try {
+                    symbolTable.loadStandardLibrary();
+                } catch (SemanticException e) {
+                    exit();
+                }
                 symbolTable.enter();
                 if (functionInfo.getArguments().size() > 0 || functionInfo.getType() != Type.NOTHING) {
                     System.err.println("Semantic error: first method should have no arguments and \'nothing\' as return type");
-                    System.exit(1);
+                    exit();
                 }
                 finalCode.addMainFunction(functionInfo.getToken().getText());
             }
@@ -177,7 +191,11 @@ public class TreeVisitor extends DepthFirstAdapter {
 
             /* Add function symbol on current scope */
             Symbol function = new Function(functionInfo.getToken(), arguments, functionInfo.getType(), true);
-            symbolTable.insert(function);
+            try {
+                symbolTable.insert(function);
+            } catch (SemanticException e) {
+                exit();
+            }
             functionScope = symbolTable.getCurScope();
 
 
@@ -186,7 +204,11 @@ public class TreeVisitor extends DepthFirstAdapter {
                 symbolTable.enter();
             }
             for (Argument argument : arguments) {
-                symbolTable.insert(argument);
+                try {
+                    symbolTable.insert(argument);
+                } catch (SemanticException e) {
+                    exit();
+                }
             }
         }
         {
@@ -230,7 +252,7 @@ public class TreeVisitor extends DepthFirstAdapter {
                                "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
                                " returns type " + functionInfo.getType() +
                                " but has no return statement");
-            System.exit(1);
+            exit();
         }
         ir.backpatch(blockList, ir.getNextQuadIndex());
         quad = new Quad(Quad.Op.ENDU,
@@ -240,7 +262,11 @@ public class TreeVisitor extends DepthFirstAdapter {
         //ir.print(finalCode.getCurQuad(), finalCode.getCurTempVar());
         //System.out.println("");
         finalCode.generate();
-        symbolTable.exit();
+        try {
+            symbolTable.exit();
+        } catch (SemanticException e) {
+            exit();
+        }
         if (symbolTable.onFirstScope()) {
             finalCode.closeWriter();
         }
@@ -258,7 +284,7 @@ public class TreeVisitor extends DepthFirstAdapter {
             if (!argumentInfo.hasReference() && (argumentInfo.getDimensions().size() > 0 || argumentInfo.hasNoFirstDimension())) {
                 System.err.println("Semantic error: argument(s) '" + argumentInfo.getIdentifiers() + "' in method '" +
                                     node.getIdentifier().getText() +"' at " + Symbol.getLocation(node.getIdentifier()) + " are of type array but not reference");
-                System.exit(1);
+                exit();
             }
             arguments.addFirst(argumentInfo);
         }
@@ -321,7 +347,11 @@ public class TreeVisitor extends DepthFirstAdapter {
         VariableInfo variableInfo = (VariableInfo) returnInfo.pop();
         for (Token token : node.getIdentifier()) {
             Symbol symbol = new Variable(token, variableInfo.getType(), variableInfo.getDimensions());
-            symbolTable.insert(symbol);
+            try {
+                symbolTable.insert(symbol);
+            } catch (SemanticException e) {
+                exit();
+            }
         }
     }
 
@@ -334,7 +364,7 @@ public class TreeVisitor extends DepthFirstAdapter {
         Type type = convertNodeToType(node.getDataType());
         if (type == Type.NOTHING) {
             System.err.println("Internal error: unsupported AST returnInfo in outAVarType");
-            System.exit(1);
+            exit();
         }
 
         ReturnInfo variableInfo = new VariableInfo(type, convertTokensToNumbers(node.getIntConstant()));
@@ -445,7 +475,7 @@ public class TreeVisitor extends DepthFirstAdapter {
         }
     }
 
-    private static void checkSameTypeAssignment(ExprInfo lvalue, ExprInfo expr) {
+    private void checkSameTypeAssignment(ExprInfo lvalue, ExprInfo expr) {
         if (lvalue.getDimensions().size() > 0 || expr.getDimensions().size() > 0 ||
             lvalue.getType() != expr.getType()) {
             System.err.println("Semantic error: assignment at " + Symbol.getLocation(lvalue.getToken()) +
@@ -454,7 +484,7 @@ public class TreeVisitor extends DepthFirstAdapter {
                                 String.join("", Collections.nCopies(lvalue.getDimensions().size(), "[]")) + "' and '" +
                                 Symbol.typeToString(expr.getType()) +
                                 String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) + "' instead");
-            System.exit(1);
+            exit();
         }
     }
 
@@ -497,13 +527,13 @@ public class TreeVisitor extends DepthFirstAdapter {
                                "', but found return type '" + Symbol.typeToString(expr.getType()) +
                                String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) +
                                "' at " + Symbol.getLocation(expr.getToken()));
-            System.exit(1);
+            exit();
         } else if (expr == null && functionInfo.getType() != Type.NOTHING) {
             System.err.println("Semantic error: method '" + functionInfo.getToken().getText() +
                                "' defined at " + Symbol.getLocation(functionInfo.getToken()) +
                                " is of return type '" + Symbol.typeToString(functionInfo.getType()) +
                                "', but found no return type");
-            System.exit(1);
+            exit();
         }
         functionInfo.setFoundReturn(true);
         Quad quad = null;
@@ -528,7 +558,7 @@ public class TreeVisitor extends DepthFirstAdapter {
 
     /* Condition */
 
-    private static void checkSameTypeOperand(String operator, ExprInfo exprLeft, ExprInfo exprRight) {
+    private void checkSameTypeOperand(String operator, ExprInfo exprLeft, ExprInfo exprRight) {
         if (exprLeft.getDimensions().size() > 0 || exprRight.getDimensions().size() > 0 ||
             exprLeft.getType() != exprRight.getType() || exprLeft.getType() == Type.NOTHING) {
             System.err.println("Semantic error: operator '" + operator + "' expected operand of the same type 'int' or 'char', but got '" +
@@ -537,7 +567,7 @@ public class TreeVisitor extends DepthFirstAdapter {
                                 Symbol.typeToString(exprRight.getType()) +
                                 String.join("", Collections.nCopies(exprRight.getDimensions().size(), "[]"))+ "' instead at " +
                                 Symbol.getLocation(exprLeft.getToken()));
-            System.exit(1);
+            exit();
         }
     }
 
@@ -704,7 +734,7 @@ public class TreeVisitor extends DepthFirstAdapter {
             System.err.println("Semantic error: undeclared method \'" +
                                 node.getIdentifier().getText() + "\' at " +
                                 Symbol.getLocation(node.getIdentifier()));
-            System.exit(1);
+            exit();
         }
 
         Function function = (Function)symbol;
@@ -716,7 +746,7 @@ public class TreeVisitor extends DepthFirstAdapter {
                                Symbol.getLocation(function.getToken()) + ": expected " +
                                function.getArguments().size() + " but got " + node.getExpr().size() +
                                " instead");
-            System.exit(1);
+            exit();
         }
 
         /* Get arguments in the right order */
@@ -743,14 +773,14 @@ public class TreeVisitor extends DepthFirstAdapter {
                                    "', but got '" + Symbol.typeToString(arg.getType()) +
                                    String.join("", Collections.nCopies(arg.getDimensions().size(), "[]")) +
                                    "' instead at " + Symbol.getLocation(arg.getToken()));
-                System.exit(1);
+                exit();
             } else if (!arg.isLvalue() && argCorrect.isReference()) {
                 System.err.println("Semantic error: method '" + node.getIdentifier().getText() +
                                    "' called at " + Symbol.getLocation(node.getIdentifier()) +
                                    " conflicts with header's argument at " +
                                    Symbol.getLocation(function.getToken()) + ": argument " +
                                    (i+1) + " is passed by reference, but is not an lvalue'");
-                System.exit(1);
+                exit();
             }
             QuadOperand.Type pass = (argCorrect.isReference() ? QuadOperand.Type.R
                                                                : QuadOperand.Type.V);
@@ -780,14 +810,14 @@ public class TreeVisitor extends DepthFirstAdapter {
 
     /* L_value */
 
-    private static void checkNumericExpession(ExprInfo expr) {
+    private void checkNumericExpession(ExprInfo expr) {
         if (expr.getType() != Type.INT || expr.getDimensions().size() > 0) {
             System.err.println("Semantic error: expression at " + Symbol.getLocation(expr.getToken()) +
                                " should be of type 'int', but it is '" +
                                Symbol.typeToString(expr.getType()) +
                                String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) +
                                "' instead");
-            System.exit(1);
+            exit();
         }
     }
 
@@ -802,7 +832,7 @@ public class TreeVisitor extends DepthFirstAdapter {
             System.err.println("Semantic error: undeclared symbol \'" +
                                 node.getIdentifier().getText() + "\' at " +
                                 Symbol.getLocation(node.getIdentifier()));
-            System.exit(1);
+            exit();
         }
 
         int dimensionsNum = ((Variable)symbol).getDimensions().size();
@@ -818,7 +848,7 @@ public class TreeVisitor extends DepthFirstAdapter {
                                Symbol.getLocation(variable.getToken()) + ": expected at most " +
                                dimensionsNum + " but got " + node.getExpr().size() +
                                " instead");
-            System.exit(1);
+            exit();
         }
 
         ArrayList<ExprInfo> exprs = new ArrayList<ExprInfo>();
@@ -930,7 +960,7 @@ public class TreeVisitor extends DepthFirstAdapter {
                                "' at " + Symbol.getLocation(node.getString()) +
                                " expected at most 1 dimension but got " +
                                node.getExpr().size() + " instead");
-            System.exit(1);
+            exit();
         }
 
         IRInfo irInfo = null;
@@ -970,13 +1000,13 @@ public class TreeVisitor extends DepthFirstAdapter {
         }
     }
 
-    private static void checkNumericOperand(String operator, ExprInfo expr) {
+    private void checkNumericOperand(String operator, ExprInfo expr) {
         if (expr.getType() != Type.INT || expr.getDimensions().size() > 0) {
             System.err.println("Semantic error: operator '" + operator + "' expected operand of type 'int', but got '" +
                                 Symbol.typeToString(expr.getType()) +
                                 String.join("", Collections.nCopies(expr.getDimensions().size(), "[]")) + "' instead at " +
                                 Symbol.getLocation(expr.getToken()));
-            System.exit(1);
+            exit();
         }
     }
 
