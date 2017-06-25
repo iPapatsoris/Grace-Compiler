@@ -1,6 +1,8 @@
 /target
 /ex
 /src/tests/*.s
+/src/tests/grading_tests
+src/main/standard-library/sl.s
 grades_part1.pdf
 *.txt
 *.s

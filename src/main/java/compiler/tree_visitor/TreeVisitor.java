@@ -23,14 +23,17 @@ public class TreeVisitor extends DepthFirstAdapter {
     private final SymbolTable symbolTable;
     private final ArrayDeque<ReturnInfo> returnInfo;
     private final IntermediateRepresentation ir;
+    private final Optimizer optimizer;
     private FinalCode finalCode;
     private final boolean printAST;
+    private final boolean optimize;
     private int indentation;
 
-    public TreeVisitor(String output, boolean printAST) {
+    public TreeVisitor(String output, boolean printAST, boolean optimize) {
         this.symbolTable = new SymbolTable();
         this.returnInfo = new ArrayDeque<ReturnInfo>();
-        this.ir = new IntermediateRepresentation();
+        this.ir = new IntermediateRepresentation(optimize);
+        this.optimizer = new Optimizer(this.ir);
         try {
             this.finalCode = new FinalCode(ir, symbolTable, output);
         } catch (IOException e) {
@@ -38,6 +41,7 @@ public class TreeVisitor extends DepthFirstAdapter {
             exit();
         }
         this.printAST = printAST;
+        this.optimize = optimize;
         this.indentation = 0;
     }
 
@@ -261,6 +265,10 @@ public class TreeVisitor extends DepthFirstAdapter {
         ir.insertQuad(quad);
         //ir.print(finalCode.getCurQuad(), finalCode.getCurTempVar());
         //System.out.println("");
+        if (optimize) {
+            optimizer.run();
+            optimizer.print();
+        }
         finalCode.generate();
         try {
             symbolTable.exit();
@@ -464,6 +472,9 @@ public class TreeVisitor extends DepthFirstAdapter {
         Quad quad = new Quad(Quad.Op.JUMP, null, null, new QuadOperand(QuadOperand.Type.LABEL,
                                                                        firstQuad));
         ir.insertQuad(quad);
+        if (optimize) {
+            ir.getLabels().add(firstQuad);
+        }
         returnInfo.push(new BackpatchInfo(backpatchCond.getFalseList()));
         outAWhileStatement(node);
     }

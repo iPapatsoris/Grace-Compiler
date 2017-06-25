@@ -34,37 +34,27 @@ public class Main {
             System.exit(1);
         }
         TreeVisitor treeVisitor = new TreeVisitor(options.getOutputCode(),
-                                                  options.getPrintAST());
+                                                  options.getPrintAST(),
+                                                  options.getOptimize());
         tree.apply(treeVisitor);
         if (options.getPrintIR()) {
             treeVisitor.getIR().print();
         }
-
-        /* Not secure */
-        /*try {
-            Runtime.getRuntime().exec("gcc -m32 " + options.getOutputCode() +
-                                  " src/main/standard-library/sl.s" +
-                                  (options.getOutputProgram() != null ?
-                                   " -o " + options.getOutputProgram() : ""));
-        } catch (IOException e) {
-            System.err.println("I/O error in producing binary from final code: " +
-                                e.getMessage());
-        }*/
         System.exit(0);
     }
 
     public static class Options {
         private String input;
         private String outputCode;
-        //private String outputProgram;
         private boolean printAST;
         private boolean printIR;
+        private boolean optimize;
 
         public Options(String args[]) {
             input = null;
-            //outputProgram = null;
             printAST = false;
             printIR = false;
+            optimize = false;
             for (int i = 0 ; i < args.length ; i++) {
                 switch (args[i]) {
                     case "-ast":
@@ -73,12 +63,9 @@ public class Main {
                     case "-ir":
                         printIR = true;
                         break;
-                    /*case "-o":
-                        if (++i >= args.length) {
-                            throw new IllegalArgumentException("No output program file");
-                        }
-                        outputProgram = args[i];
-                        break;*/
+                    case "-opt":
+                        optimize = true;
+                        break;
                     default:
                         input = args[i];
                 }
@@ -101,16 +88,15 @@ public class Main {
             return outputCode;
         }
 
-        /*public String getOutputProgram() {
-            return outputProgram;
-        }*/
-
         public boolean getPrintAST() {
             return printAST;
         }
 
         public boolean getPrintIR() {
             return printIR;
+        }
+        public boolean getOptimize() {
+            return optimize;
         }
     }
 }

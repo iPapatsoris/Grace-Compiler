@@ -4,8 +4,8 @@ import java.lang.String;
 
 public class Quad {
     public enum Op {
-        UNIT, ENDU, ASSIGN, ARRAY, IFB,
-        JUMP, LABEL, JUMPL, CALL, PAR, RET,
+        UNIT, ENDU, ASSIGN, ARRAY,
+        JUMP, CALL, PAR, RET,
         ADD, SUB, MULT, DIV, MOD,
         EQUAL, NOT_EQUAL, GREATER, LESS,
         GREATER_EQUAL, LESS_EQUAL
@@ -72,4 +72,5 @@ public class Quad {
     public QuadOperand getOutput() {
         return output;
     }
+
 }
