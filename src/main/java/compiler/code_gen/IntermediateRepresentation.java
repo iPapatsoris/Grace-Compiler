@@ -61,16 +61,6 @@ public class IntermediateRepresentation {
         }
 
     public void print(int quadIndex, int tempVarIndex) {
-        /* for (ListIterator it = tempVars.listIterator(tempVarIndex) ; it.hasNext() ; ) {
-            System.out.println("$" + it.nextIndex() + " " + it.next());
-            ArrayInfo arrayVar = arrayInfo.get(it.previousIndex());
-            if (arrayVar != null) {
-                System.out.println(" with " + arrayVar.getDimensionsLeft() +
-                                   " dimensions left " + " and array type of " +
-                                   arrayVar.getArrayType());
-            }
-        }
-        System.out.println(""); */
         for (ListIterator<Quad> it = quads.listIterator(quadIndex) ; it.hasNext() ; ) {
             Quad quad = it.next();
             if (quad.getOp() == Quad.Op.UNIT) {

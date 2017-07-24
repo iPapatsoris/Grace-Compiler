@@ -1228,26 +1228,6 @@ public class TreeVisitor extends DepthFirstAdapter {
 
     @Override
     public void defaultIn(Node node) {
-        System.out.println(ANSI_RED + node.getClass() + " " + ANSI_RESET + node);
-    }
-
-    @Override
-    public void inAFuncDefLocalDef(AFuncDefLocalDef node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncDeclLocalDef(AFuncDeclLocalDef node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAVarDefLocalDef(AVarDefLocalDef node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncDef(AFuncDef node) {
         printNode(node);
     }
 
@@ -1281,23 +1261,6 @@ public class TreeVisitor extends DepthFirstAdapter {
     }
 
     @Override
-    public void inAIntDataType(AIntDataType node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inACharDataType(ACharDataType node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANothingDataType(ANothingDataType node) {
-        printNode(node);
-    }
-
-    /* Variable */
-
-    @Override
     public void inAVarDef(AVarDef node) {
         if (printAST) {
             printIndentation();
@@ -1315,8 +1278,6 @@ public class TreeVisitor extends DepthFirstAdapter {
         }
     }
 
-    /* Statement */
-
     @Override
     public void inAIfStatement(AIfStatement node) {
         if (printAST) {
@@ -1327,80 +1288,6 @@ public class TreeVisitor extends DepthFirstAdapter {
     }
 
     @Override
-    public void inAWhileStatement(AWhileStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAAssignmentStatement(AAssignmentStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncCallStatement(AFuncCallStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAReturnStatement(AReturnStatement node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANullStatement(ANullStatement node) {
-        printNode(node);
-    }
-
-    /* Condition */
-
-    @Override
-    public void inADisjCond(ADisjCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAConjCond(AConjCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANegCond(ANegCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAEqualCond(AEqualCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANotEqualCond(ANotEqualCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAGreaterCond(AGreaterCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inALessCond(ALessCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAGreaterEqualCond(AGreaterEqualCond node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inALessEqualCond(ALessEqualCond node) {
-        printNode(node);
-    }
-
-    /* Function call */
-
-    @Override
     public void inAFuncCall(AFuncCall node) {
         if (printAST) {
             printIndentation();
@@ -1408,8 +1295,6 @@ public class TreeVisitor extends DepthFirstAdapter {
             addIndentationLevel();
         }
     }
-
-   /* L_value */
 
     @Override
     public void inAIdentifierLValue(AIdentifierLValue node) {
@@ -1427,53 +1312,6 @@ public class TreeVisitor extends DepthFirstAdapter {
             System.out.println(getClassName(node) + ": " + node.getString());
             addIndentationLevel();
         }
-    }
-
-    /* Expr */
-
-    @Override
-    public void inALValueExpr(ALValueExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAFuncCallExpr(AFuncCallExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAAddExpr(AAddExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inASubExpr(ASubExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAMultExpr(AMultExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inADivExpr(ADivExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAModExpr(AModExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inAPositiveExpr(APositiveExpr node) {
-        printNode(node);
-    }
-
-    @Override
-    public void inANegativeExpr(ANegativeExpr node) {
-        printNode(node);
     }
 
     @Override

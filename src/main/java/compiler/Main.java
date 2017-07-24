@@ -66,7 +66,7 @@ public class Main {
                     case "-ir":
                         printIR = true;
                         break;
-                    case "-opt":
+                    case "-O":
                         optimize = true;
                         break;
                     default:
