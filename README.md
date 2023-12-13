@@ -1,4 +1,7 @@
 # Grace-Compiler
+
+Project for MSc Compilers 2017 course.
+
 A full compiler for the Grace programming language, consisting of lexical, syntax,
 semantic analysis, intermediate code and final code generation. Grace is a
 procedural programming language with Pascal-like symbol scoping, whose specification
